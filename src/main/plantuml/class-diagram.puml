@@ -1,0 +1,39 @@
+@startuml
+
+class ActorRef {
+  +void tell(message: Object)
+  +void tell(message: Object, sender: ActorRef)
+  +void dispose()
+}
+
+interface Actor {
+  +void onMessage()
+}
+
+class Context {
+  +create(actorClass: Class<? extends Actor>, name: String, scheduleOn: Scheduler)
+  +ActorRef actorRef(name: String)
+}
+
+class Scheduler {
+
+}
+
+class Supervisor {
+  +processFailure(context:Context, actor: ActorRef, error: Throwable)
+}
+
+interface Disposable {
+  +dispose()
+}
+
+ActorRef "has self" --> "refers to" Actor
+Actor --> "processes\nmessages\non" Scheduler
+Actor "*\nsupervises" --> "supervised by\n1" Supervisor
+Actor "*\nowns" --> "created by\n1" Context
+Context --> "has default" Scheduler
+ActorRef --|> Disposable
+Scheduler --|> Disposable
+Context --|> Disposable
+
+@enduml
