@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.text.DecimalFormat;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -171,35 +172,37 @@ public class ActorTest {
 
     @Test
     public void testParallel() throws InterruptedException {
-        Integer msg = 0;
+        String start = "start";
         Context c = new Context();
         int runners = 100;
         int messagesPerRunner = 5;
         CountDownLatch latch = new CountDownLatch(runners * messagesPerRunner);
         AtomicInteger count = new AtomicInteger();
-        ActorRef<Integer> root = c.messageClass(Integer.class) //
+        ActorRef<String> root = c.messageClass(String.class) //
                 .name("root") //
-                .match(Integer.class, (con1, n) -> {
-                    if (n == msg) {
+                .match(String.class, (con1, msg) -> {
+                    if (start.equals(msg)) {
+                        DecimalFormat df = new DecimalFormat("000");
                         for (int i = 1; i <= runners; i++) {
                             int finalI = i;
-                            ActorRef<Integer> r = c.messageClass(Integer.class) //
+                            ActorRef<String> r = c.messageClass(String.class) //
                                     .name("runner" + i) //
-                                    .match(Integer.class, (con2, m) -> {
+                                    .match(String.class, (con2, m) -> {
                                         System.out.println("responding from runner " + finalI + " with value " + m);
-                                        con2.sender().get().tell(m);
+                                        con2.sender().get()
+                                                .tell("reply from runner " + df.format(finalI) + " to message " + m);
                                     }).build();
                             for (int j = 1; j <= messagesPerRunner; j++) {
                                 System.out.println("sending runner " + i + ": " + j);
-                                r.tell(j, con1.self());
+                                r.tell(j + "", con1.self());
                             }
                         }
                     } else {
                         latch.countDown();
-                        System.out.println("replies=" + count.incrementAndGet());
+                        System.out.println(msg + ", replies=" + count.incrementAndGet());
                     }
                 }).build();
-        root.tell(msg);
+        root.tell(start);
         Thread.sleep(5000);
         latch.await();
     }
