@@ -39,17 +39,9 @@ public class ActorTest {
     public void testTyped() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(3);
         Context c = new Context();
-        Supervisor supervisor = new Supervisor() {
-            @Override
-            public void processFailure(Context context, ActorRef<?> actorRef, Throwable error) {
-                error.printStackTrace();
-                actorRef.dispose();
-            }
-        };
         ActorRef<Number> a = c //
                 .messageClass(Number.class) //
                 .scheduler(Scheduler.computation()) //
-                .supervisor(supervisor) //
                 .match(Integer.class, (ctxt, n) -> {
                     ctxt.self().tell((Double) 1.2);
                 }) //

@@ -3,7 +3,6 @@ package com.github.davidmoten.reels.internal;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
