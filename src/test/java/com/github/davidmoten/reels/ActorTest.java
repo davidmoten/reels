@@ -144,7 +144,7 @@ public class ActorTest {
         Context c = new Context();
         ActorRef<Integer> a = c.create(MyActor.class);
         a.tell(123);
-        Thread.sleep(200);
+        Thread.sleep(500);
         assertEquals(123, (int) MyActor.last);
     }
 
@@ -174,26 +174,30 @@ public class ActorTest {
         Integer msg = 1;
         Integer resp = 2;
         Context c = new Context();
-        int runners = 100;
+        int runners = 3;
         int messagesPerRunner = 3;
         CountDownLatch latch = new CountDownLatch(runners * messagesPerRunner);
+        AtomicInteger count = new AtomicInteger();
         ActorRef<Integer> root = c.messageClass(Integer.class) //
                 .name("root") //
                 .match(Integer.class, (con1, n) -> {
                     if (n == msg) {
                         for (int i = 0; i < runners; i++) {
+                            int finalI = i;
                             ActorRef<Integer> r = c.messageClass(Integer.class) //
                                     .name("runner" + i) //
                                     .match(Integer.class, (con2, m) -> {
+                                        System.out.println("responding from runner " + finalI);
                                         con2.sender().get().tell(resp);
                                     }).build();
                             for (int j = 0; j < messagesPerRunner; j++) {
+                                System.out.println("sending runner " + i + ": " + j);
                                 r.tell(msg, con1.self());
                             }
                         }
                     } else {
                         latch.countDown();
-                        System.out.println("response");
+                        System.out.println(count.incrementAndGet());
                     }
                 }).build();
         root.tell(msg);

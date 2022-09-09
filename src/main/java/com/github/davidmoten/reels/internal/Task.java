@@ -1,19 +1,25 @@
 package com.github.davidmoten.reels.internal;
 
-import java.util.concurrent.Future;
-
 import com.github.davidmoten.reels.Disposable;
 
-public final class Task implements Disposable {
+public final class Task implements Disposable, Runnable {
 
-    private final Future<?> future;
+    private final Runnable run;
+    private volatile boolean disposed;
 
-    public Task(Future<?> future) {
-        this.future = future;
+    public Task(Runnable run) {
+        this.run = run;
     }
 
     @Override
     public void dispose() {
-        this.future.cancel(false);
+        disposed = true;
+    }
+
+    @Override
+    public void run() {
+        if (!disposed) {
+            run.run();
+        }
     }
 }
