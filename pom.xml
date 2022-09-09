@@ -196,9 +196,6 @@
                     <aggregate>true</aggregate>
                 </configuration>
             </plugin>
-            <!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>findbugs-maven-plugin</artifactId> 
-                <version>${findbugs.version}</version> <configuration> <xmlOutput>true</xmlOutput> 
-                <effort>Max</effort> </configuration> </plugin> -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jdepend-maven-plugin</artifactId>
