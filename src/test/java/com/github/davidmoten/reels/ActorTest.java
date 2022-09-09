@@ -83,7 +83,6 @@ public class ActorTest {
             @Override
             public void processFailure(Context context, ActorRef<?> actor, Throwable error) {
                 actor.dispose();
-                System.out.println("disposed actor");
                 latch.countDown();          }
         };
         AtomicInteger count = new AtomicInteger();
