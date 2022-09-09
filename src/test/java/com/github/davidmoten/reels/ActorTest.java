@@ -8,11 +8,14 @@ public class ActorTest {
 
     @Test
     public void test() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(3);
         Context c = new Context();
-        CountDownLatch latch = new CountDownLatch(1);
         ActorRef<Object> a = c //
                 .messageClass(Object.class) //
-                .match(Integer.class, (ctxt, n) -> latch.countDown())
+                .match(Integer.class, (ctxt, n) -> {
+                    ctxt.self().tell(2);
+                    latch.countDown();
+                }) //
                 .build();
         a.tell(123);
         latch.await();
