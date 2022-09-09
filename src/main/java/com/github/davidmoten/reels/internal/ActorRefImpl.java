@@ -15,6 +15,7 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable {
 
+    private final String name;
     private final Actor<T> actor;
     private final SimplePlainQueue<Message<T>> queue;
     private final Scheduler scheduler;
@@ -23,7 +24,8 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
     private final AtomicInteger wip = new AtomicInteger();
     private volatile boolean disposed;
 
-    public ActorRefImpl(Actor<T> actor, Scheduler scheduler, Context context, Supervisor supervisor) {
+    public ActorRefImpl(String name, Actor<T> actor, Scheduler scheduler, Context context, Supervisor supervisor) {
+        this.name = name;
         this.actor = actor;
         this.scheduler = scheduler;
         this.context = context;
@@ -35,6 +37,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
     public void dispose() {
         this.disposed = true;
         queue.clear();
+        context.disposeActor(name);
     }
 
     @Override

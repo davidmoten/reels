@@ -2,6 +2,7 @@ package com.github.davidmoten.reels;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -16,7 +17,8 @@ public final class ActorBuilder<T> {
     private Consumer<? super Throwable> onError;
     private Scheduler scheduler = Scheduler.computation();
     private Supervisor supervisor = SupervisorDefault.INSTANCE;
-
+    private String name = UUID.randomUUID().toString();
+    
     ActorBuilder(Context context) {
         this.context = context;
     }
@@ -35,6 +37,11 @@ public final class ActorBuilder<T> {
         this.supervisor = supervisor;
         return this;
     }
+    
+    public ActorBuilder<T> name(String name) {
+        this.name = name;
+        return this;
+    }
 
     public ActorBuilder<T> onError(Consumer<? super Throwable> onError) {
         this.onError = onError;
@@ -42,7 +49,7 @@ public final class ActorBuilder<T> {
     }
 
     public ActorRef<T> build() {
-        return new ActorRefImpl<T>(new MatchingActor<T>(matches, onError), scheduler, context, supervisor);
+        return new ActorRefImpl<T>(name, new MatchingActor<T>(matches, onError), scheduler, context, supervisor);
     }
 
     private static final class Matcher<T, S extends T> {
