@@ -169,6 +169,37 @@ public class ActorTest {
         assertFalse(c.lookupActor("thing").isPresent());
     }
 
+    @Test
+    public void testParallel() throws InterruptedException {
+        Integer msg = 1;
+        Integer resp = 2;
+        Context c = new Context();
+        int runners = 100;
+        int messagesPerRunner = 3;
+        CountDownLatch latch = new CountDownLatch(runners * messagesPerRunner);
+        ActorRef<Integer> root = c.messageClass(Integer.class) //
+                .name("root") //
+                .match(Integer.class, (con1, n) -> {
+                    if (n == msg) {
+                        for (int i = 0; i < runners; i++) {
+                            ActorRef<Integer> r = c.messageClass(Integer.class) //
+                                    .name("runner" + i) //
+                                    .match(Integer.class, (con2, m) -> {
+                                        con2.sender().get().tell(resp);
+                                    }).build();
+                            for (int j = 0; j < messagesPerRunner; j++) {
+                                r.tell(msg, con1.self());
+                            }
+                        }
+                    } else {
+                        latch.countDown();
+                        System.out.println("response");
+                    }
+                }).build();
+        root.tell(msg);
+        latch.await();
+    }
+
     public static final class MyActor implements Actor<Integer> {
 
         static volatile Integer last;

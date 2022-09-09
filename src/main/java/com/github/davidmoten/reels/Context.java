@@ -70,5 +70,9 @@ public final class Context {
     public void disposeActor(String name) {
         actors.remove(name);
     }
+    
+    public void shutdown() {
+        
+    }
 
 }

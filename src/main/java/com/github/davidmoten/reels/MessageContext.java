@@ -16,8 +16,9 @@ public final class MessageContext<T> {
         return self;
     }
 
-    public Optional<ActorRef<?>> sender() {
-        return sender;
+    @SuppressWarnings("unchecked")
+    public <S> Optional<ActorRef<S>> sender() {
+        return (Optional<ActorRef<S>>) (Optional<?>) sender;
     }
 
 }
