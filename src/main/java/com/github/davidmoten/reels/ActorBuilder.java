@@ -11,7 +11,7 @@ import com.github.davidmoten.reels.internal.SupervisorDefault;
 public final class ActorBuilder<T> {
 
     private final Context context;
-    private final List<Matcher<? extends T>> matches = new ArrayList<>();
+    private final List<Matcher<T, ? extends T>> matches = new ArrayList<>();
     private Consumer<? super Throwable> onError;
     private Scheduler scheduler = Scheduler.computation();
     private Supervisor supervisor = SupervisorDefault.INSTANCE;
@@ -20,8 +20,8 @@ public final class ActorBuilder<T> {
         this.context = context;
     }
 
-    public <S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<S>, S> consumer) {
-        matches.add(new Matcher<S>(matchClass, consumer));
+    public <S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, S> consumer) {
+        matches.add(new Matcher<T, S>(matchClass, consumer));
         return this;
     }
 
@@ -44,22 +44,22 @@ public final class ActorBuilder<T> {
         return new ActorRefImpl<T>(new MatchingActor<T>(matches, onError), scheduler, context, supervisor);
     }
 
-    private static final class Matcher<S> {
+    private static final class Matcher<T, S extends T> {
         final Class<S> matchClass;
-        final BiConsumer<MessageContext<S>, S> consumer;
+        final BiConsumer<MessageContext<T>, S> consumer;
 
-        Matcher(Class<S> matchClass, BiConsumer<MessageContext<S>, S> consumer) {
+        Matcher(Class<S> matchClass, BiConsumer<MessageContext<T>, S> consumer2) {
             this.matchClass = matchClass;
-            this.consumer = consumer;
+            this.consumer = consumer2;
         }
     }
 
     private static final class MatchingActor<T> implements Actor<T> {
 
-        private final List<Matcher<? extends T>> matchers;
+        private final List<Matcher<T, ? extends T>> matchers;
         private final Consumer<? super Throwable> onError;
 
-        public MatchingActor(List<Matcher<? extends T>> matchers, Consumer<? super Throwable> onError) {
+        public MatchingActor(List<Matcher<T, ? extends T>> matchers, Consumer<? super Throwable> onError) {
             this.matchers = matchers;
             this.onError = onError;
         }
@@ -67,10 +67,10 @@ public final class ActorBuilder<T> {
         @SuppressWarnings("unchecked")
         @Override
         public void onMessage(MessageContext<T> context, T message) {
-            for (Matcher<?> matcher : matchers) {
+            for (Matcher<T, ? extends T> matcher : matchers) {
                 if (matcher.matchClass.isInstance(message)) {
                     try {
-                        ((Matcher<Object>) matcher).consumer.accept((MessageContext<Object>) context, message);
+                        ((Matcher<T, T>) matcher).consumer.accept((MessageContext<T>) context, message);
                     } catch (Throwable e) {
                         if (onError != null) {
                             onError.accept(e);
