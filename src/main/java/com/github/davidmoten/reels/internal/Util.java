@@ -1,8 +1,12 @@
-package com.github.davidmoten.reels;
+package com.github.davidmoten.reels.internal;
 
 public final class Util {
 
-    static int systemPropertyInt(String name, int defaultValue) {
+    private Util() {
+        // prevent instantiation
+    }
+
+    public static int systemPropertyInt(String name, int defaultValue) {
         return Integer.parseInt(System.getProperty(name, defaultValue + ""));
     }
 

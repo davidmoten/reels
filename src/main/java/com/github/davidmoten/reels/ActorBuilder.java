@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.SupervisorDefault;
+import com.github.davidmoten.reels.internal.Util;
 
 public final class ActorBuilder<T> {
 

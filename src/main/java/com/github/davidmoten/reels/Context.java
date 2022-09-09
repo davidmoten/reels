@@ -35,7 +35,7 @@ public final class Context {
         return new ActorBuilder<T>(this);
     }
 
-    public <T> ActorRef<T> actorRef(String name, Class<T> messageType) {
+    public <T> ActorRef<T> lookupActor(String name, Class<T> messageType) {
         return null;
     }
 
