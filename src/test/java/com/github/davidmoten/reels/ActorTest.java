@@ -2,6 +2,7 @@ package com.github.davidmoten.reels;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -151,6 +152,21 @@ public class ActorTest {
     public void testCustomActorWithoutBuilderNoPublicNoArgConstructor() throws InterruptedException {
         Context c = new Context();
         c.create(MyActorBad.class);
+    }
+
+    @Test
+    public void testLookup() {
+        Context c = new Context();
+        ActorRef<Integer> a = c //
+                .messageClass(Integer.class) //
+                .match(Integer.class, (ctxt, n) -> {
+                    throw new RuntimeException("boo");
+                }) //
+                .name("thing") //
+                .build();
+        assertTrue(a == c.<Integer>lookupActor("thing").get());
+        a.dispose();
+        assertFalse(c.lookupActor("thing").isPresent());
     }
 
     public static final class MyActor implements Actor<Integer> {
