@@ -13,6 +13,8 @@ import com.github.davidmoten.reels.internal.SupervisorDefault;
  * Creates actors, disposes actors and looks actors up by name.
  */
 public final class Context {
+    
+    public static final Context DEFAULT = new Context();
 
     private final Supervisor supervisor;
 
