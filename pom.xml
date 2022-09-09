@@ -47,8 +47,8 @@
     </licenses>
 
     <ciManagement>
-        <system>Travis</system>
-        <url>https://travis-ci.org/davidmoten/reels</url>
+        <system>GithubActions</system>
+        <url>TODO</url>
     </ciManagement>
 
     <issueManagement>
@@ -56,7 +56,7 @@
         <url>https://github.com/davidmoten/reels/issues</url>
     </issueManagement>
 
-    <inceptionYear>2018</inceptionYear>
+    <inceptionYear>2022</inceptionYear>
     <developers>
         <developer>
             <id>dave</id>
@@ -100,20 +100,7 @@
             <version>0.4</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-core</artifactId>
-            <version>${jmh.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-generator-annprocess</artifactId>
-            <version>${jmh.version}</version>
-            <scope>test</scope>
-        </dependency>
-    
+        
     </dependencies>
 
     <build>
@@ -141,7 +128,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.7</version>
+                <version>0.8.8</version>
                 <executions>
                     <execution>
                         <goals>
@@ -236,63 +223,7 @@
                     <aggregate>true</aggregate>
                 </configuration>
             </plugin>
-            <!-- commented this plugin out because cannot run offline (e.g. 
-                at home) -->
-            <!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-changelog-plugin</artifactId> 
-                <version>${changelog.version}</version> <configuration> <username>${svn.username}</username> 
-                <password>${svn.password}</password> </configuration> </plugin> -->
         </plugins>
     </reporting>
-
-    <profiles>
-        <profile>
-            <id>benchmark</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.openjdk.jmh</groupId>
-                    <artifactId>jmh-generator-annprocess</artifactId>
-                    <version>${jmh.version}</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${exec.version}</version>
-                        <executions>
-                            <execution>
-                                <id>run-benchmarks</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <classpathScope>test</classpathScope>
-                                    <executable>java</executable>
-                                    <arguments>
-                                        <argument>-classpath</argument>
-                                        <classpath />
-                                        <argument>org.openjdk.jmh.Main</argument>
-                                        <!-- -h for help -->
-                                        <!-- <argument>-h</argument> -->
-                                        <argument>-f</argument>
-                                        <argument>1</argument>
-                                        <argument>-i</argument>
-                                        <argument>10</argument>
-                                        <argument>-wi</argument>
-                                        <argument>4</argument>
-                                        <argument>-jvmArgs</argument>
-                                        <argument>-Xmx512m</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 </project>
