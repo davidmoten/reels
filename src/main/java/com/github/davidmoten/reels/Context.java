@@ -2,6 +2,9 @@ package com.github.davidmoten.reels;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.github.davidmoten.reels.internal.ActorRefImpl;
+import com.github.davidmoten.reels.internal.SupervisorDefault;
+
 public final class Context {
 
     private final Supervisor supervisor;
@@ -12,8 +15,16 @@ public final class Context {
         this.supervisor = supervisor;
     }
 
+    public Context() {
+        this(SupervisorDefault.INSTANCE);
+    }
+
     public <T> ActorRef<T> create(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn) {
-        return null;
+        try {
+            return new ActorRefImpl<>(actorClass.newInstance(), processMessagesOn, this, supervisor);
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new CreateException(e);
+        }
     }
 
     public <T> ActorRef<T> create(Class<? extends Actor<T>> actorClass) {
