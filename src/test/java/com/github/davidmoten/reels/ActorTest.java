@@ -83,7 +83,8 @@ public class ActorTest {
             @Override
             public void processFailure(Context context, ActorRef<?> actor, Throwable error) {
                 actor.dispose();
-                latch.countDown();          }
+                latch.countDown();
+            }
         };
         AtomicInteger count = new AtomicInteger();
         ActorRef<Integer> a = c //
@@ -103,5 +104,5 @@ public class ActorTest {
         a.tell(999);
         assertEquals(1, count.get());
     }
-    
+
 }
