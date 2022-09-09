@@ -1,6 +1,9 @@
 package com.github.davidmoten.reels;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
@@ -31,7 +34,7 @@ public class ActorTest {
         a.tell(123);
         latch.await();
     }
-    
+
     @Test
     public void testTyped() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(3);
@@ -56,6 +59,57 @@ public class ActorTest {
                 }).build();
         a.tell(123);
         latch.await();
+    }
+
+    @Test
+    public void testSupervisorCalled() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        Context c = new Context();
+        Supervisor supervisor = new Supervisor() {
+            @Override
+            public void processFailure(Context context, ActorRef<?> actorRef, Throwable error) {
+                latch.countDown();
+            }
+        };
+        ActorRef<Integer> a = c //
+                .messageClass(Integer.class) //
+                .scheduler(Scheduler.computation()) //
+                .supervisor(supervisor) //
+                .match(Integer.class, (ctxt, n) -> {
+                    throw new RuntimeException("boo");
+                }) //
+                .build();
+        a.tell(123);
+        latch.await();
+    }
+
+    @Test
+    public void testSupervisorDisposesActor() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        Context c = new Context();
+        Supervisor supervisor = new Supervisor() {
+            @Override
+            public void processFailure(Context context, ActorRef<?> actor, Throwable error) {
+                actor.dispose();
+                System.out.println("disposed actor");
+                latch.countDown();          }
+        };
+        AtomicInteger count = new AtomicInteger();
+        ActorRef<Integer> a = c //
+                .messageClass(Integer.class) //
+                .scheduler(Scheduler.computation()) //
+                .supervisor(supervisor) //
+                .match(Integer.class, (ctxt, n) -> {
+                    count.incrementAndGet();
+                    throw new RuntimeException("boo");
+                }) //
+                .build();
+        a.tell(123);
+        a.tell(234);
+        a.tell(456);
+        Thread.sleep(1000);
+        latch.await();
+        assertEquals(1, count.get());
     }
 
 }
