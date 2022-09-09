@@ -16,7 +16,7 @@
  * https://github.com/JCTools/JCTools/blob/master/jctools-core/src/main/java/org/jctools/queues/atomic
  */
 
-package com.github.davidmoten.reels.internal;
+package com.github.davidmoten.reels.internal.queue;
 
 import java.util.concurrent.atomic.AtomicReference;
 

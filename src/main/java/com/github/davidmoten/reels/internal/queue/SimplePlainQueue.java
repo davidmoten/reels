@@ -11,7 +11,7 @@
  * the License for the specific language governing permissions and limitations under the License.
  */
 
-package com.github.davidmoten.reels.internal;
+package com.github.davidmoten.reels.internal.queue;
 
 /**
  * Override of the {@link SimpleQueue} interface with no {@code throws Throwable} on {@code poll()}.

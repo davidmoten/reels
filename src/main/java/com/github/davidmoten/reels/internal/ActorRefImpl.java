@@ -10,6 +10,8 @@ import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.MessageContext;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Supervisor;
+import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
+import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable {
 
