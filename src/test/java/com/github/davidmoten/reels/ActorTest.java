@@ -138,4 +138,39 @@ public class ActorTest {
         assertFalse(supervisorCalled.get());
     }
 
+    @Test
+    public void testCustomActorWithoutBuilder() throws InterruptedException {
+        Context c = new Context();
+        ActorRef<Integer> a = c.create(MyActor.class);
+        a.tell(123);
+        Thread.sleep(200);
+        assertEquals(123, (int) MyActor.last);
+    }
+
+    @Test(expected = CreateException.class)
+    public void testCustomActorWithoutBuilderNoPublicNoArgConstructor() throws InterruptedException {
+        Context c = new Context();
+        c.create(MyActorBad.class);
+    }
+
+    public static final class MyActor implements Actor<Integer> {
+
+        static volatile Integer last;
+
+        @Override
+        public void onMessage(MessageContext<Integer> context, Integer message) {
+            last = message;
+        }
+    }
+
+    public static final class MyActorBad implements Actor<Integer> {
+
+        public MyActorBad(String s) {
+
+        }
+
+        @Override
+        public void onMessage(MessageContext<Integer> context, Integer message) {
+        }
+    }
 }

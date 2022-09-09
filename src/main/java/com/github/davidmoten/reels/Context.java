@@ -1,6 +1,7 @@
 package com.github.davidmoten.reels;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -59,8 +60,9 @@ public final class Context {
         return new ActorBuilder<T>(this);
     }
 
-    public <T> ActorRef<T> lookupActor(String name, Class<T> messageType) {
-        return null;
+    @SuppressWarnings("unchecked")
+    public <T> Optional<ActorRef<T>> lookupActor(String name) {
+        return Optional.ofNullable((ActorRef<T>) actors.get(name));
     }
 
     public void disposeActor(String name) {
