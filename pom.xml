@@ -142,6 +142,9 @@
                             <goal>report</goal>
                         </goals>
                         <configuration>
+                            <excludes>
+                                <exclude>com/github/davidmoten/reels/internal/queue/*</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                 </executions>
