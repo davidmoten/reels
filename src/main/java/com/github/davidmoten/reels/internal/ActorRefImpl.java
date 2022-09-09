@@ -53,6 +53,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
 
     @Override
     public void run() {
+        // drain queue
         if (wip.getAndIncrement() == 0) {
             int missed = 1;
             Message<T> message;
