@@ -171,36 +171,36 @@ public class ActorTest {
 
     @Test
     public void testParallel() throws InterruptedException {
-        Integer msg = 1;
-        Integer resp = 2;
+        Integer msg = 0;
         Context c = new Context();
-        int runners = 3;
-        int messagesPerRunner = 3;
+        int runners = 100;
+        int messagesPerRunner = 5;
         CountDownLatch latch = new CountDownLatch(runners * messagesPerRunner);
         AtomicInteger count = new AtomicInteger();
         ActorRef<Integer> root = c.messageClass(Integer.class) //
                 .name("root") //
                 .match(Integer.class, (con1, n) -> {
                     if (n == msg) {
-                        for (int i = 0; i < runners; i++) {
+                        for (int i = 1; i <= runners; i++) {
                             int finalI = i;
                             ActorRef<Integer> r = c.messageClass(Integer.class) //
                                     .name("runner" + i) //
                                     .match(Integer.class, (con2, m) -> {
-                                        System.out.println("responding from runner " + finalI);
-                                        con2.sender().get().tell(resp);
+                                        System.out.println("responding from runner " + finalI + " with value " + m);
+                                        con2.sender().get().tell(m);
                                     }).build();
-                            for (int j = 0; j < messagesPerRunner; j++) {
+                            for (int j = 1; j <= messagesPerRunner; j++) {
                                 System.out.println("sending runner " + i + ": " + j);
-                                r.tell(msg, con1.self());
+                                r.tell(j, con1.self());
                             }
                         }
                     } else {
                         latch.countDown();
-                        System.out.println(count.incrementAndGet());
+                        System.out.println("replies=" + count.incrementAndGet());
                     }
                 }).build();
         root.tell(msg);
+        Thread.sleep(5000);
         latch.await();
     }
 

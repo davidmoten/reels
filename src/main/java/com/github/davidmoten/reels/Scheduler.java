@@ -1,5 +1,6 @@
 package com.github.davidmoten.reels;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -17,8 +18,8 @@ public interface Scheduler {
         return SchedulerIo.INSTANCE;
     }
 
-    static Scheduler from(ScheduledExecutorService executor) {
-        return new SchedulerFromExecutor(executor);
+    static Scheduler from(ExecutorService direct, ScheduledExecutorService scheduled) {
+        return new SchedulerFromExecutor(direct, scheduled);
     }
 
     Disposable schedule(Runnable run);

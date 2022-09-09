@@ -1,8 +1,8 @@
 package com.github.davidmoten.reels.internal;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.github.davidmoten.reels.Disposable;
@@ -16,9 +16,9 @@ public final class SchedulerComputation implements Scheduler {
 
     private SchedulerComputation() {
         int size = Util.systemPropertyInt("reels.computation.pool.size", Runtime.getRuntime().availableProcessors());
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(size);
-        ((ScheduledThreadPoolExecutor) executor).setMaximumPoolSize(size);
-        scheduler = new SchedulerFromExecutor(executor);
+        ExecutorService direct = Executors.newWorkStealingPool(size);
+        ScheduledExecutorService scheduled = Executors.newSingleThreadScheduledExecutor();
+        scheduler = new SchedulerFromExecutor(direct, scheduled);
     }
 
     @Override

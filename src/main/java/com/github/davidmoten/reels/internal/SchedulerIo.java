@@ -1,5 +1,6 @@
 package com.github.davidmoten.reels.internal;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -14,8 +15,9 @@ public class SchedulerIo implements Scheduler {
     private final SchedulerFromExecutor scheduler;
 
     private SchedulerIo() {
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(0);
-        scheduler = new SchedulerFromExecutor(executor);
+        ExecutorService direct = Executors.newScheduledThreadPool(0);
+        ScheduledExecutorService scheduled = Executors.newSingleThreadScheduledExecutor();
+        scheduler = new SchedulerFromExecutor(direct, scheduled);
     }
 
     @Override
