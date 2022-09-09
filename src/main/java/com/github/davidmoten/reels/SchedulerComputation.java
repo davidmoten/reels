@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 public final class SchedulerComputation implements Scheduler {
 
-    public static final Scheduler INSTANCE = null;
+    public static final Scheduler INSTANCE = new SchedulerComputation();
 
     private final SchedulerFromExecutor scheduler;
 

@@ -5,16 +5,33 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import com.github.davidmoten.reels.internal.ActorRefImpl;
+import com.github.davidmoten.reels.internal.SupervisorDefault;
+
 public final class ActorBuilder<T> {
 
+    private final Context context;
     private final List<Matcher<? extends T>> matches = new ArrayList<>();
     private Consumer<? super Throwable> onError;
+    private Scheduler scheduler = Scheduler.computation();
+    private Supervisor supervisor = SupervisorDefault.INSTANCE;
 
-    ActorBuilder() {
+    ActorBuilder(Context context) {
+        this.context = context;
     }
 
     public <S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<S>, S> consumer) {
         matches.add(new Matcher<S>(matchClass, consumer));
+        return this;
+    }
+
+    public ActorBuilder<T> scheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
+        return this;
+    }
+
+    public ActorBuilder<T> supervisor(Supervisor supervisor) {
+        this.supervisor = supervisor;
         return this;
     }
 
@@ -23,8 +40,8 @@ public final class ActorBuilder<T> {
         return this;
     }
 
-    public Actor<T> build() {
-        return new MatchingActor<T>(matches, onError);
+    public ActorRef<T> build() {
+        return new ActorRefImpl<T>(new MatchingActor<T>(matches, onError), scheduler, context, supervisor);
     }
 
     private static final class Matcher<S> {

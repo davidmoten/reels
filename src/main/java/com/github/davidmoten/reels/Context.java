@@ -30,6 +30,10 @@ public final class Context {
     public <T> ActorRef<T> create(Class<? extends Actor<T>> actorClass) {
         return create(actorClass, Long.toString(counter.incrementAndGet()), Scheduler.computation());
     }
+    
+    public <T> ActorBuilder<T> messageClass(Class<T> messageClass) {
+        return new ActorBuilder<T>(this);
+    }
 
     public <T> ActorRef<T> actorRef(String name, Class<T> messageType) {
         return null;
