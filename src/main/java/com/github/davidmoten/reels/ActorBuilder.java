@@ -18,7 +18,7 @@ public final class ActorBuilder<T> {
     private Scheduler scheduler = Scheduler.computation();
     private Supervisor supervisor = SupervisorDefault.INSTANCE;
     private String name = UUID.randomUUID().toString();
-    
+
     ActorBuilder(Context context) {
         this.context = context;
     }
@@ -37,7 +37,7 @@ public final class ActorBuilder<T> {
         this.supervisor = supervisor;
         return this;
     }
-    
+
     public ActorBuilder<T> name(String name) {
         this.name = name;
         return this;
@@ -49,7 +49,7 @@ public final class ActorBuilder<T> {
     }
 
     public ActorRef<T> build() {
-        return new ActorRefImpl<T>(name, new MatchingActor<T>(matches, onError), scheduler, context, supervisor);
+        return context.create(new MatchingActor<T>(matches, onError), name, scheduler, supervisor);
     }
 
     private static final class Matcher<T, S extends T> {

@@ -27,13 +27,22 @@ public final class Context {
     }
 
     public <T> ActorRef<T> create(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn) {
+        return create(actorClass, name, processMessagesOn, supervisor);
+    }
+
+    public <T> ActorRef<T> create(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn,
+            Supervisor supervisor) {
         Preconditions.checkArgument(name != null, "name cannot be null");
         try {
-            return insert(name,
-                    new ActorRefImpl<T>(name, actorClass.newInstance(), processMessagesOn, this, supervisor));
+            return create((Actor<T>) actorClass.newInstance(), name, processMessagesOn, supervisor);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new CreateException(e);
         }
+    }
+
+    public <T> ActorRef<T> create(Actor<T> actor, String name, Scheduler processMessagesOn, Supervisor supervisor) {
+        Preconditions.checkArgument(name != null, "name cannot be null");
+        return insert(name, new ActorRefImpl<T>(name, actor, processMessagesOn, this, supervisor));
     }
 
     private <T> ActorRef<T> insert(String name, ActorRef<T> actorRef) {
