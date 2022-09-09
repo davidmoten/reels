@@ -1,8 +1,10 @@
 package com.github.davidmoten.reels;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
@@ -103,6 +105,35 @@ public class ActorTest {
         latch.await();
         a.tell(999);
         assertEquals(1, count.get());
+    }
+
+    @Test
+    public void testBuilderOnError() throws InterruptedException {
+        AtomicBoolean supervisorCalled = new AtomicBoolean();
+        Supervisor supervisor = new Supervisor() {
+            @Override
+            public void processFailure(Context context, ActorRef<?> actor, Throwable error) {
+                supervisorCalled.set(true);
+            }
+        };
+        CountDownLatch latch = new CountDownLatch(1);
+        Context c = new Context();
+        ActorRef<Integer> a = c //
+                .messageClass(Integer.class) //
+                .scheduler(Scheduler.computation()) //
+                .supervisor(supervisor) //
+                .match(Integer.class, (ctxt, n) -> {
+                    throw new RuntimeException("boo");
+                }) //
+                .onError(e -> {
+                    if ("boo".equals(e.getMessage())) {
+                        latch.countDown();
+                    }
+                }).build();
+        a.tell(123);
+        latch.await();
+        Thread.sleep(200);
+        assertFalse(supervisorCalled.get());
     }
 
 }
