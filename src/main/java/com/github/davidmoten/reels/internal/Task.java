@@ -1,12 +1,14 @@
-package com.github.davidmoten.reels;
+package com.github.davidmoten.reels.internal;
 
 import java.util.concurrent.Future;
 
-final class Task implements Disposable {
+import com.github.davidmoten.reels.Disposable;
+
+public final class Task implements Disposable {
 
     private final Future<?> future;
 
-    Task(Future<?> future) {
+    public Task(Future<?> future) {
         this.future = future;
     }
 

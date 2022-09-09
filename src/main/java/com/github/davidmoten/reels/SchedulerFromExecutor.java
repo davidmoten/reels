@@ -4,6 +4,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.github.davidmoten.reels.internal.Task;
+
 public final class SchedulerFromExecutor implements Scheduler {
 
     private final ScheduledExecutorService executor;
