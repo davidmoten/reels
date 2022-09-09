@@ -32,7 +32,9 @@ public class ActorTest {
                 .match(String.class, (ctxt, s) -> {
                     ctxt.self().tell(2);
                     latch.countDown();
-                }).build();
+                }) //
+                .name("test") //
+                .build();
         a.tell(123);
         latch.await();
     }
