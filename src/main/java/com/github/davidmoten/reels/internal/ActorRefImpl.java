@@ -38,11 +38,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
 
     @Override
     public void tell(T message) {
-        if (disposed) {
-            return;
-        }
-        queue.offer(new Message<T>(message, Optional.empty()));
-        scheduler.schedule(this);
+        tell(message, null);
     }
 
     @Override
@@ -50,8 +46,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
         if (disposed) {
             return;
         }
-        Preconditions.checkNotNull(sender, "sender cannot be null");
-        queue.offer(new Message<T>(message, Optional.of(sender)));
+        queue.offer(new Message<T>(message, Optional.ofNullable(sender)));
         scheduler.schedule(this);
     }
 

@@ -109,6 +109,7 @@ public class ActorTest {
         a.tell(456);
         Thread.sleep(1000);
         latch.await();
+        a.tell(999);
         assertEquals(1, count.get());
     }
 
