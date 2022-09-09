@@ -1,10 +1,11 @@
-package com.github.davidmoten.reels;
+package com.github.davidmoten.reels.internal;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.github.davidmoten.reels.internal.Task;
+import com.github.davidmoten.reels.Disposable;
+import com.github.davidmoten.reels.Scheduler;
 
 public final class SchedulerFromExecutor implements Scheduler {
 

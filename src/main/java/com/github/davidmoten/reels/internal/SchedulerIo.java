@@ -1,20 +1,20 @@
-package com.github.davidmoten.reels;
+package com.github.davidmoten.reels.internal;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.github.davidmoten.reels.internal.Util;
+import com.github.davidmoten.reels.Disposable;
+import com.github.davidmoten.reels.Scheduler;
 
-public final class SchedulerComputation implements Scheduler {
+public class SchedulerIo implements Scheduler {
 
-    public static final Scheduler INSTANCE = new SchedulerComputation();
+    public static final Scheduler INSTANCE = new SchedulerIo();
 
     private final SchedulerFromExecutor scheduler;
 
-    private SchedulerComputation() {
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(
-                Util.systemPropertyInt("reels.computation.pool.size", Runtime.getRuntime().availableProcessors()));
+    private SchedulerIo() {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(0);
         scheduler = new SchedulerFromExecutor(executor);
     }
 
@@ -32,5 +32,4 @@ public final class SchedulerComputation implements Scheduler {
     public Disposable schedulePeriodically(Runnable run, long initialDelay, long interval, TimeUnit unit) {
         return scheduler.schedulePeriodically(run, initialDelay, interval, unit);
     }
-
 }
