@@ -11,6 +11,4 @@ public interface ActorRef<T> extends Disposable {
 
     public void tell(T message, ActorRef<?> sender);
 
-    public void dispose();
-
 }

@@ -6,4 +6,14 @@ public final class Util {
         return Integer.parseInt(System.getProperty(name, defaultValue + ""));
     }
 
+    public static void rethrow(Throwable e) {
+        if (e instanceof RuntimeException) {
+            throw (RuntimeException) e;
+        } else if (e instanceof Error) {
+            throw (Error) e;
+        } else {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
