@@ -22,6 +22,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <exec.version>3.0.0</exec.version>
         <jmh.version>1.34</jmh.version>
+        <slf4j.version>1.7.36</slf4j.version>
 
         <checkstyle.version>3.2.0</checkstyle.version>
         <findbugs.version>2.5.4</findbugs.version>
@@ -84,6 +85,12 @@
             <version>0.1.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
         <!-- Test Dependencies -->
 
         <dependency>
@@ -93,14 +100,21 @@
             <scope>test</scope>
             <optional>true</optional>
         </dependency>
-
+        
         <dependency>
             <groupId>com.github.davidmoten</groupId>
             <artifactId>junit-extras</artifactId>
             <version>0.4</version>
             <scope>test</scope>
         </dependency>
-        
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -161,8 +175,7 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                </configuration>
+                <configuration></configuration>
             </plugin>
         </plugins>
     </build>

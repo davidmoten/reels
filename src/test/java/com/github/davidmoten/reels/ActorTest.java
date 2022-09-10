@@ -5,7 +5,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -175,36 +178,37 @@ public class ActorTest {
         String start = "start";
         Context c = new Context();
         int runners = 100;
-        int messagesPerRunner = 5;
+        int messagesPerRunner = 100000;
         CountDownLatch latch = new CountDownLatch(runners * messagesPerRunner);
         AtomicInteger count = new AtomicInteger();
         ActorRef<String> root = c.messageClass(String.class) //
                 .name("root") //
                 .match(String.class, (con1, msg) -> {
                     if (start.equals(msg)) {
-                        DecimalFormat df = new DecimalFormat("000");
                         for (int i = 1; i <= runners; i++) {
                             int finalI = i;
                             ActorRef<String> r = c.messageClass(String.class) //
                                     .name("runner" + i) //
                                     .match(String.class, (con2, m) -> {
-                                        System.out.println("responding from runner " + finalI + " with value " + m);
-                                        con2.sender().get()
-                                                .tell("reply from runner " + df.format(finalI) + " to message " + m);
+//                                        DecimalFormat df = new DecimalFormat("000");
+//                                        System.out.println("responding from runner " + finalI + " with value " + m);
+//                                          String reply = "reply from runner " + df.format(finalI) + " to message " + m;
+                                        con2.sender().get().tell("reply");
                                     }).build();
                             for (int j = 1; j <= messagesPerRunner; j++) {
-                                System.out.println("sending runner " + i + ": " + j);
+//                              System.out.println("sending runner " + i + ": " + j);
                                 r.tell(j + "", con1.self());
                             }
                         }
                     } else {
                         latch.countDown();
-                        System.out.println(msg + ", replies=" + count.incrementAndGet());
+//                        System.out.println(msg + ", replies=" + count.incrementAndGet());
                     }
                 }).build();
         root.tell(start);
-        Thread.sleep(5000);
-        latch.await();
+        if (!latch.await(60, TimeUnit.SECONDS)) {
+            org.junit.Assert.fail();
+        }
     }
 
     public static final class MyActor implements Actor<Integer> {

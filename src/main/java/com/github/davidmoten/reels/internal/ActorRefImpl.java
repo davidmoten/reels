@@ -3,6 +3,9 @@ package com.github.davidmoten.reels.internal;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
@@ -14,6 +17,8 @@ import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
 import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable {
+
+    private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
     private final String name;
     private final Actor<T> actor;
@@ -58,14 +63,19 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
     public void run() {
         // drain queue
         if (wip.getAndIncrement() == 0) {
+//            log.info("starting drain");
             int missed = 1;
             Message<T> message;
             while ((message = queue.poll()) != null) {
+//                log.info("message polled=" + message.content());
                 if (disposed) {
+                    queue.clear();
                     return;
                 }
                 try {
+//                    log.info("calling onMessage");
                     actor.onMessage(new MessageContext<T>(this, message.sender()), message.content());
+//                    log.info("called onMessage");
                 } catch (Throwable e) {
                     supervisor.processFailure(context, this, e);
                 }

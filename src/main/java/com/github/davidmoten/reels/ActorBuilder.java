@@ -14,7 +14,7 @@ public final class ActorBuilder<T> {
     private final Context context;
     private final List<Matcher<T, ? extends T>> matches = new ArrayList<>();
     private Consumer<? super Throwable> onError;
-    private Scheduler scheduler = Scheduler.computation();
+    private Scheduler scheduler = Scheduler.newSingleThread();
     private Supervisor supervisor = SupervisorDefault.INSTANCE;
     private String name = UUID.randomUUID().toString();
 
