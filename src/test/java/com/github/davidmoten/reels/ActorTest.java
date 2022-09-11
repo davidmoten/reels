@@ -44,8 +44,9 @@ public class ActorTest {
 
     @Test
     public void testTyped() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(3);
+        CountDownLatch latch = new CountDownLatch(1);
         Context c = new Context();
+        AtomicBoolean once = new AtomicBoolean();
         ActorRef<Number> a = c //
                 .messageClass(Number.class) //
                 .scheduler(Scheduler.computation()) //
@@ -53,8 +54,10 @@ public class ActorTest {
                     ctxt.self().tell((Double) 1.2);
                 }) //
                 .match(Double.class, (ctxt, s) -> {
-                    ctxt.self().tell(2);
-                    latch.countDown();
+                    if (once.compareAndSet(false, true)) {
+                        ctxt.self().tell(2);
+                        latch.countDown();
+                    }
                 }).build();
         a.tell(123);
         latch.await();
@@ -172,7 +175,7 @@ public class ActorTest {
     }
 
     @Test
-    @Ignore
+//    @Ignore
     public void testParallel() throws InterruptedException {
         String start = "start";
         Context c = new Context();
@@ -201,6 +204,10 @@ public class ActorTest {
                         }
                     } else {
                         latch.countDown();
+                        long n = latch.getCount();
+                        if (n % 1000 == 0) {
+                            System.out.println(n);
+                        }
 //                        System.out.println(msg + ", replies=" + count.incrementAndGet());
                     }
                 }).build();
