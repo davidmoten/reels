@@ -182,8 +182,8 @@ public class ActorTest {
     public void testParallel() throws InterruptedException {
         String start = "start";
         Context c = new Context();
-        int runners = 5;
-        int messagesPerRunner = 2;
+        int runners = 100;
+        int messagesPerRunner = 10000;
         CountDownLatch latch = new CountDownLatch(runners * messagesPerRunner);
         AtomicInteger count = new AtomicInteger();
         ActorRef<String> root = c.messageClass(String.class) //
@@ -208,7 +208,7 @@ public class ActorTest {
                     } else {
                         latch.countDown();
                         long n = latch.getCount();
-                        if (n % 1000 == 0) {
+                        if (n % 10000 == 0) {
                             System.out.println(n);
                         }
 //                        System.out.println(msg + ", replies=" + count.incrementAndGet());
