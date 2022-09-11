@@ -16,7 +16,7 @@ public class ActorTest {
 
     @Test
     public void test() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(3);
+        CountDownLatch latch = new CountDownLatch(1);
         Context c = new Context();
         Supervisor supervisor = new Supervisor() {
             @Override
@@ -25,6 +25,7 @@ public class ActorTest {
                 actorRef.dispose();
             }
         };
+        AtomicBoolean once = new AtomicBoolean();
         ActorRef<Object> a = c //
                 .messageClass(Object.class) //
                 .scheduler(Scheduler.computation()) //
@@ -33,8 +34,10 @@ public class ActorTest {
                     ctxt.self().tell("hello");
                 }) //
                 .match(String.class, (ctxt, s) -> {
-                    ctxt.self().tell(2);
-                    latch.countDown();
+                    if (once.compareAndSet(false, true)) {
+                        ctxt.self().tell(2);
+                        latch.countDown();
+                    }
                 }) //
                 .name("test") //
                 .build();
@@ -179,8 +182,8 @@ public class ActorTest {
     public void testParallel() throws InterruptedException {
         String start = "start";
         Context c = new Context();
-        int runners = 100;
-        int messagesPerRunner = 100;
+        int runners = 5;
+        int messagesPerRunner = 2;
         CountDownLatch latch = new CountDownLatch(runners * messagesPerRunner);
         AtomicInteger count = new AtomicInteger();
         ActorRef<String> root = c.messageClass(String.class) //
