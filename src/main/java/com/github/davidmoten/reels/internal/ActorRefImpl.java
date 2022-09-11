@@ -13,6 +13,7 @@ import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.MessageContext;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Supervisor;
+import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
 import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
@@ -23,19 +24,19 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
     private final String name;
     private final Actor<T> actor;
     private final SimplePlainQueue<Message<T>> queue;
-    private final Scheduler scheduler;
     private final Context context;
     private final Supervisor supervisor;
     private final AtomicInteger wip = new AtomicInteger();
     private volatile boolean disposed;
+    private final Worker worker;
 
     public ActorRefImpl(String name, Actor<T> actor, Scheduler scheduler, Context context, Supervisor supervisor) {
         this.name = name;
         this.actor = actor;
-        this.scheduler = scheduler;
         this.context = context;
         this.supervisor = supervisor;
         this.queue = new MpscLinkedQueue<Message<T>>();
+        this.worker = scheduler.createWorker();
     }
 
     @Override
@@ -56,7 +57,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
             return;
         }
         queue.offer(new Message<T>(message, Optional.ofNullable(sender)));
-        scheduler.schedule(this);
+        worker.schedule(this);
     }
 
     @Override

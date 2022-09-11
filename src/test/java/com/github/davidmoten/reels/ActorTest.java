@@ -4,14 +4,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class ActorTest {
@@ -174,11 +172,12 @@ public class ActorTest {
     }
 
     @Test
+    @Ignore
     public void testParallel() throws InterruptedException {
         String start = "start";
         Context c = new Context();
         int runners = 100;
-        int messagesPerRunner = 100000;
+        int messagesPerRunner = 100;
         CountDownLatch latch = new CountDownLatch(runners * messagesPerRunner);
         AtomicInteger count = new AtomicInteger();
         ActorRef<String> root = c.messageClass(String.class) //
