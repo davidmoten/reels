@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
 
 import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
@@ -63,8 +64,21 @@ public final class Context implements Disposable {
         return create(actorClass, Long.toString(counter.incrementAndGet()), Scheduler.computation());
     }
 
-    public <T> ActorBuilder<T> messageClass(Class<T> messageClass) {
+    public <T> ActorBuilder<T> builder() {
         return new ActorBuilder<T>(this);
+    }
+
+    /**
+     * Returns an ActorBuilder using the given match.
+     * 
+     * @param <T>        actor message type
+     * @param <S>        match class type
+     * @param matchClass match class
+     * @param consumer   consumes messages of type S
+     * @return builder
+     */
+    public <T, S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, S> consumer) {
+        return new ActorBuilder<T>(this).match(matchClass, consumer);
     }
 
     @SuppressWarnings("unchecked")

@@ -26,10 +26,7 @@ public class ActorTest {
         };
         AtomicBoolean once = new AtomicBoolean();
         ActorRef<Object> a = c //
-                .messageClass(Object.class) //
-                .scheduler(Scheduler.computation()) //
-                .supervisor(supervisor) //
-                .match(Integer.class, (ctxt, n) -> {
+                .<Object, Integer>match(Integer.class, (ctxt, n) -> {
                     ctxt.self().tell("hello");
                 }) //
                 .match(String.class, (ctxt, s) -> {
@@ -38,6 +35,8 @@ public class ActorTest {
                         latch.countDown();
                     }
                 }) //
+                .scheduler(Scheduler.computation()) //
+                .supervisor(supervisor) //
                 .name("test") //
                 .build();
         a.tell(123);
@@ -50,9 +49,7 @@ public class ActorTest {
         Context c = new Context();
         AtomicBoolean once = new AtomicBoolean();
         ActorRef<Number> a = c //
-                .messageClass(Number.class) //
-                .scheduler(Scheduler.computation()) //
-                .match(Integer.class, (ctxt, n) -> {
+                .<Number, Integer>match(Integer.class, (ctxt, n) -> {
                     ctxt.self().tell((Double) 1.2);
                 }) //
                 .match(Double.class, (ctxt, s) -> {
@@ -60,7 +57,8 @@ public class ActorTest {
                         ctxt.self().tell(2);
                         latch.countDown();
                     }
-                }).build();
+                }).scheduler(Scheduler.computation()) //
+                .build();
         a.tell(123);
         latch.await();
     }
@@ -76,12 +74,11 @@ public class ActorTest {
             }
         };
         ActorRef<Integer> a = c //
-                .messageClass(Integer.class) //
-                .scheduler(Scheduler.computation()) //
-                .supervisor(supervisor) //
                 .match(Integer.class, (ctxt, n) -> {
                     throw new RuntimeException("boo");
                 }) //
+                .scheduler(Scheduler.computation()) //
+                .supervisor(supervisor) //
                 .build();
         a.tell(123);
         latch.await();
@@ -100,13 +97,12 @@ public class ActorTest {
         };
         AtomicInteger count = new AtomicInteger();
         ActorRef<Integer> a = c //
-                .messageClass(Integer.class) //
-                .scheduler(Scheduler.computation()) //
-                .supervisor(supervisor) //
                 .match(Integer.class, (ctxt, n) -> {
                     count.incrementAndGet();
                     throw new RuntimeException("boo");
                 }) //
+                .scheduler(Scheduler.computation()) //
+                .supervisor(supervisor) //
                 .build();
         a.tell(123);
         a.tell(234);
@@ -129,12 +125,11 @@ public class ActorTest {
         CountDownLatch latch = new CountDownLatch(1);
         Context c = new Context();
         ActorRef<Integer> a = c //
-                .messageClass(Integer.class) //
-                .scheduler(Scheduler.computation()) //
-                .supervisor(supervisor) //
                 .match(Integer.class, (ctxt, n) -> {
                     throw new RuntimeException("boo");
                 }) //
+                .scheduler(Scheduler.computation()) //
+                .supervisor(supervisor) //
                 .onError(e -> {
                     if ("boo".equals(e.getMessage())) {
                         latch.countDown();
@@ -160,16 +155,19 @@ public class ActorTest {
         Context c = new Context();
         c.create(MyActorBad.class);
     }
-    
+
     @Test
     public void testKill() throws InterruptedException {
         Context context = new Context();
         AtomicInteger count = new AtomicInteger();
-        ActorRef<Integer> a = context.messageClass(Integer.class).match(Integer.class, (c, msg) -> {count.incrementAndGet();}).build();
+        ActorRef<Integer> a = context //
+                .match(Integer.class, //
+                        (c, msg) -> count.incrementAndGet()) //
+                .build();
         a.tell(1);
         a.kill();
         a.tell(2);
-        Thread.sleep(500);        
+        Thread.sleep(500);
         assertEquals(1, count.get());
     }
 
@@ -177,7 +175,6 @@ public class ActorTest {
     public void testLookup() {
         Context c = new Context();
         ActorRef<Integer> a = c //
-                .messageClass(Integer.class) //
                 .match(Integer.class, (ctxt, n) -> {
                     throw new RuntimeException("boo");
                 }) //
@@ -209,13 +206,13 @@ public class ActorTest {
             CountDownLatch latch = new CountDownLatch(1);
             AtomicInteger count = new AtomicInteger();
             int[] countFinished = new int[1];
-            ActorRef<String> root = c.messageClass(String.class) //
+            ActorRef<String> root = c.<String>builder() //
                     .name("root") //
                     .scheduler(scheduler).match(String.class, (con1, msg) -> {
                         if (start.equals(msg)) {
                             for (int i = 1; i <= runners; i++) {
-                                int finalI = i;
-                                ActorRef<String> r = c.messageClass(String.class) //
+//                                int finalI = i;
+                                ActorRef<String> r = c.<String>builder() //
                                         .name("runner" + i) //
                                         .scheduler(scheduler).match(String.class, (con2, m) -> {
 //                                    DecimalFormat df = new DecimalFormat("000");
