@@ -21,6 +21,8 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
 
     private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
+    private static final Object POISON_PILL = new Object();
+
     private final String name;
     private final Actor<T> actor;
     private final SimplePlainQueue<Message<T>> queue;
@@ -60,6 +62,12 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
         worker.schedule(this);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public void kill() {
+        tell((T) POISON_PILL);
+    }
+
     @Override
     public void run() {
         // drain queue
@@ -69,7 +77,10 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
             Message<T> message;
             while ((message = queue.poll()) != null) {
 //                log.info("message polled=" + message.content());
-                if (disposed) {
+                if (message == POISON_PILL) {
+                    dispose();
+                    return;
+                } else if (disposed) {
                     queue.clear();
                     return;
                 }
