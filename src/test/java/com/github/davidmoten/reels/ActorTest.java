@@ -192,7 +192,7 @@ public class ActorTest {
         String start = "start";
         Context c = new Context();
         int runners = 100;
-        int messagesPerRunner = 10000;
+        int messagesPerRunner = 1000;
         CountDownLatch latch = new CountDownLatch(1);
         AtomicInteger count = new AtomicInteger();
         int[] countFinished = new int[1];
