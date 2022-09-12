@@ -78,6 +78,8 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
                     actor.onMessage(new MessageContext<T>(this, message.sender()), message.content());
 //                    log.info("called onMessage");
                 } catch (Throwable e) {
+                    // if the line below throws then the actor will no longer process messages
+                    // (because wip will be != 0)
                     supervisor.processFailure(context, this, e);
                 }
             }
