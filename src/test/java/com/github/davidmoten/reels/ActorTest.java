@@ -160,6 +160,18 @@ public class ActorTest {
         Context c = new Context();
         c.create(MyActorBad.class);
     }
+    
+    @Test
+    public void testKill() throws InterruptedException {
+        Context context = new Context();
+        AtomicInteger count = new AtomicInteger();
+        ActorRef<Integer> a = context.messageClass(Integer.class).match(Integer.class, (c, msg) -> {count.incrementAndGet();}).build();
+        a.tell(1);
+        a.kill();
+        a.tell(2);
+        Thread.sleep(500);        
+        assertEquals(1, count.get());
+    }
 
     @Test
     public void testLookup() {

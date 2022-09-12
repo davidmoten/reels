@@ -77,7 +77,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
             Message<T> message;
             while ((message = queue.poll()) != null) {
 //                log.info("message polled=" + message.content());
-                if (message == POISON_PILL) {
+                if (message.content() == POISON_PILL) {
                     dispose();
                     return;
                 } else if (disposed) {
