@@ -12,15 +12,15 @@ import com.github.davidmoten.reels.internal.SupervisorDefault;
 /**
  * Creates actors, disposes actors and looks actors up by name.
  */
-public final class Context {
-    
+public final class Context implements Disposable {
+
     public static final Context DEFAULT = new Context();
 
     private final Supervisor supervisor;
 
     private final AtomicLong counter = new AtomicLong();
     private final Map<String, ActorRef<?>> actors = new ConcurrentHashMap<>();
-    
+
     private volatile boolean disposed;
 
     public Context(Supervisor supervisor) {
@@ -78,11 +78,14 @@ public final class Context {
             a.dispose();
         }
     }
-    
-    public void shutdown() {
-        disposed = true;
-        actors.forEach((name, actorRef) -> actorRef.dispose());
-        actors.clear();
+
+    @Override
+    public void dispose() {
+        if (!disposed) {
+            disposed = true;
+            actors.forEach((name, actorRef) -> actorRef.dispose());
+            actors.clear();
+        }
     }
 
 }

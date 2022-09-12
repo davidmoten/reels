@@ -178,15 +178,15 @@ public class ActorTest {
 
     @Test
     public void testParallel() throws InterruptedException {
-        parallelTest(Scheduler.computation());
+        concurrencyTest(Scheduler.computation());
     }
 
     @Test
     public void testImmediate() throws InterruptedException {
-        parallelTest(Scheduler.immediate());
+        concurrencyTest(Scheduler.immediate());
     }
 
-    private static void parallelTest(Scheduler scheduler) throws InterruptedException {
+    private static void concurrencyTest(Scheduler scheduler) throws InterruptedException {
         System.out.println("=================================================");
         long t = System.currentTimeMillis();
         String start = "start";

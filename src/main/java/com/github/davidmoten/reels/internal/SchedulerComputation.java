@@ -21,16 +21,12 @@ public final class SchedulerComputation extends AtomicInteger implements Schedul
 
     private SchedulerComputation() {
         int size = Util.systemPropertyInt("reels.computation.pool.size", Runtime.getRuntime().availableProcessors());
-        ThreadFactory factory = new ThreadFactory() {
-
-            @Override
-            public Thread newThread(Runnable r) {
-                String name = "ReelsComputation-" + incrementAndGet();
-                Thread t = new Thread(r, name);
-                t.setPriority(Thread.NORM_PRIORITY);
-                t.setDaemon(true);
-                return t;
-            }
+        ThreadFactory factory = r -> {
+            String name = "ReelsComputation-" + incrementAndGet();
+            Thread t = new Thread(r, name);
+            t.setPriority(Thread.NORM_PRIORITY);
+            t.setDaemon(true);
+            return t;
         };
         workers = IntStream //
                 .range(0, size) //
@@ -45,7 +41,7 @@ public final class SchedulerComputation extends AtomicInteger implements Schedul
 
     @Override
     public void shutdown() {
-        for (Worker w: workers) {
+        for (Worker w : workers) {
             w.dispose();
         }
     }
