@@ -8,4 +8,8 @@ public final class CreateException extends RuntimeException {
         super(t);
     }
 
+    public CreateException(String message) {
+        super(message);
+    }
+
 }

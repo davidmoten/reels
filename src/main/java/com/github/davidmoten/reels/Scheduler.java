@@ -10,11 +10,11 @@ public interface Scheduler {
     }
 
     static Scheduler io() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     static Scheduler newSingleThread() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     static Scheduler immediate() {
@@ -22,5 +22,7 @@ public interface Scheduler {
     }
 
     Worker createWorker();
+    
+    void shutdown();
 
 }

@@ -213,6 +213,7 @@ public class ActorTest {
                                             System.out.println("runner received count = " + n);
                                         }
                                         con2.sender().get().tell("reply");
+                                        con2.self().dispose();
                                     }).build();
                             for (int j = 1; j <= messagesPerRunner; j++) {
 //                          System.out.println("sending runner " + i + ": " + j);

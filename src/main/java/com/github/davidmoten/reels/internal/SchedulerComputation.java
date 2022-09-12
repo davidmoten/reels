@@ -43,6 +43,11 @@ public final class SchedulerComputation extends AtomicInteger implements Schedul
         return new SchedulerWorker(workers.get(index++ % workers.size()));
     }
 
-    // TODO shutdown
+    @Override
+    public void shutdown() {
+        for (Worker w: workers) {
+            w.dispose();
+        }
+    }
 
 }

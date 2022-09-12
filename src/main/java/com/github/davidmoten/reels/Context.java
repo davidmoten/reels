@@ -20,6 +20,8 @@ public final class Context {
 
     private final AtomicLong counter = new AtomicLong();
     private final Map<String, ActorRef<?>> actors = new ConcurrentHashMap<>();
+    
+    private volatile boolean disposed;
 
     public Context(Supervisor supervisor) {
         this.supervisor = supervisor;
@@ -45,6 +47,9 @@ public final class Context {
 
     public <T> ActorRef<T> create(Actor<T> actor, String name, Scheduler processMessagesOn, Supervisor supervisor) {
         Preconditions.checkArgument(name != null, "name cannot be null");
+        if (disposed) {
+            throw new CreateException("shutdown");
+        }
         return insert(name, new ActorRefImpl<T>(name, actor, processMessagesOn, this, supervisor));
     }
 
@@ -68,11 +73,16 @@ public final class Context {
     }
 
     public void disposeActor(String name) {
-        actors.remove(name);
+        ActorRef<?> a = actors.remove(name);
+        if (a != null) {
+            a.dispose();
+        }
     }
     
     public void shutdown() {
-        
+        disposed = true;
+        actors.forEach((name, actorRef) -> actorRef.dispose());
+        actors.clear();
     }
 
 }

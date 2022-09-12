@@ -4,9 +4,9 @@ import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
 
 public class SchedulerImmediate implements Scheduler {
-    
+
     public static final SchedulerImmediate INSTANCE = new SchedulerImmediate();
-    
+
     private SchedulerImmediate() {
     }
 
@@ -14,5 +14,10 @@ public class SchedulerImmediate implements Scheduler {
     public Worker createWorker() {
         return new ImmediateWorker();
     }
-    
+
+    @Override
+    public void shutdown() {
+        // no disposing required
+    }
+
 }

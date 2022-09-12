@@ -20,6 +20,7 @@ public final class NewThreadWorker implements Worker {
     @Override
     public void dispose() {
         disposed = true;
+        executor.shutdownNow();
     }
 
     @Override
