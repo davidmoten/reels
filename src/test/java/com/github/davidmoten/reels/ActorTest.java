@@ -180,44 +180,54 @@ public class ActorTest {
     @Test
 //    @Ignore
     public void testParallel() throws InterruptedException {
-        String start = "start";
-        Context c = new Context();
-        int runners = 100;
-        int messagesPerRunner = 10000;
-        CountDownLatch latch = new CountDownLatch(runners * messagesPerRunner);
-        AtomicInteger count = new AtomicInteger();
-        ActorRef<String> root = c.messageClass(String.class) //
-                .name("root") //
-                .match(String.class, (con1, msg) -> {
-                    if (start.equals(msg)) {
-                        for (int i = 1; i <= runners; i++) {
-                            int finalI = i;
-                            ActorRef<String> r = c.messageClass(String.class) //
-                                    .name("runner" + i) //
-                                    .match(String.class, (con2, m) -> {
+            System.out.println("=================================================");
+            long t = System.currentTimeMillis();
+            String start = "start";
+            Context c = new Context();
+            int runners = 100;
+            int messagesPerRunner = 10000;
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicInteger count = new AtomicInteger();
+            int[] countFinished = new int[1]; 
+            ActorRef<String> root = c.messageClass(String.class) //
+                    .name("root") //
+                    .match(String.class, (con1, msg) -> {
+                        if (start.equals(msg)) {
+                            for (int i = 1; i <= runners; i++) {
+                                int finalI = i;
+                                ActorRef<String> r = c.messageClass(String.class) //
+                                        .name("runner" + i) //
+                                        .match(String.class, (con2, m) -> {
 //                                        DecimalFormat df = new DecimalFormat("000");
 //                                        System.out.println("responding from runner " + finalI + " with value " + m);
 //                                          String reply = "reply from runner " + df.format(finalI) + " to message " + m;
-                                        con2.sender().get().tell("reply");
-                                    }).build();
-                            for (int j = 1; j <= messagesPerRunner; j++) {
+                                            int n = count.incrementAndGet();
+                                            if (n % 100000 == 0) {
+                                                System.out.println("runner received count = " + n);
+                                            }
+                                            con2.sender().get().tell("reply");
+                                        }).build();
+                                for (int j = 1; j <= messagesPerRunner; j++) {
 //                              System.out.println("sending runner " + i + ": " + j);
-                                r.tell(j + "", con1.self());
+                                    r.tell(j + "", con1.self());
+                                }
                             }
-                        }
-                    } else {
-                        latch.countDown();
-                        long n = latch.getCount();
-                        if (n % 10000 == 0) {
-                            System.out.println(n);
-                        }
+                        } else {
+                            long n = ++countFinished[0];
+                            if (n % 100000 == 0) {
+                                System.out.println(n);
+                            } 
+                            if (n == runners * messagesPerRunner) {
+                                latch.countDown();
+                            }
 //                        System.out.println(msg + ", replies=" + count.incrementAndGet());
-                    }
-                }).build();
-        root.tell(start);
-        if (!latch.await(60, TimeUnit.SECONDS)) {
-            org.junit.Assert.fail();
-        }
+                        }
+                    }).build();
+            root.tell(start);
+            if (!latch.await(60, TimeUnit.SECONDS)) {
+                org.junit.Assert.fail();
+            }
+        System.out.println("time=" + (System.currentTimeMillis() - t)/1000.0 + "s");
     }
 
     public static final class MyActor implements Actor<Integer> {
