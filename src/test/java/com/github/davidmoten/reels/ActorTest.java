@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ActorTest {
@@ -178,56 +177,64 @@ public class ActorTest {
     }
 
     @Test
-//    @Ignore
     public void testParallel() throws InterruptedException {
-            System.out.println("=================================================");
-            long t = System.currentTimeMillis();
-            String start = "start";
-            Context c = new Context();
-            int runners = 100;
-            int messagesPerRunner = 10000;
-            CountDownLatch latch = new CountDownLatch(1);
-            AtomicInteger count = new AtomicInteger();
-            int[] countFinished = new int[1]; 
-            ActorRef<String> root = c.messageClass(String.class) //
-                    .name("root") //
-                    .match(String.class, (con1, msg) -> {
-                        if (start.equals(msg)) {
-                            for (int i = 1; i <= runners; i++) {
-                                int finalI = i;
-                                ActorRef<String> r = c.messageClass(String.class) //
-                                        .name("runner" + i) //
-                                        .match(String.class, (con2, m) -> {
-//                                        DecimalFormat df = new DecimalFormat("000");
-//                                        System.out.println("responding from runner " + finalI + " with value " + m);
-//                                          String reply = "reply from runner " + df.format(finalI) + " to message " + m;
-                                            int n = count.incrementAndGet();
-                                            if (n % 100000 == 0) {
-                                                System.out.println("runner received count = " + n);
-                                            }
-                                            con2.sender().get().tell("reply");
-                                        }).build();
-                                for (int j = 1; j <= messagesPerRunner; j++) {
-//                              System.out.println("sending runner " + i + ": " + j);
-                                    r.tell(j + "", con1.self());
-                                }
+        parallelTest(Scheduler.computation());
+    }
+
+    @Test
+    public void testImmediate() throws InterruptedException {
+        parallelTest(Scheduler.immediate());
+    }
+
+    private static void parallelTest(Scheduler scheduler) throws InterruptedException {
+        System.out.println("=================================================");
+        long t = System.currentTimeMillis();
+        String start = "start";
+        Context c = new Context();
+        int runners = 100;
+        int messagesPerRunner = 10000;
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicInteger count = new AtomicInteger();
+        int[] countFinished = new int[1];
+        ActorRef<String> root = c.messageClass(String.class) //
+                .name("root") //
+                .scheduler(scheduler).match(String.class, (con1, msg) -> {
+                    if (start.equals(msg)) {
+                        for (int i = 1; i <= runners; i++) {
+                            int finalI = i;
+                            ActorRef<String> r = c.messageClass(String.class) //
+                                    .name("runner" + i) //
+                                    .scheduler(scheduler).match(String.class, (con2, m) -> {
+//                                    DecimalFormat df = new DecimalFormat("000");
+//                                    System.out.println("responding from runner " + finalI + " with value " + m);
+//                                      String reply = "reply from runner " + df.format(finalI) + " to message " + m;
+                                        int n = count.incrementAndGet();
+                                        if (n % 100000 == 0) {
+                                            System.out.println("runner received count = " + n);
+                                        }
+                                        con2.sender().get().tell("reply");
+                                    }).build();
+                            for (int j = 1; j <= messagesPerRunner; j++) {
+//                          System.out.println("sending runner " + i + ": " + j);
+                                r.tell(j + "", con1.self());
                             }
-                        } else {
-                            long n = ++countFinished[0];
-                            if (n % 100000 == 0) {
-                                System.out.println(n);
-                            } 
-                            if (n == runners * messagesPerRunner) {
-                                latch.countDown();
-                            }
-//                        System.out.println(msg + ", replies=" + count.incrementAndGet());
                         }
-                    }).build();
-            root.tell(start);
-            if (!latch.await(60, TimeUnit.SECONDS)) {
-                org.junit.Assert.fail();
-            }
-        System.out.println("time=" + (System.currentTimeMillis() - t)/1000.0 + "s");
+                    } else {
+                        long n = ++countFinished[0];
+                        if (n % 100000 == 0) {
+                            System.out.println(n);
+                        }
+                        if (n == runners * messagesPerRunner) {
+                            latch.countDown();
+                        }
+//                    System.out.println(msg + ", replies=" + count.incrementAndGet());
+                    }
+                }).build();
+        root.tell(start);
+        if (!latch.await(60, TimeUnit.SECONDS)) {
+            org.junit.Assert.fail();
+        }
+        System.out.println("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
     }
 
     public static final class MyActor implements Actor<Integer> {

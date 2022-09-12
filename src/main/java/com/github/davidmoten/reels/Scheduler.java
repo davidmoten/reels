@@ -1,6 +1,7 @@
 package com.github.davidmoten.reels;
 
 import com.github.davidmoten.reels.internal.SchedulerComputation;
+import com.github.davidmoten.reels.internal.SchedulerImmediate;
 
 public interface Scheduler {
 
@@ -17,7 +18,7 @@ public interface Scheduler {
     }
 
     static Scheduler immediate() {
-        return null;
+        return SchedulerImmediate.INSTANCE;
     }
 
     Worker createWorker();
