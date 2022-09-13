@@ -1,4 +1,4 @@
-package com.github.davidmoten.reels.internal;
+package com.github.davidmoten.reels.internal.scheduler;
 
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
@@ -8,6 +8,7 @@ import java.util.stream.IntStream;
 
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
+import com.github.davidmoten.reels.internal.Util;
 
 public final class SchedulerComputation extends AtomicInteger implements Scheduler {
 

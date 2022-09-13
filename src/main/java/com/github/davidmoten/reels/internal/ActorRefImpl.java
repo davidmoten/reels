@@ -3,9 +3,6 @@ package com.github.davidmoten.reels.internal;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
@@ -19,7 +16,7 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable {
 
-    private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
+//    private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
     private static final Object POISON_PILL = new Object();
 

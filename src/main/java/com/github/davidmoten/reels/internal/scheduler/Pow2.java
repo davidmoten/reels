@@ -16,7 +16,7 @@
  * Original location: https://github.com/JCTools/JCTools/blob/master/jctools-core/src/main/java/org/jctools/util/Pow2.java
  */
 
-package com.github.davidmoten.reels.internal;
+package com.github.davidmoten.reels.internal.scheduler;
 
 public final class Pow2 {
     private Pow2() {

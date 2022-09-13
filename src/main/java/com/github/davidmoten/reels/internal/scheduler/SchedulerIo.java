@@ -11,7 +11,7 @@
  * the License for the specific language governing permissions and limitations under the License.
  */
 
-package com.github.davidmoten.reels.internal;
+package com.github.davidmoten.reels.internal.scheduler;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
@@ -26,6 +26,7 @@ import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
+import com.github.davidmoten.reels.internal.Util;
 
 /**
  * Scheduler that creates and caches a set of thread pools and reuses them if

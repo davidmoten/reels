@@ -1,4 +1,4 @@
-package com.github.davidmoten.reels.internal;
+package com.github.davidmoten.reels.internal.scheduler;
 
 import java.util.concurrent.Future;
 

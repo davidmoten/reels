@@ -1,4 +1,4 @@
-package com.github.davidmoten.reels.internal;
+package com.github.davidmoten.reels.internal.scheduler;
 
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;

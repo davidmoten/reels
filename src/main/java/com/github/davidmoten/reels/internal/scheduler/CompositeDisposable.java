@@ -11,13 +11,14 @@
  * the License for the specific language governing permissions and limitations under the License.
  */
 
-package com.github.davidmoten.reels.internal;
+package com.github.davidmoten.reels.internal.scheduler;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import com.github.davidmoten.reels.Disposable;
+import com.github.davidmoten.reels.internal.Exceptions;
 
 /**
  * A disposable container that can hold onto multiple other {@link Disposable}s

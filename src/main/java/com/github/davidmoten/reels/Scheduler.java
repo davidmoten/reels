@@ -1,8 +1,8 @@
 package com.github.davidmoten.reels;
 
-import com.github.davidmoten.reels.internal.SchedulerComputation;
-import com.github.davidmoten.reels.internal.SchedulerImmediate;
-import com.github.davidmoten.reels.internal.SchedulerIo;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerComputation;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerImmediate;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerIo;
 
 public interface Scheduler {
 
