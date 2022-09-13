@@ -16,4 +16,9 @@ public class FutureTask implements Disposable {
     public void dispose() {
         future.cancel(false);
     }
+    
+    @Override
+    public boolean isDisposed() {
+        return future.isCancelled();
+    }
 }

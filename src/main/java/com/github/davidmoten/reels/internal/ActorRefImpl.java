@@ -100,5 +100,10 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
             }
         }
     }
+    
+    @Override
+    public boolean isDisposed() {
+        return disposed;
+    }
 
 }

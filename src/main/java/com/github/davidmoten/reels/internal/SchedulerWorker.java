@@ -43,4 +43,8 @@ public final class SchedulerWorker implements Worker {
         disposed = true;
     }
     
+    @Override
+    public boolean isDisposed() {
+        return disposed;
+    }
 }

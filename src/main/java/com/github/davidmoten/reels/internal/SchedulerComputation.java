@@ -21,13 +21,7 @@ public final class SchedulerComputation extends AtomicInteger implements Schedul
 
     private SchedulerComputation() {
         int size = Util.systemPropertyInt("reels.computation.pool.size", Runtime.getRuntime().availableProcessors());
-        ThreadFactory factory = r -> {
-            String name = "ReelsComputation-" + incrementAndGet();
-            Thread t = new Thread(r, name);
-            t.setPriority(Thread.NORM_PRIORITY);
-            t.setDaemon(true);
-            return t;
-        };
+        ThreadFactory factory = Util.createThreadFactory("ReelsComputation");
         workers = IntStream //
                 .range(0, size) //
                 .mapToObj(n -> new NewThreadWorker(factory)) //

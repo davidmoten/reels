@@ -42,4 +42,8 @@ public final class ImmediateWorker implements Worker {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public boolean isDisposed() {
+        return disposed;
+    }
 }

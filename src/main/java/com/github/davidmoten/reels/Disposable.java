@@ -8,8 +8,15 @@ public interface Disposable {
         public void dispose() {
             // no-op
         }
+
+        @Override
+        public boolean isDisposed() {
+            return true;
+        }
     };
 
     void dispose();
+    
+    boolean isDisposed();
 
 }

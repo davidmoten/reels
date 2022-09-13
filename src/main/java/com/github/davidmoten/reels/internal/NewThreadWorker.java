@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Worker;
 
-public final class NewThreadWorker implements Worker {
+public class NewThreadWorker implements Worker {
 
     private final ScheduledExecutorService executor;
     private volatile boolean disposed;
@@ -51,6 +51,11 @@ public final class NewThreadWorker implements Worker {
         final ScheduledThreadPoolExecutor exec = new ScheduledThreadPoolExecutor(1, factory);
         exec.setRemoveOnCancelPolicy(true);
         return exec;
+    }
+    
+    @Override
+    public boolean isDisposed() {
+        return disposed;
     }
 
 }

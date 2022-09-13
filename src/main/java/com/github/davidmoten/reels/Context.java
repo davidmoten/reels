@@ -101,5 +101,10 @@ public final class Context implements Disposable {
             actors.clear();
         }
     }
+    
+    @Override
+    public boolean isDisposed() {
+        return disposed;
+    }
 
 }
