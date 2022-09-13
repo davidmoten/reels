@@ -5,6 +5,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Worker;
 
@@ -14,6 +15,7 @@ public class NewThreadWorker implements Worker {
     private volatile boolean disposed;
 
     public NewThreadWorker(ThreadFactory threadFactory) {
+        Preconditions.checkNotNull(threadFactory);
         executor = createExecutor(threadFactory);
     }
 

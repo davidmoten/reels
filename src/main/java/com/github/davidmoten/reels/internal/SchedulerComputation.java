@@ -13,7 +13,7 @@ public final class SchedulerComputation extends AtomicInteger implements Schedul
 
     private static final long serialVersionUID = -6316108674515948678L;
 
-    public static final Scheduler INSTANCE = new SchedulerComputation();
+    public static final SchedulerComputation INSTANCE = new SchedulerComputation();
 
     private final List<Worker> workers;
 

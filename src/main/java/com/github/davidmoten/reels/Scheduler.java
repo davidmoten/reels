@@ -2,6 +2,7 @@ package com.github.davidmoten.reels;
 
 import com.github.davidmoten.reels.internal.SchedulerComputation;
 import com.github.davidmoten.reels.internal.SchedulerImmediate;
+import com.github.davidmoten.reels.internal.SchedulerIo;
 
 public interface Scheduler {
 
@@ -10,7 +11,7 @@ public interface Scheduler {
     }
 
     static Scheduler io() {
-        throw new UnsupportedOperationException();
+        return SchedulerIo.INSTANCE;
     }
 
     static Scheduler newSingleThread() {

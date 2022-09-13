@@ -185,14 +185,19 @@ public class ActorTest {
         assertFalse(c.lookupActor("thing").isPresent());
     }
 
-    @Test
+    @Test(timeout=30000)
     public void testParallel() throws InterruptedException {
         concurrencyTest(Scheduler.computation());
     }
 
-    @Test
+    @Test(timeout=30000)
     public void testImmediate() throws InterruptedException {
         concurrencyTest(Scheduler.immediate());
+    }
+    
+    @Test(timeout=30000)
+    public void testIo() throws InterruptedException {
+        concurrencyTest(Scheduler.io());
     }
 
     private static void concurrencyTest(Scheduler scheduler) throws InterruptedException {

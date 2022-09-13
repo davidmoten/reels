@@ -22,51 +22,67 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
 
 /**
- * Scheduler that creates and caches a set of thread pools and reuses them if possible.
+ * Scheduler that creates and caches a set of thread pools and reuses them if
+ * possible.
  */
-public final class IoScheduler implements Scheduler {
-    private static final String WORKER_THREAD_NAME_PREFIX = "RxCachedThreadScheduler";
-    static final ThreadFactory WORKER_THREAD_FACTORY;
+public final class SchedulerIo implements Scheduler {
 
-    private static final String EVICTOR_THREAD_NAME_PREFIX = "RxCachedWorkerPoolEvictor";
-    static final ThreadFactory EVICTOR_THREAD_FACTORY;
+    private static final String WORKER_THREAD_NAME_PREFIX = "ReelsCachedThreadScheduler";
+    private static final ThreadFactory WORKER_THREAD_FACTORY = Util.createThreadFactory(WORKER_THREAD_NAME_PREFIX);
+    private static final String EVICTOR_THREAD_NAME_PREFIX = "ReelsCachedWorkerPoolEvictor";
+    private static final ThreadFactory EVICTOR_THREAD_FACTORY = Util.createThreadFactory(EVICTOR_THREAD_NAME_PREFIX);
 
-    /** The name of the system property for setting the keep-alive time (in seconds) for this Scheduler workers. */
-    private static final String KEY_KEEP_ALIVE_TIME = "rx3.io-keep-alive-time";
+    /**
+     * The name of the system property for setting the keep-alive time (in seconds)
+     * for this Scheduler workers.
+     */
+    private static final String KEY_KEEP_ALIVE_TIME = "reels.io-keep-alive-time";
+
     public static final long KEEP_ALIVE_TIME_DEFAULT = 60;
-
-    private static final long KEEP_ALIVE_TIME;
+    private static final long KEEP_ALIVE_TIME = Long.getLong(KEY_KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_DEFAULT);
     private static final TimeUnit KEEP_ALIVE_UNIT = TimeUnit.SECONDS;
+    private static final ThreadWorker SHUTDOWN_THREAD_WORKER = createShutdownWorker();
+    private final ThreadFactory threadFactory;
+    private final AtomicReference<CachedWorkerPool> pool;
+    private static final CachedWorkerPool NONE = createEmptyCachedWorkerPool();
 
-    static final ThreadWorker SHUTDOWN_THREAD_WORKER;
-    final ThreadFactory threadFactory;
-    final AtomicReference<CachedWorkerPool> pool;
+    public static final SchedulerIo INSTANCE = new SchedulerIo();
+    
+    private static ThreadWorker createShutdownWorker() {
+        ThreadWorker w = new ThreadWorker(Util.createThreadFactory("ReelsCachedThreadSchedulerShutdown"));
+        w.dispose();
+        return w;
+    }
 
-    /** The name of the system property for setting the release behaviour for this Scheduler. */
-    private static final String KEY_SCHEDULED_RELEASE = "rx3.io-scheduled-release";
-    static boolean USE_SCHEDULED_RELEASE;
+    private static CachedWorkerPool createEmptyCachedWorkerPool() {
+        CachedWorkerPool p = new CachedWorkerPool(0, null, WORKER_THREAD_FACTORY);
+        p.shutdown();
+        return p;
+    }
 
-    static final CachedWorkerPool NONE;
+    public SchedulerIo() {
+        this(WORKER_THREAD_FACTORY);
+    }
 
-    static {
-        KEEP_ALIVE_TIME = Long.getLong(KEY_KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_DEFAULT);
-
-        SHUTDOWN_THREAD_WORKER = new ThreadWorker(Util.createThreadFactory("ReelsCachedThreadSchedulerShutdown"));
-        SHUTDOWN_THREAD_WORKER.dispose();
-
-        WORKER_THREAD_FACTORY = Util.createThreadFactory(WORKER_THREAD_NAME_PREFIX);
-
-        EVICTOR_THREAD_FACTORY = Util.createThreadFactory(EVICTOR_THREAD_NAME_PREFIX);
-
-        USE_SCHEDULED_RELEASE = Boolean.getBoolean(KEY_SCHEDULED_RELEASE);
-
-        NONE = new CachedWorkerPool(0, null, WORKER_THREAD_FACTORY);
-        NONE.shutdown();
+    /**
+     * Constructs an IoScheduler with the given thread factory and starts the pool
+     * of workers.
+     * 
+     * @param threadFactory thread factory to use for creating worker threads. Note
+     *                      that this takes precedence over any system properties
+     *                      for configuring new thread creation. Cannot be null.
+     */
+    private SchedulerIo(ThreadFactory threadFactory) {
+        Preconditions.checkNotNull(threadFactory);
+        this.threadFactory = threadFactory;
+        this.pool = new AtomicReference<>(NONE);
+        start();
     }
 
     static final class CachedWorkerPool implements Runnable {
@@ -87,7 +103,8 @@ public final class IoScheduler implements Scheduler {
             Future<?> task = null;
             if (unit != null) {
                 evictor = Executors.newScheduledThreadPool(1, EVICTOR_THREAD_FACTORY);
-                task = evictor.scheduleWithFixedDelay(this, this.keepAliveTime, this.keepAliveTime, TimeUnit.NANOSECONDS);
+                task = evictor.scheduleWithFixedDelay(this, this.keepAliveTime, this.keepAliveTime,
+                        TimeUnit.NANOSECONDS);
             }
             evictorService = evictor;
             evictorTask = task;
@@ -118,11 +135,11 @@ public final class IoScheduler implements Scheduler {
         void release(ThreadWorker threadWorker) {
             // Refresh expire time before putting worker back in pool
             threadWorker.setExpirationTime(now() + keepAliveTime);
-
             expiringWorkerQueue.offer(threadWorker);
         }
 
-        static void evictExpiredWorkers(ConcurrentLinkedQueue<ThreadWorker> expiringWorkerQueue, CompositeDisposable allWorkers) {
+        static void evictExpiredWorkers(ConcurrentLinkedQueue<ThreadWorker> expiringWorkerQueue,
+                CompositeDisposable allWorkers) {
             if (!expiringWorkerQueue.isEmpty()) {
                 long currentTimestamp = now();
 
@@ -132,7 +149,8 @@ public final class IoScheduler implements Scheduler {
                             allWorkers.remove(threadWorker);
                         }
                     } else {
-                        // Queue is ordered with the worker that will expire first in the beginning, so when we
+                        // Queue is ordered with the worker that will expire first in the beginning, so
+                        // when we
                         // find a non-expired worker we can stop evicting.
                         break;
                     }
@@ -155,23 +173,7 @@ public final class IoScheduler implements Scheduler {
         }
     }
 
-    public IoScheduler() {
-        this(WORKER_THREAD_FACTORY);
-    }
-
-    /**
-     * Constructs an IoScheduler with the given thread factory and starts the pool of workers.
-     * @param threadFactory thread factory to use for creating worker threads. Note that this takes precedence over any
-     *                      system properties for configuring new thread creation. Cannot be null.
-     */
-    public IoScheduler(ThreadFactory threadFactory) {
-        this.threadFactory = threadFactory;
-        this.pool = new AtomicReference<>(NONE);
-        start();
-    }
-
-    @Override
-    public void start() {
+    private void start() {
         CachedWorkerPool update = new CachedWorkerPool(KEEP_ALIVE_TIME, KEEP_ALIVE_UNIT, threadFactory);
         if (!pool.compareAndSet(NONE, update)) {
             update.shutdown();
@@ -186,7 +188,6 @@ public final class IoScheduler implements Scheduler {
         }
     }
 
-    @NonNull
     @Override
     public Worker createWorker() {
         return new EventLoopWorker(pool.get());
@@ -196,7 +197,7 @@ public final class IoScheduler implements Scheduler {
         return pool.get().allWorkers.size();
     }
 
-    static final class EventLoopWorker extends Scheduler.Worker implements Runnable {
+    static final class EventLoopWorker implements Worker {
         private final CompositeDisposable tasks;
         private final CachedWorkerPool pool;
         private final ThreadWorker threadWorker;
@@ -214,18 +215,9 @@ public final class IoScheduler implements Scheduler {
             if (once.compareAndSet(false, true)) {
                 tasks.dispose();
 
-                if (USE_SCHEDULED_RELEASE) {
-                    threadWorker.scheduleActual(this, 0, TimeUnit.NANOSECONDS, null);
-                } else {
-                    // releasing the pool should be the last action
-                    pool.release(threadWorker);
-                }
+                // releasing the pool should be the last action
+                pool.release(threadWorker);
             }
-        }
-
-        @Override
-        public void run() {
-            pool.release(threadWorker);
         }
 
         @Override
@@ -233,15 +225,29 @@ public final class IoScheduler implements Scheduler {
             return once.get();
         }
 
-        @NonNull
         @Override
-        public Disposable schedule(@NonNull Runnable action, long delayTime, @NonNull TimeUnit unit) {
+        public Disposable schedule(Runnable action, long delayTime, TimeUnit unit) {
             if (tasks.isDisposed()) {
                 // don't schedule, we are unsubscribed
-                return EmptyDisposable.INSTANCE;
+                return Disposable.NOOP;
             }
+            Disposable d = threadWorker.schedule(action, delayTime, unit);
+            tasks.add(d);
+            return d;
+        }
 
-            return threadWorker.scheduleActual(action, delayTime, unit, tasks);
+        @Override
+        public Disposable schedule(Runnable run) {
+            Disposable d = threadWorker.schedule(run);
+            tasks.add(d);
+            return d;
+        }
+
+        @Override
+        public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
+            Disposable d = threadWorker.schedulePeriodically(run, initialDelay, period, unit);
+            tasks.add(d);
+            return d;
         }
     }
 
