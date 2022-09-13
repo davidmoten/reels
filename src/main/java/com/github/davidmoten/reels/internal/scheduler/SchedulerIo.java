@@ -35,19 +35,18 @@ import com.github.davidmoten.reels.internal.Util;
 public final class SchedulerIo implements Scheduler {
 
     private static final String WORKER_THREAD_NAME_PREFIX = "ReelsCachedThreadScheduler";
-    private static final ThreadFactory WORKER_THREAD_FACTORY = Util.createThreadFactory(WORKER_THREAD_NAME_PREFIX);
     private static final String EVICTOR_THREAD_NAME_PREFIX = "ReelsCachedWorkerPoolEvictor";
+    private static final ThreadFactory WORKER_THREAD_FACTORY = Util.createThreadFactory(WORKER_THREAD_NAME_PREFIX);
     private static final ThreadFactory EVICTOR_THREAD_FACTORY = Util.createThreadFactory(EVICTOR_THREAD_NAME_PREFIX);
 
     /**
      * The name of the system property for setting the keep-alive time (in seconds)
      * for this Scheduler workers.
      */
-    private static final String KEY_KEEP_ALIVE_TIME = "reels.io-keep-alive-time";
-
+    private static final String KEY_KEEP_ALIVE_TIME = "reels.io-keep-alive-time.seconds";
     public static final long KEEP_ALIVE_TIME_DEFAULT = 60;
-    private static final long KEEP_ALIVE_TIME = Long.getLong(KEY_KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_DEFAULT);
     private static final TimeUnit KEEP_ALIVE_UNIT = TimeUnit.SECONDS;
+    private static final long KEEP_ALIVE_TIME = Long.getLong(KEY_KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_DEFAULT);
     private static final ThreadWorker SHUTDOWN_THREAD_WORKER = createShutdownWorker();
     private final ThreadFactory threadFactory;
     private final AtomicReference<CachedWorkerPool> pool;
@@ -55,19 +54,7 @@ public final class SchedulerIo implements Scheduler {
 
     public static final SchedulerIo INSTANCE = new SchedulerIo();
     
-    private static ThreadWorker createShutdownWorker() {
-        ThreadWorker w = new ThreadWorker(Util.createThreadFactory("ReelsCachedThreadSchedulerShutdown"));
-        w.dispose();
-        return w;
-    }
-
-    private static CachedWorkerPool createEmptyCachedWorkerPool() {
-        CachedWorkerPool p = new CachedWorkerPool(0, null, WORKER_THREAD_FACTORY);
-        p.shutdown();
-        return p;
-    }
-
-    public SchedulerIo() {
+    private SchedulerIo() {
         this(WORKER_THREAD_FACTORY);
     }
 
@@ -89,7 +76,7 @@ public final class SchedulerIo implements Scheduler {
     static final class CachedWorkerPool implements Runnable {
         private final long keepAliveTime;
         private final ConcurrentLinkedQueue<ThreadWorker> expiringWorkerQueue;
-        final CompositeDisposable allWorkers;
+        private final CompositeDisposable allWorkers;
         private final ScheduledExecutorService evictorService;
         private final Future<?> evictorTask;
         private final ThreadFactory threadFactory;
@@ -202,8 +189,7 @@ public final class SchedulerIo implements Scheduler {
         private final CompositeDisposable tasks;
         private final CachedWorkerPool pool;
         private final ThreadWorker threadWorker;
-
-        final AtomicBoolean once = new AtomicBoolean();
+        private final AtomicBoolean once = new AtomicBoolean();
 
         EventLoopWorker(CachedWorkerPool pool) {
             this.pool = pool;
@@ -269,4 +255,17 @@ public final class SchedulerIo implements Scheduler {
             this.expirationTime = expirationTime;
         }
     }
+    
+    private static ThreadWorker createShutdownWorker() {
+        ThreadWorker w = new ThreadWorker(Util.createThreadFactory("ReelsCachedThreadSchedulerShutdown"));
+        w.dispose();
+        return w;
+    }
+
+    private static CachedWorkerPool createEmptyCachedWorkerPool() {
+        CachedWorkerPool p = new CachedWorkerPool(0, null, WORKER_THREAD_FACTORY);
+        p.shutdown();
+        return p;
+    }
+
 }
