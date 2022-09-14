@@ -18,6 +18,8 @@
 
 package com.github.davidmoten.reels.internal.scheduler;
 
+import com.github.davidmoten.reels.internal.Util;
+
 /**
  * A simple open hash set with add, remove and clear capabilities only.
  * <p>Doesn't support nor checks for {@code null}s.
@@ -48,7 +50,7 @@ public final class OpenHashSet<T> {
     @SuppressWarnings("unchecked")
     public OpenHashSet(int capacity, float loadFactor) {
         this.loadFactor = loadFactor;
-        int c = Pow2.roundToPowerOfTwo(capacity);
+        int c = Util.roundToPowerOfTwo(capacity);
         this.mask = c - 1;
         this.maxSize = (int)(loadFactor * c);
         this.keys = (T[])new Object[c];

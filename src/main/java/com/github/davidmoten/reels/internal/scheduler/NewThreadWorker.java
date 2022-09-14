@@ -49,15 +49,14 @@ public class NewThreadWorker implements Worker {
         return new FutureTask(executor.scheduleAtFixedRate(run, initialDelay, period, unit));
     }
 
+    @Override
+    public boolean isDisposed() {
+        return disposed;
+    }
+    
     private static ScheduledExecutorService createExecutor(ThreadFactory factory) {
         final ScheduledThreadPoolExecutor exec = new ScheduledThreadPoolExecutor(1, factory);
         exec.setRemoveOnCancelPolicy(true);
         return exec;
     }
-    
-    @Override
-    public boolean isDisposed() {
-        return disposed;
-    }
-
 }

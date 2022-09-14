@@ -202,12 +202,14 @@ public class ActorTest {
 
     private static void concurrencyTest(Scheduler scheduler) throws InterruptedException {
         System.out.println("=================================================");
+        System.out.println("" + scheduler.getClass().getName());
+        System.out.println("=================================================");
         long t = System.currentTimeMillis();
         String start = "start";
         Context c = new Context();
         try {
             int runners = 100;
-            int messagesPerRunner = 1000;
+            int messagesPerRunner = 10000;
             CountDownLatch latch = new CountDownLatch(1);
             AtomicInteger count = new AtomicInteger();
             int[] countFinished = new int[1];
