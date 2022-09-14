@@ -138,8 +138,7 @@ public final class SchedulerIo implements Scheduler {
                         }
                     } else {
                         // Queue is ordered with the worker that will expire first in the beginning, so
-                        // when we
-                        // find a non-expired worker we can stop evicting.
+                        // when we find a non-expired worker we can stop evicting.
                         break;
                     }
                 }
