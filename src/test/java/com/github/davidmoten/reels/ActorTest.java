@@ -185,17 +185,17 @@ public class ActorTest {
         assertFalse(c.lookupActor("thing").isPresent());
     }
 
-    @Test(timeout=30000)
+    @Test(timeout = 30000)
     public void testParallel() throws InterruptedException {
         concurrencyTest(Scheduler.computation());
     }
 
-    @Test(timeout=30000)
+    @Test(timeout = 30000)
     public void testImmediate() throws InterruptedException {
         concurrencyTest(Scheduler.immediate());
     }
-    
-    @Test(timeout=30000)
+
+    @Test(timeout = 30000)
     public void testIo() throws InterruptedException {
         concurrencyTest(Scheduler.io());
     }
@@ -209,19 +209,21 @@ public class ActorTest {
         Context c = new Context();
         try {
             int runners = 100;
-            int messagesPerRunner = 10000;
+            int messagesPerRunner = Integer.getInteger("n", 10000);
             CountDownLatch latch = new CountDownLatch(1);
             AtomicInteger count = new AtomicInteger();
             int[] countFinished = new int[1];
             ActorRef<String> root = c.<String>builder() //
                     .name("root") //
-                    .scheduler(scheduler).match(String.class, (con1, msg) -> {
+                    .scheduler(scheduler) //
+                    .match(String.class, (con1, msg) -> {
                         if (start.equals(msg)) {
                             for (int i = 1; i <= runners; i++) {
 //                                int finalI = i;
                                 ActorRef<String> r = c.<String>builder() //
                                         .name("runner" + i) //
-                                        .scheduler(scheduler).match(String.class, (con2, m) -> {
+                                        .scheduler(scheduler) //
+                                        .match(String.class, (con2, m) -> {
 //                                    DecimalFormat df = new DecimalFormat("000");
 //                                    System.out.println("responding from runner " + finalI + " with value " + m);
 //                                      String reply = "reply from runner " + df.format(finalI) + " to message " + m;
