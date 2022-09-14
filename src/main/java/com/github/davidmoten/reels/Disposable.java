@@ -2,7 +2,7 @@ package com.github.davidmoten.reels;
 
 public interface Disposable {
 
-    static Disposable NOOP = new Disposable() {
+    static Disposable DISPOSED = new Disposable() {
 
         @Override
         public void dispose() {
