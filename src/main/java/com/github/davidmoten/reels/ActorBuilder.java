@@ -22,11 +22,11 @@ public final class ActorBuilder<T> {
         this.context = context;
     }
 
-    public <S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, S> consumer) {
+    public <S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, ? super S> consumer) {
         matches.add(new Matcher<T, S>(matchClass, consumer));
         return this;
     }
-
+    
     public ActorBuilder<T> scheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
         return this;
@@ -53,9 +53,9 @@ public final class ActorBuilder<T> {
 
     private static final class Matcher<T, S extends T> {
         final Class<S> matchClass;
-        final BiConsumer<MessageContext<T>, S> consumer;
+        final BiConsumer<MessageContext<T>, ? super S> consumer;
 
-        Matcher(Class<S> matchClass, BiConsumer<MessageContext<T>, S> consumer2) {
+        Matcher(Class<S> matchClass, BiConsumer<MessageContext<T>, ? super S> consumer2) {
             this.matchClass = matchClass;
             this.consumer = consumer2;
         }

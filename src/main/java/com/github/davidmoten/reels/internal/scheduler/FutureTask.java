@@ -4,7 +4,7 @@ import java.util.concurrent.Future;
 
 import com.github.davidmoten.reels.Disposable;
 
-public class FutureTask implements Disposable {
+public final class FutureTask implements Disposable {
 
     private final Future<?> future;
 

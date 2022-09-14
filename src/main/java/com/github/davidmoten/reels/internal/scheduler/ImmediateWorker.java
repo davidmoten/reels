@@ -39,7 +39,7 @@ public final class ImmediateWorker implements Worker {
 
     @Override
     public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("cannot schedule periodically with the immediate scheduler");
     }
 
     @Override

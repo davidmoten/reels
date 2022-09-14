@@ -1,6 +1,5 @@
 package com.github.davidmoten.reels.internal;
 
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.davidmoten.reels.Actor;
@@ -55,7 +54,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
         if (disposed) {
             return;
         }
-        queue.offer(new Message<T>(message, Optional.ofNullable(sender)));
+        queue.offer(new Message<T>(message, sender));
         worker.schedule(this);
     }
 

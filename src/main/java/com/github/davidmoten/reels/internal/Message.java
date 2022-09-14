@@ -1,15 +1,13 @@
 package com.github.davidmoten.reels.internal;
 
-import java.util.Optional;
-
 import com.github.davidmoten.reels.ActorRef;
 
 public class Message<T> {
 
     private final T content;
-    private final Optional<ActorRef<?>> sender;
+    private final ActorRef<?> sender; //nullable
 
-    public Message(T content, Optional<ActorRef<?>> sender) {
+    public Message(T content, ActorRef<?> sender) {
         this.content = content;
         this.sender = sender;
     }
@@ -18,7 +16,7 @@ public class Message<T> {
         return content;
     }
 
-    public Optional<ActorRef<?>> sender() {
+    public ActorRef<?> sender() {
         return sender;
     }
 }
