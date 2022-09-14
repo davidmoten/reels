@@ -20,5 +20,9 @@ public final class MessageContext<T> {
     public <S> Optional<ActorRef<S>> sender() {
         return Optional.of((ActorRef<S>) sender);
     }
+    
+    public Context context() {
+        return self.context();
+    }
 
 }

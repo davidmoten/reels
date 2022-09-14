@@ -60,7 +60,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
 
     @SuppressWarnings("unchecked")
     @Override
-    public void kill() {
+    public void stop() {
         tell((T) POISON_PILL);
     }
 
@@ -100,6 +100,11 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
     @Override
     public boolean isDisposed() {
         return disposed;
+    }
+
+    @Override
+    public Context context() {
+        return context();
     }
 
 }

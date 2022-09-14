@@ -48,7 +48,7 @@ public final class ActorBuilder<T> {
     }
 
     public ActorRef<T> build() {
-        return context.create(new MatchingActor<T>(matches, onError), name, scheduler, supervisor);
+        return context.createActor(new MatchingActor<T>(matches, onError), name, scheduler, supervisor);
     }
 
     private static final class Matcher<T, S extends T> {

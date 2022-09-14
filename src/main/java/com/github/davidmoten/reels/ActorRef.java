@@ -22,6 +22,8 @@ public interface ActorRef<T> extends Disposable {
      * message is processed. The Poison Pill message does not jump the queue past
      * other already waiting messages on the Actor.
      */
-    public void kill();
+    public void stop();
+    
+    public Context context();
 
 }

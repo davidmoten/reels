@@ -33,20 +33,20 @@ public final class Context implements Disposable {
     }
 
     public <T> ActorRef<T> create(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn) {
-        return create(actorClass, name, processMessagesOn, supervisor);
+        return createActor(actorClass, name, processMessagesOn, supervisor);
     }
 
-    public <T> ActorRef<T> create(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn,
+    public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn,
             Supervisor supervisor) {
         Preconditions.checkArgument(name != null, "name cannot be null");
         try {
-            return create((Actor<T>) actorClass.newInstance(), name, processMessagesOn, supervisor);
+            return createActor((Actor<T>) actorClass.newInstance(), name, processMessagesOn, supervisor);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new CreateException(e);
         }
     }
 
-    public <T> ActorRef<T> create(Actor<T> actor, String name, Scheduler processMessagesOn, Supervisor supervisor) {
+    public <T> ActorRef<T> createActor(Actor<T> actor, String name, Scheduler processMessagesOn, Supervisor supervisor) {
         Preconditions.checkArgument(name != null, "name cannot be null");
         if (disposed) {
             throw new CreateException("shutdown");
@@ -60,7 +60,7 @@ public final class Context implements Disposable {
         return actorRef;
     }
 
-    public <T> ActorRef<T> create(Class<? extends Actor<T>> actorClass) {
+    public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass) {
         return create(actorClass, Long.toString(counter.incrementAndGet()), Scheduler.computation());
     }
 

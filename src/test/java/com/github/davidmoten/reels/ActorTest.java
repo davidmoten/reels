@@ -144,7 +144,7 @@ public class ActorTest {
     @Test
     public void testCustomActorWithoutBuilder() throws InterruptedException {
         Context c = new Context();
-        ActorRef<Integer> a = c.create(MyActor.class);
+        ActorRef<Integer> a = c.createActor(MyActor.class);
         a.tell(123);
         Thread.sleep(500);
         assertEquals(123, (int) MyActor.last);
@@ -153,7 +153,7 @@ public class ActorTest {
     @Test(expected = CreateException.class)
     public void testCustomActorWithoutBuilderNoPublicNoArgConstructor() throws InterruptedException {
         Context c = new Context();
-        c.create(MyActorBad.class);
+        c.createActor(MyActorBad.class);
     }
 
     @Test
@@ -165,7 +165,7 @@ public class ActorTest {
                         (c, msg) -> count.incrementAndGet()) //
                 .build();
         a.tell(1);
-        a.kill();
+        a.stop();
         a.tell(2);
         Thread.sleep(500);
         assertEquals(1, count.get());
