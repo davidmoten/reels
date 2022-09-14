@@ -104,7 +104,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
 
     @Override
     public Context context() {
-        return context();
+        return context;
     }
 
 }
