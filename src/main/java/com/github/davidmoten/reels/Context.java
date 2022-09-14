@@ -1,5 +1,8 @@
 package com.github.davidmoten.reels;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,13 +43,23 @@ public final class Context implements Disposable {
             Supervisor supervisor) {
         Preconditions.checkArgument(name != null, "name cannot be null");
         try {
-            return createActor((Actor<T>) actorClass.newInstance(), name, processMessagesOn, supervisor);
-        } catch (InstantiationException | IllegalAccessException e) {
+            Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors())
+                    .filter(x -> x.getParameterCount() == 0).findFirst();
+            if (c.isEmpty()) {
+                throw new CreateException(
+                        "Actor class must have a public no-arg constructor to be created with this method."
+                                + " Another method is available to create ActorRef for an Actor instance that you provide.");
+            }
+            @SuppressWarnings("unchecked")
+            Actor<T> actor = (Actor<T>) c.get().newInstance();
+            return createActor(actor, name, processMessagesOn, supervisor);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new CreateException(e);
         }
     }
 
-    public <T> ActorRef<T> createActor(Actor<T> actor, String name, Scheduler processMessagesOn, Supervisor supervisor) {
+    public <T> ActorRef<T> createActor(Actor<T> actor, String name, Scheduler processMessagesOn,
+            Supervisor supervisor) {
         Preconditions.checkArgument(name != null, "name cannot be null");
         if (disposed) {
             throw new CreateException("shutdown");
@@ -101,7 +114,7 @@ public final class Context implements Disposable {
             actors.clear();
         }
     }
-    
+
     @Override
     public boolean isDisposed() {
         return disposed;
