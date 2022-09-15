@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
@@ -52,20 +53,20 @@ public final class Context implements Disposable {
             }
             @SuppressWarnings("unchecked")
             Actor<T> actor = (Actor<T>) c.get().newInstance();
-            return createActor(actor, name, processMessagesOn, supervisor, parent);
+            return createActor(() -> actor, name, processMessagesOn, supervisor, parent);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
             throw new CreateException(e);
         }
     }
 
-    public <T> ActorRef<T> createActor(Actor<T> actor, String name, Scheduler processMessagesOn,
-            Supervisor supervisor, Optional<ActorRef<?>> parent) {
+    public <T> ActorRef<T> createActor(Supplier<? extends Actor<T>> actorFactory, String name,
+            Scheduler processMessagesOn, Supervisor supervisor, Optional<ActorRef<?>> parent) {
         Preconditions.checkArgument(name != null, "name cannot be null");
         if (disposed) {
             throw new CreateException("shutdown");
         }
-        return insert(name, ActorRefImpl.create(name, actor, processMessagesOn, this, supervisor, parent));
+        return insert(name, ActorRefImpl.create(name, actorFactory.get(), processMessagesOn, this, supervisor, parent));
     }
 
     private <T> ActorRef<T> insert(String name, ActorRef<T> actorRef) {
@@ -93,6 +94,10 @@ public final class Context implements Disposable {
      */
     public <T, S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, S> consumer) {
         return new ActorBuilder<T>(this).match(matchClass, consumer);
+    }
+
+    public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
+        return new ActorBuilder<T>(this).factory(factory);
     }
 
     @SuppressWarnings("unchecked")

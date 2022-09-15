@@ -6,7 +6,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
+import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.internal.SupervisorDefault;
 import com.github.davidmoten.reels.internal.Util;
 
@@ -19,13 +21,21 @@ public final class ActorBuilder<T> {
     private Supervisor supervisor = SupervisorDefault.INSTANCE;
     private String name = UUID.randomUUID().toString();
     private Optional<ActorRef<?>> parent = Optional.empty();
+    private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
 
     ActorBuilder(Context context) {
         this.context = context;
     }
 
     public <S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, ? super S> consumer) {
+        Preconditions.checkArgument(!factory.isPresent(), "cannot set both matches and factory in builder");
         matches.add(new Matcher<T, S>(matchClass, consumer));
+        return this;
+    }
+
+    public ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
+        Preconditions.checkArgument(!matches.isEmpty(), "cannot set both matches and factory in builder");
+        this.factory = Optional.of(factory);
         return this;
     }
 
@@ -60,7 +70,10 @@ public final class ActorBuilder<T> {
     }
 
     public ActorRef<T> build() {
-        return context.createActor(new MatchingActor<T>(matches, onError), name, scheduler, supervisor, parent);
+        if (!factory.isPresent()) {
+            factory = Optional.of(() -> new MatchingActor<T>(matches, onError));
+        }
+        return context.createActor(factory.get(), name, scheduler, supervisor, parent);
     }
 
     private static final class Matcher<T, S extends T> {
