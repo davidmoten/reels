@@ -1,5 +1,8 @@
 package com.github.davidmoten.reels;
 
+import com.github.davidmoten.reels.internal.Disposed;
+import com.github.davidmoten.reels.internal.OnDispose;
+
 public interface Disposable {
 
     void dispose();
@@ -7,18 +10,9 @@ public interface Disposable {
     boolean isDisposed();
     
     static Disposable DISPOSED = new Disposed();
-    
-    static final class Disposed implements Disposable {
 
-        @Override
-        public void dispose() {
-            // do nothing
-        }
-
-        @Override
-        public boolean isDisposed() {
-            return true;
-        }
+    static Disposable onDispose(Runnable run) {
+        return new OnDispose(run);
     }
 
 }
