@@ -89,7 +89,7 @@ public final class Context implements Disposable {
         actors.put(name, actorRef);
         return actorRef;
     }
-    
+
     @SuppressWarnings("unchecked")
     public <T> Optional<ActorRef<T>> lookupActor(String name) {
         return Optional.ofNullable((ActorRef<T>) actors.get(name));
@@ -101,7 +101,14 @@ public final class Context implements Disposable {
             a.dispose();
         }
     }
-    
+
+    /**
+     * Remove actor from context (so that when context is disposed actor.dispose()
+     * is not called).
+     * 
+     * @param name name of the actor
+     * @return the removed ActorRef
+     */
     public ActorRef<?> removeActor(String name) {
         return actors.remove(name);
     }
@@ -119,7 +126,7 @@ public final class Context implements Disposable {
     public boolean isDisposed() {
         return disposed;
     }
-    
+
     /////////////////////////////
     // builder entry methods
     ////////////////////////////
@@ -144,9 +151,9 @@ public final class Context implements Disposable {
     public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
         return new ActorBuilder<T>(this).factory(factory);
     }
-    
+
     public <T> ActorBuilder<T> processor(BiConsumer<MessageContext<T>, ? super T> consumer) {
         return new ActorBuilder<T>(this).processor(consumer);
     }
-    
+
 }
