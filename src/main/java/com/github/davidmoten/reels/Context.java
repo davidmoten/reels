@@ -45,7 +45,7 @@ public final class Context implements Disposable {
         try {
             Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors())
                     .filter(x -> x.getParameterCount() == 0).findFirst();
-            if (c.isEmpty()) {
+            if (!c.isPresent()) {
                 throw new CreateException(
                         "Actor class must have a public no-arg constructor to be created with this method."
                                 + " Another method is available to create ActorRef for an Actor instance that you provide.");
