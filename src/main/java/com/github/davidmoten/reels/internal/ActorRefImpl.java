@@ -143,4 +143,9 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         queue.clear();
     }
 
+    @Override
+    public String name() {
+        return name;
+    }
+
 }

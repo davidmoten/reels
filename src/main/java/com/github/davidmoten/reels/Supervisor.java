@@ -1,6 +1,11 @@
 package com.github.davidmoten.reels;
 
+import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
+
+@FunctionalInterface
 public interface Supervisor {
+
+    final static Supervisor DEFAULT = SupervisorDefault.INSTANCE;
 
     /**
      * Processes a thrown error from Actor.onMessage. This method <b>must not
@@ -10,7 +15,7 @@ public interface Supervisor {
      * Note that because the method is provided with the actorRef that the dispose
      * method can be called on the actorRef which will stop all further processing
      * of messages including already queued ones. If the actorRef is not disposed
-     * then message processing will continue with following messages as normal.
+     * then message processing will continue with subsequent messages as normal.
      * 
      * <p>
      * A {@link SupervisedActorRef} also has methods to restart the actor (recreate

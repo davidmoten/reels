@@ -9,8 +9,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.github.davidmoten.guavamini.Preconditions;
-import com.github.davidmoten.reels.internal.SupervisorDefault;
 import com.github.davidmoten.reels.internal.Util;
+import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
 
 public final class ActorBuilder<T> {
 

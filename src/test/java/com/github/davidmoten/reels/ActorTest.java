@@ -17,12 +17,9 @@ public class ActorTest {
     public void test() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         Context c = new Context();
-        Supervisor supervisor = new Supervisor() {
-            @Override
-            public void processFailure(Context context, SupervisedActorRef<?> actorRef, Throwable error) {
-                error.printStackTrace();
-                actorRef.dispose();
-            }
+        Supervisor supervisor = (context, actor, error) -> {
+            error.printStackTrace();
+            actor.dispose();
         };
         AtomicBoolean once = new AtomicBoolean();
         ActorRef<Object> a = c //
@@ -67,12 +64,7 @@ public class ActorTest {
     public void testSupervisorCalled() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         Context c = new Context();
-        Supervisor supervisor = new Supervisor() {
-            @Override
-            public void processFailure(Context context, SupervisedActorRef<?> actorRef, Throwable error) {
-                latch.countDown();
-            }
-        };
+        Supervisor supervisor = (context, actor, error) -> latch.countDown();
         ActorRef<Integer> a = c //
                 .match(Integer.class, (ctxt, n) -> {
                     throw new RuntimeException("boo");
@@ -88,12 +80,9 @@ public class ActorTest {
     public void testSupervisorDisposesActor() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         Context c = new Context();
-        Supervisor supervisor = new Supervisor() {
-            @Override
-            public void processFailure(Context context, SupervisedActorRef<?> actor, Throwable error) {
-                actor.dispose();
-                latch.countDown();
-            }
+        Supervisor supervisor = (context, actor, error) -> {
+            actor.dispose();
+            latch.countDown();
         };
         AtomicInteger count = new AtomicInteger();
         ActorRef<Integer> a = c //
@@ -116,12 +105,7 @@ public class ActorTest {
     @Test
     public void testBuilderOnError() throws InterruptedException {
         AtomicBoolean supervisorCalled = new AtomicBoolean();
-        Supervisor supervisor = new Supervisor() {
-            @Override
-            public void processFailure(Context context, SupervisedActorRef<?> actor, Throwable error) {
-                supervisorCalled.set(true);
-            }
-        };
+        Supervisor supervisor = (context, actor, error) -> supervisorCalled.set(true);
         CountDownLatch latch = new CountDownLatch(1);
         Context c = new Context();
         ActorRef<Integer> a = c //

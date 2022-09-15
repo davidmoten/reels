@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 
 import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
-import com.github.davidmoten.reels.internal.SupervisorDefault;
+import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
 
 /**
  * Creates actors, disposes actors and looks actors up by name.

@@ -23,11 +23,19 @@ public interface ActorRef<T> extends Disposable {
      * other already waiting messages on the Actor.
      */
     public void stop();
-    
-    /** Returns the current actor system context.
+
+    /**
+     * Returns the current actor system context.
      * 
      * @return actor system context
      */
     public Context context();
+
+    /**
+     * The unique Actor identifier for the current Context.
+     * 
+     * @return unique identifier for the current Context
+     */
+    public String name();
 
 }
