@@ -75,7 +75,7 @@ public class ActorTest {
         a.tell(123);
         latch.await();
     }
-    
+
     @Test
     public void testSupervisorCreatesAgainOnRestart() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(2);
@@ -85,7 +85,7 @@ public class ActorTest {
                 .<Integer>factory(() -> {
                     latch.countDown();
                     return (context, message) -> {
-                      throw new RuntimeException("boo");  
+                        throw new RuntimeException("boo");
                     };
                 }) //
                 .scheduler(Scheduler.computation()) //
@@ -93,10 +93,28 @@ public class ActorTest {
                 .build();
         a.tell(123);
         a.tell(345);
-        latch.await(30, TimeUnit.SECONDS);
+        assertTrue(latch.await(30, TimeUnit.SECONDS));
     }
-    
-        
+
+    @Test
+    public void testScheduledMessage() throws InterruptedException {
+        Context c = Context.create();
+        CountDownLatch latch = new CountDownLatch(2);
+        long[] t = new long[2];
+        long intervalMs = 300;
+        ActorRef<Integer> a = c.<Integer>processor((ctxt, message) -> {
+            latch.countDown();
+            if (message == 1) {
+                t[0] = System.currentTimeMillis();
+            } else {
+                t[1] = System.currentTimeMillis();
+            }
+            ctxt.self().worker().schedule(() -> ctxt.self().tell(2), intervalMs, TimeUnit.MILLISECONDS);
+        }).build();
+        a.tell(1);
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertTrue(t[1] - t[0] > intervalMs -  100);
+    }
 
     @Test
     public void testSupervisorDisposesActor() throws InterruptedException {

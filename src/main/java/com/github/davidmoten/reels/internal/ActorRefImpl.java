@@ -148,4 +148,9 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         return name;
     }
 
+    @Override
+    public Worker worker() {
+        return worker;
+    }
+
 }

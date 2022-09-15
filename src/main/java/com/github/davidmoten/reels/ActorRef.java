@@ -7,7 +7,7 @@ public interface ActorRef<T> extends Disposable {
      * 
      * @param message
      */
-    public void tell(T message);
+    void tell(T message);
 
     /**
      * Sends the message with the given sender.
@@ -15,27 +15,34 @@ public interface ActorRef<T> extends Disposable {
      * @param message message to send
      * @param sender  message sender (for replies as an example)
      */
-    public void tell(T message, ActorRef<?> sender);
+    void tell(T message, ActorRef<?> sender);
 
     /**
      * Sends a Poision Pill message to the actor which will be disposed when that
      * message is processed. The Poison Pill message does not jump the queue past
      * other already waiting messages on the Actor.
      */
-    public void stop();
+    void stop();
 
     /**
      * Returns the current actor system context.
      * 
      * @return actor system context
      */
-    public Context context();
+    Context context();
 
     /**
      * The unique Actor identifier for the current Context.
      * 
      * @return unique identifier for the current Context
      */
-    public String name();
+    String name();
+
+    /**
+     * Returns the worker that the Actor's messages are processed on.
+     * 
+     * @return the worker that the Actor's messages are processed on
+     */
+    Worker worker();
 
 }

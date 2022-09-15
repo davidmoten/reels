@@ -35,6 +35,10 @@ public final class Context implements Disposable {
     public Context() {
         this(SupervisorDefault.INSTANCE);
     }
+    
+    public static Context create() {
+        return new Context();
+    }
 
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass) {
         return createActor(actorClass, actorClass.getName() + "-" + Long.toString(counter.incrementAndGet()));
