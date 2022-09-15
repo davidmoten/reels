@@ -7,6 +7,10 @@ import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.Util;
 
+/**
+ * Use of this scheduler brings about a lockup that prevents all progress if
+ * there is enough load (recursive calls to the executor?)
+ */
 public final class SchedulerComputationNonSticky implements Scheduler {
 
     public static final SchedulerComputationNonSticky INSTANCE = new SchedulerComputationNonSticky();
