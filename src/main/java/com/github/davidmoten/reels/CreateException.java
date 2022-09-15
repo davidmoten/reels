@@ -12,4 +12,8 @@ public final class CreateException extends RuntimeException {
         super(message);
     }
 
+    public CreateException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }
