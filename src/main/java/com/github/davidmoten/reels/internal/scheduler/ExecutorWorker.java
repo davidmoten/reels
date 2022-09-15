@@ -6,11 +6,11 @@ import java.util.concurrent.TimeUnit;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Worker;
 
-final class ExecutorWorker implements Worker {
+public class ExecutorWorker implements Worker {
     private volatile boolean disposed;
     private final ScheduledExecutorService executor;
 
-    ExecutorWorker(ScheduledExecutorService executor) {
+    public ExecutorWorker(ScheduledExecutorService executor) {
         this.executor = executor;
     }
 
