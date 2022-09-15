@@ -89,28 +89,7 @@ public final class Context implements Disposable {
         actors.put(name, actorRef);
         return actorRef;
     }
-
-    public <T> ActorBuilder<T> builder() {
-        return new ActorBuilder<T>(this);
-    }
-
-    /**
-     * Returns an ActorBuilder using the given match.
-     * 
-     * @param <T>        actor message type
-     * @param <S>        match class type
-     * @param matchClass match class
-     * @param consumer   consumes messages of type S
-     * @return builder
-     */
-    public <T, S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, S> consumer) {
-        return new ActorBuilder<T>(this).match(matchClass, consumer);
-    }
-
-    public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
-        return new ActorBuilder<T>(this).factory(factory);
-    }
-
+    
     @SuppressWarnings("unchecked")
     public <T> Optional<ActorRef<T>> lookupActor(String name) {
         return Optional.ofNullable((ActorRef<T>) actors.get(name));
@@ -136,5 +115,34 @@ public final class Context implements Disposable {
     public boolean isDisposed() {
         return disposed;
     }
+    
+    /////////////////////////////
+    // builder entry methods
+    ////////////////////////////
 
+    public <T> ActorBuilder<T> builder() {
+        return new ActorBuilder<T>(this);
+    }
+
+    /**
+     * Returns an ActorBuilder using the given match.
+     * 
+     * @param <T>        actor message type
+     * @param <S>        match class type
+     * @param matchClass match class
+     * @param consumer   consumes messages of type S
+     * @return builder builder
+     */
+    public <T, S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, S> consumer) {
+        return new ActorBuilder<T>(this).match(matchClass, consumer);
+    }
+
+    public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
+        return new ActorBuilder<T>(this).factory(factory);
+    }
+    
+    public <T> ActorBuilder<T> processor(BiConsumer<MessageContext<T>, ? super T> consumer) {
+        return new ActorBuilder<T>(this).processor(consumer);
+    }
+    
 }

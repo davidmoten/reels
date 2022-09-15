@@ -261,6 +261,29 @@ public class ActorTest {
         System.out.println("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
     }
 
+    @Test
+    public void testTennis() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        int maxMessages = 100000;
+        Context c = new Context();
+        try {
+            ActorRef<Integer> b = c.<Integer>processor((ctxt, message) -> {
+                ctxt.sender().ifPresent(sender -> sender.tell(message + 1));
+            }).build();
+            ActorRef<Integer> a = c.<Integer>processor((ctxt, message) -> {
+                if (message < maxMessages) {
+                    b.tell(message + 1, ctxt.self());
+                } else {
+                    latch.countDown();
+                }
+            }).build();
+            a.tell(0);
+            latch.await(60, TimeUnit.SECONDS);
+        } finally {
+            c.dispose();
+        }
+    }
+
     public static final class MyActor implements Actor<Integer> {
 
         static volatile Integer last;
@@ -281,5 +304,5 @@ public class ActorTest {
         public void onMessage(MessageContext<Integer> context, Integer message) {
         }
     }
-    
+
 }

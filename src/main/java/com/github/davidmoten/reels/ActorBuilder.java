@@ -38,6 +38,11 @@ public final class ActorBuilder<T> {
         this.factory = Optional.of(factory);
         return this;
     }
+    
+    @SuppressWarnings("unchecked")
+    public ActorBuilder<T> processor(BiConsumer<MessageContext<T>, ? super T> consumer) {
+        return match((Class<T>) Object.class, consumer);
+    }
 
     public ActorBuilder<T> scheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
