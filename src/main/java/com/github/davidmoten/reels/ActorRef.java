@@ -24,6 +24,10 @@ public interface ActorRef<T> extends Disposable {
      */
     public void stop();
     
+    /** Returns the current actor system context.
+     * 
+     * @return actor system context
+     */
     public Context context();
 
 }

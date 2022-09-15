@@ -36,13 +36,40 @@ public final class Context implements Disposable {
         this(SupervisorDefault.INSTANCE);
     }
 
-    public <T> ActorRef<T> create(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn) {
+    public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass) {
+        return createActor(actorClass, actorClass.getName() + "-" + Long.toString(counter.incrementAndGet()));
+    }
+
+    public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name) {
+        return createActor(actorClass, name, Scheduler.computation());
+    }
+
+    public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn) {
         return createActor(actorClass, name, processMessagesOn, supervisor, Optional.empty());
     }
 
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn,
             Supervisor supervisor, Optional<ActorRef<?>> parent) {
+        Preconditions.checkArgument(actorClass != null, "actorFactory cannot be null");
+        return createActor(() -> createActorObject(actorClass), name, processMessagesOn, supervisor, parent);
+    }
+
+    public <T> ActorRef<T> createActor(Supplier<? extends Actor<T>> actorFactory, String name,
+            Scheduler processMessagesOn, Supervisor supervisor, Optional<ActorRef<?>> parent) {
+        Preconditions.checkArgument(actorFactory != null, "actorFactory cannot be null");
         Preconditions.checkArgument(name != null, "name cannot be null");
+        Preconditions.checkArgument(processMessagesOn != null, "processMessagesOn scheduler cannot be null");
+        Preconditions.checkArgument(supervisor != null, "supervisor cannot be null");
+        Preconditions.checkArgument(parent != null, "parent cannot be null");
+        if (disposed) {
+            throw new CreateException("cannot create actor because Context shutdown");
+        }
+        return insert(name, ActorRefImpl.create(name, actorFactory.get(), processMessagesOn, this, supervisor, parent));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass) {
+        Preconditions.checkArgument(actorClass != null, "actorFactory cannot be null");
         try {
             Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors())
                     .filter(x -> x.getParameterCount() == 0).findFirst();
@@ -51,32 +78,16 @@ public final class Context implements Disposable {
                         "Actor class must have a public no-arg constructor to be created with this method."
                                 + " Another method is available to create ActorRef for an Actor instance that you provide.");
             }
-            @SuppressWarnings("unchecked")
-            Actor<T> actor = (Actor<T>) c.get().newInstance();
-            return createActor(() -> actor, name, processMessagesOn, supervisor, parent);
+            return (Actor<T>) c.get().newInstance();
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
             throw new CreateException(e);
         }
     }
 
-    public <T> ActorRef<T> createActor(Supplier<? extends Actor<T>> actorFactory, String name,
-            Scheduler processMessagesOn, Supervisor supervisor, Optional<ActorRef<?>> parent) {
-        Preconditions.checkArgument(name != null, "name cannot be null");
-        if (disposed) {
-            throw new CreateException("shutdown");
-        }
-        return insert(name, ActorRefImpl.create(name, actorFactory.get(), processMessagesOn, this, supervisor, parent));
-    }
-
     private <T> ActorRef<T> insert(String name, ActorRef<T> actorRef) {
-        Preconditions.checkArgument(name != null, "name cannot be null");
         actors.put(name, actorRef);
         return actorRef;
-    }
-
-    public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass) {
-        return create(actorClass, Long.toString(counter.incrementAndGet()), Scheduler.computation());
     }
 
     public <T> ActorBuilder<T> builder() {
