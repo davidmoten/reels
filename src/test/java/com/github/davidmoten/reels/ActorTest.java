@@ -19,7 +19,7 @@ public class ActorTest {
         Context c = new Context();
         Supervisor supervisor = new Supervisor() {
             @Override
-            public void processFailure(Context context, ActorRef<?> actorRef, Throwable error) {
+            public void processFailure(Context context, SupervisedActorRef<?> actorRef, Throwable error) {
                 error.printStackTrace();
                 actorRef.dispose();
             }
@@ -69,7 +69,7 @@ public class ActorTest {
         Context c = new Context();
         Supervisor supervisor = new Supervisor() {
             @Override
-            public void processFailure(Context context, ActorRef<?> actorRef, Throwable error) {
+            public void processFailure(Context context, SupervisedActorRef<?> actorRef, Throwable error) {
                 latch.countDown();
             }
         };
@@ -90,7 +90,7 @@ public class ActorTest {
         Context c = new Context();
         Supervisor supervisor = new Supervisor() {
             @Override
-            public void processFailure(Context context, ActorRef<?> actor, Throwable error) {
+            public void processFailure(Context context, SupervisedActorRef<?> actor, Throwable error) {
                 actor.dispose();
                 latch.countDown();
             }
@@ -118,7 +118,7 @@ public class ActorTest {
         AtomicBoolean supervisorCalled = new AtomicBoolean();
         Supervisor supervisor = new Supervisor() {
             @Override
-            public void processFailure(Context context, ActorRef<?> actor, Throwable error) {
+            public void processFailure(Context context, SupervisedActorRef<?> actor, Throwable error) {
                 supervisorCalled.set(true);
             }
         };

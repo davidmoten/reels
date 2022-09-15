@@ -15,6 +15,6 @@ public interface Supervisor {
      * @param actorRef reference to the actor where the error occurred
      * @param error    the error throw in the Actor.onMessage method
      */
-    void processFailure(Context context, ActorRef<?> actorRef, Throwable error);
+    void processFailure(Context context, SupervisedActorRef<?> actorRef, Throwable error);
 
 }

@@ -2,6 +2,7 @@ package com.github.davidmoten.reels.internal;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
@@ -9,19 +10,18 @@ import com.github.davidmoten.reels.Context;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.MessageContext;
 import com.github.davidmoten.reels.Scheduler;
+import com.github.davidmoten.reels.SupervisedActorRef;
 import com.github.davidmoten.reels.Supervisor;
 import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
 import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
-public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable {
-
-//    private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
+public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, Disposable {
 
     private static final Object POISON_PILL = new Object();
 
     private final String name;
-    private final Actor<T> actor;
+    private final Supplier<? extends Actor<T>> factory;
     private final SimplePlainQueue<Message<T>> queue;
     private final Context context;
     private final Supervisor supervisor;
@@ -29,18 +29,19 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
     private final CompositeDisposable disposable;
     private final Worker worker;
     private final Optional<ActorRef<?>> parent;
+    private Actor<T> actor;
 
-    public static <T> ActorRefImpl<T> create(String name, Actor<T> actor, Scheduler scheduler, Context context,
-            Supervisor supervisor, Optional<ActorRef<?>> parent) {
-        ActorRefImpl<T> a = new ActorRefImpl<T>(name, actor, scheduler, context, supervisor, parent);
+    public static <T> ActorRefImpl<T> create(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
+            Context context, Supervisor supervisor, Optional<ActorRef<?>> parent) {
+        ActorRefImpl<T> a = new ActorRefImpl<T>(name, factory, scheduler, context, supervisor, parent);
         parent.ifPresent(p -> ((ActorRefImpl<?>) p).addChild(a));
         return a;
     }
 
-    private ActorRefImpl(String name, Actor<T> actor, Scheduler scheduler, Context context, Supervisor supervisor,
-            Optional<ActorRef<?>> parent) {
+    private ActorRefImpl(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler, Context context,
+            Supervisor supervisor, Optional<ActorRef<?>> parent) {
         this.name = name;
-        this.actor = actor;
+        this.factory = factory;
         this.context = context;
         this.supervisor = supervisor;
         this.queue = new MpscLinkedQueue<Message<T>>();
@@ -48,6 +49,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
         this.disposable = new CompositeDisposable();
         this.parent = parent;
         disposable.add(this);
+        this.actor = factory.get();
     }
 
     void addChild(ActorRef<?> actor) {
@@ -129,6 +131,16 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
     @Override
     public Context context() {
         return context;
+    }
+
+    @Override
+    public void restart() {
+        actor = factory.get();
+    }
+
+    @Override
+    public void clearQueue() {
+        queue.clear();
     }
 
 }

@@ -64,7 +64,7 @@ public final class Context implements Disposable {
         if (disposed) {
             throw new CreateException("cannot create actor because Context shutdown");
         }
-        return insert(name, ActorRefImpl.create(name, actorFactory.get(), processMessagesOn, this, supervisor, parent));
+        return insert(name, ActorRefImpl.create(name, actorFactory, processMessagesOn, this, supervisor, parent));
     }
 
     @SuppressWarnings("unchecked")

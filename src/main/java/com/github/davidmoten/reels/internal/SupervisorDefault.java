@@ -1,7 +1,7 @@
 package com.github.davidmoten.reels.internal;
 
-import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
+import com.github.davidmoten.reels.SupervisedActorRef;
 import com.github.davidmoten.reels.Supervisor;
 
 public final class SupervisorDefault implements Supervisor {
@@ -13,7 +13,7 @@ public final class SupervisorDefault implements Supervisor {
     }
 
     @Override
-    public void processFailure(Context context, ActorRef<?> actorRef, Throwable error) {
+    public void processFailure(Context context, SupervisedActorRef<?> actorRef, Throwable error) {
         error.printStackTrace();
         actorRef.dispose();
         System.out.println(
