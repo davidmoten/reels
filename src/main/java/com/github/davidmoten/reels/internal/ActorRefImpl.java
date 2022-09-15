@@ -25,7 +25,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
     private final Context context;
     private final Supervisor supervisor;
     private final AtomicInteger wip = new AtomicInteger();
-    private volatile boolean disposed;
+    private final CompositeDisposable disposable ;
     private final Worker worker;
 
     public ActorRefImpl(String name, Actor<T> actor, Scheduler scheduler, Context context, Supervisor supervisor) {
@@ -35,11 +35,13 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
         this.supervisor = supervisor;
         this.queue = new MpscLinkedQueue<Message<T>>();
         this.worker = scheduler.createWorker();
+        this.disposable = new CompositeDisposable();
+        disposable.add(this);
     }
 
     @Override
     public void dispose() {
-        this.disposed = true;
+        disposable.dispose();
         queue.clear();
         context.disposeActor(name);
     }
@@ -51,7 +53,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
 
     @Override
     public void tell(T message, ActorRef<?> sender) {
-        if (disposed) {
+        if (disposable.isDisposed()) {
             return;
         }
         queue.offer(new Message<T>(message, sender));
@@ -76,7 +78,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
                 if (message.content() == POISON_PILL) {
                     dispose();
                     return;
-                } else if (disposed) {
+                } else if (disposable.isDisposed()) {
                     queue.clear();
                     return;
                 }
@@ -99,7 +101,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
     
     @Override
     public boolean isDisposed() {
-        return disposed;
+        return disposable.isDisposed();
     }
 
     @Override

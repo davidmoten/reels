@@ -26,6 +26,7 @@ import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
+import com.github.davidmoten.reels.internal.CompositeDisposable;
 import com.github.davidmoten.reels.internal.Util;
 
 /**
