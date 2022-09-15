@@ -4,6 +4,9 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
@@ -18,6 +21,8 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, Disposable {
 
+    private static Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
+
     private static final Object POISON_PILL = new Object();
 
     private final String name;
@@ -29,7 +34,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     private final CompositeDisposable disposable;
     private final Worker worker;
     private final Optional<ActorRef<?>> parent;
-    private Actor<T> actor;
+    private Actor<T> actor; // mutable because recreated if restart called
 
     public static <T> ActorRefImpl<T> create(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
             Context context, Supervisor supervisor, Optional<ActorRef<?>> parent) {
@@ -48,8 +53,8 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         this.worker = scheduler.createWorker();
         this.disposable = new CompositeDisposable();
         this.parent = parent;
-        disposable.add(this);
         this.actor = factory.get();
+        disposable.add(this);
     }
 
     void addChild(ActorRef<?> actor) {
@@ -93,34 +98,42 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     @Override
     public void run() {
         // drain queue
+//        info("run called");
         if (wip.getAndIncrement() == 0) {
-//            log.info("starting drain");
-            int missed = 1;
-            Message<T> message;
-            while ((message = queue.poll()) != null) {
-//                log.info("message polled=" + message.content());
-                if (message.content() == POISON_PILL) {
-                    dispose();
-                    return;
-                } else if (disposable.isDisposed()) {
-                    queue.clear();
-                    return;
+//            info("starting drain");
+            while (true) {
+                int missed = 1;
+                Message<T> message;
+                while ((message = queue.poll()) != null) {
+//                    info("message polled=" + message.content());
+                    if (message.content() == POISON_PILL) {
+                        dispose();
+                        return;
+                    } else if (disposable.isDisposed()) {
+                        queue.clear();
+                        return;
+                    }
+                    try {
+//                        info("calling onMessage");
+                        actor.onMessage(new MessageContext<T>(this, message.sender()), message.content());
+//                        info("called onMessage");
+                    } catch (Throwable e) {
+                        // if the line below throws then the actor will no longer process messages
+                        // (because wip will be != 0)
+                        supervisor.processFailure(context, this, e);
+                    }
                 }
-                try {
-//                    log.info("calling onMessage");
-                    actor.onMessage(new MessageContext<T>(this, message.sender()), message.content());
-//                    log.info("called onMessage");
-                } catch (Throwable e) {
-                    // if the line below throws then the actor will no longer process messages
-                    // (because wip will be != 0)
-                    supervisor.processFailure(context, this, e);
+                missed = wip.addAndGet(-missed);
+                if (missed == 0) {
+                    break;
                 }
-            }
-            missed = wip.addAndGet(-missed);
-            if (missed == 0) {
-                return;
             }
         }
+//        info("exited run, wip=" + wip.get());
+    }
+
+    private void info(String s) {
+        log.info(name + ": " + s);
     }
 
     @Override

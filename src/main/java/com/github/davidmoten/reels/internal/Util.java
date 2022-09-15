@@ -9,10 +9,6 @@ public final class Util {
         // prevent instantiation
     }
 
-    public static int systemPropertyInt(String name, int defaultValue) {
-        return Integer.parseInt(System.getProperty(name, defaultValue + ""));
-    }
-
     public static void rethrow(Throwable e) {
         if (e instanceof RuntimeException) {
             throw (RuntimeException) e;

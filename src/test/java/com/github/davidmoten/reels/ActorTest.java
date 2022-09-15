@@ -10,8 +10,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ActorTest {
+
+    private static final Logger log = LoggerFactory.getLogger(ActorTest.class);
 
     @Test
     public void test() throws InterruptedException {
@@ -37,7 +41,7 @@ public class ActorTest {
                 .name("test") //
                 .build();
         a.tell(123);
-        latch.await();
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
     }
 
     @Test
@@ -57,7 +61,7 @@ public class ActorTest {
                 }).scheduler(Scheduler.computation()) //
                 .build();
         a.tell(123);
-        latch.await();
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
     }
 
     @Test
@@ -73,7 +77,7 @@ public class ActorTest {
                 .supervisor(supervisor) //
                 .build();
         a.tell(123);
-        latch.await();
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
     }
 
     @Test
@@ -137,7 +141,7 @@ public class ActorTest {
         a.tell(234);
         a.tell(456);
         Thread.sleep(1000);
-        latch.await();
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
         a.tell(999);
         assertEquals(1, count.get());
     }
@@ -160,7 +164,7 @@ public class ActorTest {
                     }
                 }).build();
         a.tell(123);
-        latch.await();
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
         Thread.sleep(200);
         assertFalse(supervisorCalled.get());
     }
@@ -209,31 +213,30 @@ public class ActorTest {
         assertFalse(c.lookupActor("thing").isPresent());
     }
 
-    @Test(timeout = 30000)
+    @Test(timeout = 300000)
     public void testParallel() throws InterruptedException {
-        concurrencyTest(Scheduler.computation());
+        concurrencyTest(Scheduler.computation(), Integer.getInteger("n", 10000));
     }
 
     @Test(timeout = 30000)
     public void testImmediate() throws InterruptedException {
-        concurrencyTest(Scheduler.immediate());
+        concurrencyTest(Scheduler.immediate(), 10000);
     }
 
     @Test(timeout = 30000)
     public void testIo() throws InterruptedException {
-        concurrencyTest(Scheduler.io());
+        concurrencyTest(Scheduler.io(), 10000);
     }
 
-    private static void concurrencyTest(Scheduler scheduler) throws InterruptedException {
-        System.out.println("=================================================");
-        System.out.println("" + scheduler.getClass().getName());
-        System.out.println("=================================================");
+    private static void concurrencyTest(Scheduler scheduler, int nmessagesPerRunner)  throws InterruptedException {
+        log.info("=================================================");
+        log.info("" + scheduler.getClass().getName());
+        log.info("=================================================");
         long t = System.currentTimeMillis();
         String start = "start";
         Context c = new Context();
         try {
             int runners = 100;
-            int messagesPerRunner = Integer.getInteger("n", 10000);
             CountDownLatch latch = new CountDownLatch(1);
             AtomicInteger count = new AtomicInteger();
             int[] countFinished = new int[1];
@@ -250,29 +253,29 @@ public class ActorTest {
                                         .parent(con1.self()) //
                                         .match(String.class, (con2, m) -> {
 //                                    DecimalFormat df = new DecimalFormat("000");
-//                                    System.out.println("responding from runner " + finalI + " with value " + m);
+//                                    log.info("responding from runner " + finalI + " with value " + m);
 //                                      String reply = "reply from runner " + df.format(finalI) + " to message " + m;
                                             int n = count.incrementAndGet();
                                             if (n % 100000 == 0) {
-                                                System.out.println("runner received count = " + n);
+                                                log.info("runner received count = " + n);
                                             }
                                             con2.sender().get().tell("reply");
 //                                        con2.self().kill();
                                         }).build();
                                 for (int j = 1; j <= messagesPerRunner; j++) {
-//                          System.out.println("sending runner " + i + ": " + j);
+//                          log.info("sending runner " + i + ": " + j);
                                     r.tell(j + "", con1.self());
                                 }
                             }
                         } else {
                             long n = ++countFinished[0];
                             if (n % 100000 == 0) {
-                                System.out.println(n);
+                                log.info("" + n);
                             }
                             if (n == runners * messagesPerRunner) {
                                 latch.countDown();
                             }
-//                    System.out.println(msg + ", replies=" + count.incrementAndGet());
+//                    log.info(msg + ", replies=" + count.incrementAndGet());
                         }
                     }).build();
             root.tell(start);
@@ -282,7 +285,7 @@ public class ActorTest {
         } finally {
             c.dispose();
         }
-        System.out.println("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
+        log.info("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
     }
 
     @Test
@@ -292,17 +295,23 @@ public class ActorTest {
         Context c = new Context();
         try {
             ActorRef<Integer> b = c.<Integer>processor((ctxt, message) -> {
+                log.info("b " + message);
+                log.info("telling a");
                 ctxt.sender().ifPresent(sender -> sender.tell(message + 1));
-            }).build();
+                log.info("told a");
+            }).name("b").build();
             ActorRef<Integer> a = c.<Integer>processor((ctxt, message) -> {
+                log.info("a " + message);
                 if (message < maxMessages) {
+                    log.info("telling b");
                     b.tell(message + 1, ctxt.self());
+                    log.info("told b");
                 } else {
                     latch.countDown();
                 }
-            }).build();
+            }).name("a").build();
             a.tell(0);
-            latch.await(60, TimeUnit.SECONDS);
+            assertTrue(latch.await(10, TimeUnit.SECONDS));
         } finally {
             c.dispose();
         }

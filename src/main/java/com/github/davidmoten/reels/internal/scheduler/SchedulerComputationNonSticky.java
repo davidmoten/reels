@@ -19,8 +19,8 @@ public final class SchedulerComputationNonSticky implements Scheduler {
     private final ExecutorWorker worker;
 
     private SchedulerComputationNonSticky() {
-        executor = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors(),
-                Util.createThreadFactory("ReelsComputationNonSticky"));
+        int size = Integer.getInteger("reels.computation.pool.size", Runtime.getRuntime().availableProcessors());
+        executor = Executors.newScheduledThreadPool(size, Util.createThreadFactory("ReelsComputationNonSticky"));
         // this worker will not be constrained to a single thread
         // message ordering to an actor should still be maintained
         worker = new ExecutorWorker(executor);
