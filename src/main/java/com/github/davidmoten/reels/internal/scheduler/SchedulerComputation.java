@@ -39,6 +39,7 @@ public final class SchedulerComputation extends AtomicInteger implements Schedul
         for (Worker w : workers) {
             w.dispose();
         }
+        workers.clear();
     }
 
 }
