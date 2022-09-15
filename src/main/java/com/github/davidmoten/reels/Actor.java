@@ -1,5 +1,6 @@
 package com.github.davidmoten.reels;
 
+@FunctionalInterface
 public interface Actor<T> {
 
     /**

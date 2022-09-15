@@ -34,7 +34,7 @@ public final class ActorBuilder<T> {
     }
 
     public ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
-        Preconditions.checkArgument(!matches.isEmpty(), "cannot set both matches and factory in builder");
+        Preconditions.checkArgument(matches.isEmpty(), "cannot set both matches and factory in builder");
         this.factory = Optional.of(factory);
         return this;
     }
