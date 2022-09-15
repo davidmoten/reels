@@ -113,7 +113,7 @@ public class ActorTest {
         }).build();
         a.tell(1);
         assertTrue(latch.await(5, TimeUnit.SECONDS));
-        assertTrue(t[1] - t[0] > intervalMs -  100);
+        assertTrue(t[1] - t[0] > intervalMs - 100);
     }
 
     @Test
@@ -301,6 +301,33 @@ public class ActorTest {
                     latch.countDown();
                 }
             }).build();
+            a.tell(0);
+            latch.await(60, TimeUnit.SECONDS);
+        } finally {
+            c.dispose();
+        }
+    }
+
+    @Test
+    public void testTennisByLookup() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        int maxMessages = 100;
+        Context c = new Context();
+        try {
+            ActorRef<Integer> b = c.<Integer>processor((ctxt, message) -> {
+                ctxt.context().lookupActor("a").get().tell(message + 1);
+            }) //
+                    .name("b") //
+                    .build();
+            ActorRef<Integer> a = c.<Integer>processor((ctxt, message) -> {
+                if (message < maxMessages) {
+                    ctxt.context().lookupActor("b").get().tell(message + 1, ctxt.self());
+                } else {
+                    latch.countDown();
+                }
+            }) //
+                    .name("a") //
+                    .build();
             a.tell(0);
             latch.await(60, TimeUnit.SECONDS);
         } finally {
