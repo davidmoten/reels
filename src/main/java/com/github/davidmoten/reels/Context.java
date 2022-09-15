@@ -53,7 +53,8 @@ public final class Context implements Disposable {
             @SuppressWarnings("unchecked")
             Actor<T> actor = (Actor<T>) c.get().newInstance();
             return createActor(actor, name, processMessagesOn, supervisor);
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
             throw new CreateException(e);
         }
     }
@@ -64,7 +65,7 @@ public final class Context implements Disposable {
         if (disposed) {
             throw new CreateException("shutdown");
         }
-        return insert(name, new ActorRefImpl<T>(name, actor, processMessagesOn, this, supervisor));
+        return insert(name, ActorRefImpl.create(name, actor, processMessagesOn, this, supervisor, Optional.empty()));
     }
 
     private <T> ActorRef<T> insert(String name, ActorRef<T> actorRef) {

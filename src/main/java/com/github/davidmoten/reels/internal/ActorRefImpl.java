@@ -1,5 +1,6 @@
 package com.github.davidmoten.reels.internal;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.davidmoten.reels.Actor;
@@ -25,10 +26,19 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
     private final Context context;
     private final Supervisor supervisor;
     private final AtomicInteger wip = new AtomicInteger();
-    private final CompositeDisposable disposable ;
+    private final CompositeDisposable disposable;
     private final Worker worker;
+    private final Optional<ActorRef<?>> parent;
 
-    public ActorRefImpl(String name, Actor<T> actor, Scheduler scheduler, Context context, Supervisor supervisor) {
+    public static <T> ActorRefImpl<T> create(String name, Actor<T> actor, Scheduler scheduler, Context context,
+            Supervisor supervisor, Optional<ActorRef<?>> parent) {
+        ActorRefImpl<T> a = new ActorRefImpl<T>(name, actor, scheduler, context, supervisor, parent);
+        parent.ifPresent(p -> ((ActorRefImpl<?>) p).addChild(a));
+        return a;
+    }
+
+    private ActorRefImpl(String name, Actor<T> actor, Scheduler scheduler, Context context, Supervisor supervisor,
+            Optional<ActorRef<?>> parent) {
         this.name = name;
         this.actor = actor;
         this.context = context;
@@ -36,13 +46,23 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
         this.queue = new MpscLinkedQueue<Message<T>>();
         this.worker = scheduler.createWorker();
         this.disposable = new CompositeDisposable();
+        this.parent = parent;
         disposable.add(this);
+    }
+
+    void addChild(ActorRef<?> actor) {
+        disposable.add(actor);
+    }
+
+    void removeChild(ActorRef<?> actor) {
+        disposable.remove(actor);
     }
 
     @Override
     public void dispose() {
         disposable.dispose();
         queue.clear();
+        parent.ifPresent(p -> ((ActorRefImpl<?>) p).removeChild(this));
         context.disposeActor(name);
     }
 
@@ -98,7 +118,7 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
             }
         }
     }
-    
+
     @Override
     public boolean isDisposed() {
         return disposable.isDisposed();
