@@ -3,7 +3,7 @@ package com.github.davidmoten.reels;
 public interface Supervisor {
 
     /**
-     * Processes a thrown error from Actor.onMessage. This method must not throw.
+     * Processes a thrown error from Actor.onMessage. This method <b>must not throw</b>.
      * 
      * <p>
      * Note that because the method is provided with the actorRef that the dispose
