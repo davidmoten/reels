@@ -223,6 +223,7 @@ public class ActorTest {
                                 ActorRef<String> r = c.<String>builder() //
                                         .name("runner" + i) //
                                         .scheduler(scheduler) //
+                                        .parent(con1.self()) //
                                         .match(String.class, (con2, m) -> {
 //                                    DecimalFormat df = new DecimalFormat("000");
 //                                    System.out.println("responding from runner " + finalI + " with value " + m);

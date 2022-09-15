@@ -2,6 +2,7 @@ package com.github.davidmoten.reels;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -17,6 +18,7 @@ public final class ActorBuilder<T> {
     private Scheduler scheduler = Scheduler.computation();
     private Supervisor supervisor = SupervisorDefault.INSTANCE;
     private String name = UUID.randomUUID().toString();
+    private Optional<ActorRef<?>> parent = Optional.empty();
 
     ActorBuilder(Context context) {
         this.context = context;
@@ -26,7 +28,7 @@ public final class ActorBuilder<T> {
         matches.add(new Matcher<T, S>(matchClass, consumer));
         return this;
     }
-    
+
     public ActorBuilder<T> scheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
         return this;
@@ -47,8 +49,18 @@ public final class ActorBuilder<T> {
         return this;
     }
 
+    public ActorBuilder<T> parent(ActorRef<?> parent) {
+        this.parent = Optional.of(parent);
+        return this;
+    }
+
+    public ActorBuilder<T> parent(Optional<ActorRef<?>> parent) {
+        this.parent = parent;
+        return this;
+    }
+
     public ActorRef<T> build() {
-        return context.createActor(new MatchingActor<T>(matches, onError), name, scheduler, supervisor);
+        return context.createActor(new MatchingActor<T>(matches, onError), name, scheduler, supervisor, parent);
     }
 
     private static final class Matcher<T, S extends T> {

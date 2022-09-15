@@ -36,11 +36,11 @@ public final class Context implements Disposable {
     }
 
     public <T> ActorRef<T> create(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn) {
-        return createActor(actorClass, name, processMessagesOn, supervisor);
+        return createActor(actorClass, name, processMessagesOn, supervisor, Optional.empty());
     }
 
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn,
-            Supervisor supervisor) {
+            Supervisor supervisor, Optional<ActorRef<?>> parent) {
         Preconditions.checkArgument(name != null, "name cannot be null");
         try {
             Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors())
@@ -52,7 +52,7 @@ public final class Context implements Disposable {
             }
             @SuppressWarnings("unchecked")
             Actor<T> actor = (Actor<T>) c.get().newInstance();
-            return createActor(actor, name, processMessagesOn, supervisor);
+            return createActor(actor, name, processMessagesOn, supervisor, parent);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
             throw new CreateException(e);
@@ -60,12 +60,12 @@ public final class Context implements Disposable {
     }
 
     public <T> ActorRef<T> createActor(Actor<T> actor, String name, Scheduler processMessagesOn,
-            Supervisor supervisor) {
+            Supervisor supervisor, Optional<ActorRef<?>> parent) {
         Preconditions.checkArgument(name != null, "name cannot be null");
         if (disposed) {
             throw new CreateException("shutdown");
         }
-        return insert(name, ActorRefImpl.create(name, actor, processMessagesOn, this, supervisor, Optional.empty()));
+        return insert(name, ActorRefImpl.create(name, actor, processMessagesOn, this, supervisor, parent));
     }
 
     private <T> ActorRef<T> insert(String name, ActorRef<T> actorRef) {
