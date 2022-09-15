@@ -314,12 +314,12 @@ public class ActorTest {
         int maxMessages = 100;
         Context c = new Context();
         try {
-            ActorRef<Integer> b = c.<Integer>processor((ctxt, message) -> {
+            c.<Integer>processor((ctxt, message) -> {
                 ctxt.context().lookupActor("a").get().tell(message + 1);
             }) //
                     .name("b") //
                     .build();
-            ActorRef<Integer> a = c.<Integer>processor((ctxt, message) -> {
+            c.<Integer>processor((ctxt, message) -> {
                 if (message < maxMessages) {
                     ctxt.context().lookupActor("b").get().tell(message + 1, ctxt.self());
                 } else {
@@ -328,7 +328,7 @@ public class ActorTest {
             }) //
                     .name("a") //
                     .build();
-            a.tell(0);
+            c.lookupActor("a").get().tell(0);
             latch.await(60, TimeUnit.SECONDS);
         } finally {
             c.dispose();
