@@ -14,10 +14,6 @@ public interface Scheduler {
         return SchedulerIo.INSTANCE;
     }
 
-    static Scheduler newSingleThread() {
-        throw new UnsupportedOperationException();
-    }
-
     static Scheduler immediate() {
         return SchedulerImmediate.INSTANCE;
     }
