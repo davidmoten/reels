@@ -264,7 +264,7 @@ public class ActorTest {
     @Test
     public void testTennis() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        int maxMessages = 100000;
+        int maxMessages = 10000;
         Context c = new Context();
         try {
             ActorRef<Integer> b = c.<Integer>processor((ctxt, message) -> {

@@ -60,10 +60,12 @@ public final class ActorRefImpl<T> implements ActorRef<T>, Runnable, Disposable 
 
     @Override
     public void dispose() {
-        disposable.dispose();
-        queue.clear();
-        parent.ifPresent(p -> ((ActorRefImpl<?>) p).removeChild(this));
-        context.disposeActor(name);
+        if (!disposable.isDisposed()) {
+            disposable.dispose();
+            queue.clear();
+            parent.ifPresent(p -> ((ActorRefImpl<?>) p).removeChild(this));
+            context.removeActor(name);
+        }
     }
 
     @Override

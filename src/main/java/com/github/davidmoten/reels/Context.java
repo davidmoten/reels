@@ -101,6 +101,10 @@ public final class Context implements Disposable {
             a.dispose();
         }
     }
+    
+    public ActorRef<?> removeActor(String name) {
+        return actors.remove(name);
+    }
 
     @Override
     public void dispose() {
