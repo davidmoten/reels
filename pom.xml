@@ -50,7 +50,7 @@
 
     <ciManagement>
         <system>GithubActions</system>
-        <url>TODO</url>
+        <url>https://github.com/davidmoten/reels/actions/workflows/ci.yml</url>
     </ciManagement>
 
     <issueManagement>
