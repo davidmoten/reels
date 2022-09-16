@@ -2,7 +2,10 @@ package com.github.davidmoten.reels.internal;
 
 import java.util.Enumeration;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -170,6 +173,16 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     @Override
     public Scheduler scheduler() {
         return scheduler;
+    }
+
+    @Override
+    public <S> CompletableFuture<S> ask(T message) {
+        CompletableFuture<S> answer = new CompletableFuture<S>();
+        ActorRef<S> actor = context.<S>matchAll((c, msg) -> answer.complete(msg)).build();
+        tell(message, actor);
+        return answer.whenComplete((result, error) -> {
+            actor.dispose();
+        });
     }
 
 }

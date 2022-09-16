@@ -5,7 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -114,7 +116,7 @@ public class ActorTest {
         CountDownLatch latch = new CountDownLatch(2);
         long[] t = new long[2];
         long intervalMs = 300;
-        ActorRef<Integer> a = c.<Integer>processor((ctxt, message) -> {
+        ActorRef<Integer> a = c.<Integer>matchAll((ctxt, message) -> {
             latch.countDown();
             if (message == 1) {
                 t[0] = System.currentTimeMillis();
@@ -268,7 +270,7 @@ public class ActorTest {
                 .<Object, Start>match(Start.class, (c, msg) -> {
                     for (int i = 0; i < runners; i++) {
                         ActorRef<int[]> actor = c.context() //
-                                .<int[]>processor((c2, msg2) -> {
+                                .<int[]>matchAll((c2, msg2) -> {
                                     c2.sender().get().tell(msg2, c2.self());
                                 }) //
                                 .scheduler(scheduler) //
@@ -299,10 +301,10 @@ public class ActorTest {
         int maxMessages = 10000;
         Context c = new Context();
         try {
-            ActorRef<Integer> b = c.<Integer>processor((ctxt, message) -> {
+            ActorRef<Integer> b = c.<Integer>matchAll((ctxt, message) -> {
                 ctxt.sender().ifPresent(sender -> sender.tell(message + 1));
             }).name("b").build();
-            ActorRef<Integer> a = c.<Integer>processor((ctxt, message) -> {
+            ActorRef<Integer> a = c.<Integer>matchAll((ctxt, message) -> {
                 if (message < maxMessages) {
                     b.tell(message + 1, ctxt.self());
                 } else {
@@ -322,12 +324,12 @@ public class ActorTest {
         int maxMessages = 100;
         Context c = new Context();
         try {
-            c.<Integer>processor((ctxt, message) -> {
+            c.<Integer>matchAll((ctxt, message) -> {
                 ctxt.context().lookupActor("a").get().tell(message + 1);
             }) //
                     .name("b") //
                     .build();
-            c.<Integer>processor((ctxt, message) -> {
+            c.<Integer>matchAll((ctxt, message) -> {
                 if (message < maxMessages) {
                     ctxt.context().lookupActor("b").get().tell(message + 1, ctxt.self());
                 } else {
@@ -341,6 +343,15 @@ public class ActorTest {
         } finally {
             c.dispose();
         }
+    }
+
+    @Test
+    public void testAsk() throws InterruptedException, ExecutionException, TimeoutException {
+        Context context = new Context();
+        ActorRef<String> actor = context
+                .<String>matchAll((c, msg) -> c.sender().ifPresent(sender -> sender.tell("boo"))).build();
+        assertEquals("boo", actor.ask("hi").get(1000, TimeUnit.MILLISECONDS));
+        context.dispose();
     }
 
     public static final class MyActor implements Actor<Integer> {

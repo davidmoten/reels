@@ -152,12 +152,12 @@ public final class Context implements Disposable {
         return new ActorBuilder<T>(this).match(matchClass, consumer);
     }
 
+    public <T> ActorBuilder<T> matchAll(BiConsumer<MessageContext<T>, ? super T> consumer) {
+        return new ActorBuilder<T>(this).processor(consumer);
+    }
+    
     public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
         return new ActorBuilder<T>(this).factory(factory);
-    }
-
-    public <T> ActorBuilder<T> processor(BiConsumer<MessageContext<T>, ? super T> consumer) {
-        return new ActorBuilder<T>(this).processor(consumer);
     }
 
 }

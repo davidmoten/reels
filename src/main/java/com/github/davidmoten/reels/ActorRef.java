@@ -1,5 +1,8 @@
 package com.github.davidmoten.reels;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Calling {@link #dispose()} will clear the message queue for the Actor and
  * prevent more work being queued for the Actor.
@@ -22,6 +25,8 @@ public interface ActorRef<T> extends Disposable {
      * @param sender  message sender (for replies as an example)
      */
     void tell(T message, ActorRef<?> sender);
+    
+    <S> CompletableFuture<S> ask(T message);
 
     /**
      * Sends a Poision Pill message to the actor which will be disposed when that
