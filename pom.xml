@@ -191,6 +191,32 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>com.github.davidmoten</groupId>
+                <artifactId>plantuml-maven-plugin</artifactId>
+                <version>0.1.6</version>
+                <executions>
+                    <execution>
+                        <id>generate-diagrams</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <directory>${project.basedir}/src/main/plantuml</directory>
+                                <includes>
+                                    <include>*.puml</include>
+                                </includes>
+                            </sources>
+                            <formats>
+                                <format>png</format>
+                                <format>svg</format>
+                            </formats>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <version>${spotbugs.version}</version>

@@ -1,0 +1,99 @@
+@startuml
+interface "Actor<T>" as Actor_T_ [[java:com.github.davidmoten.reels.Actor]] {
+    onMessage(context: MessageContext<T>, message: T): void
+}
+interface "ActorRef<T>" as ActorRef_T_ [[java:com.github.davidmoten.reels.ActorRef]] {
+    tell(message: T): void
+    tell(message: T, sender: ActorRef<?>): void
+    stop(): void
+    name(): String
+}
+class Context {
+}
+ActorRef_T_ --> "1" Context : context()
+class Scheduler {
+}
+ActorRef_T_ --> "1" Scheduler : scheduler()
+interface Disposable {
+}
+Disposable <|-- ActorRef_T_
+class Context [[java:com.github.davidmoten.reels.Context]] {
+    +{static} DEFAULT: Context
+    -counter: AtomicLong
+    -actors: Map<String,ActorRef<?>>
+    -disposed: boolean
+    +Context(supervisor: Supervisor)
+    +Context()
+    +{static} create(): Context
+    +createActor(actorClass: Class<? extends Actor<T>>): ActorRef<T>
+    +createActor(actorClass: Class<? extends Actor<T>>, name: String): ActorRef<T>
+    +createActor(actorClass: Class<? extends Actor<T>>, name: String, processMessagesOn: Scheduler): ActorRef<T>
+    +createActor(actorClass: Class<? extends Actor<T>>, name: String, processMessagesOn: Scheduler, supervisor: Supervisor, parent: Optional<ActorRef<?>>): ActorRef<T>
+    +createActor(actorFactory: Supplier<? extends Actor<T>>, name: String, processMessagesOn: Scheduler, supervisor: Supervisor, parent: Optional<ActorRef<?>>): ActorRef<T>
+    -{static} createActorObject(actorClass: Class<? extends Actor<T>>): Actor<T>
+    -insert(name: String, actorRef: ActorRef<T>): ActorRef<T>
+    +lookupActor(name: String): Optional<ActorRef<T>>
+    +disposeActor(name: String): void
+    +removeActor(name: String): ActorRef<?>
+    +dispose(): void
+    +isDisposed(): boolean
+    +builder(): ActorBuilder<T>
+    +match(matchClass: Class<S>, consumer: BiConsumer<MessageContext<T>,S>): ActorBuilder<T>
+    +factory(factory: Supplier<? extends Actor<T>>): ActorBuilder<T>
+    +processor(consumer: BiConsumer<MessageContext<T>,? super T>): ActorBuilder<T>
+}
+class Supervisor {
+}
+Context --> "1" Supervisor : supervisor
+interface Disposable {
+}
+Disposable <|.. Context
+interface Disposable [[java:com.github.davidmoten.reels.Disposable]] {
+    dispose(): void
+    isDisposed(): boolean
+    disposed(): Disposable
+    onDispose(run: Runnable): Disposable
+}
+class "MessageContext<T>" as MessageContext_T_ [[java:com.github.davidmoten.reels.MessageContext]] {
+    -self: ActorRef<T>
+    -sender: ActorRef<?>
+    +MessageContext(self: ActorRef<T>, sender: ActorRef<?>)
+    +self(): ActorRef<T>
+    +sender(): Optional<ActorRef<S>>
+}
+class Context {
+}
+MessageContext_T_ --> "1" Context : context()
+interface Scheduler [[java:com.github.davidmoten.reels.Scheduler]] {
+    schedule(run: Runnable): Disposable
+    schedule(run: Runnable, delay: long, unit: TimeUnit): Disposable
+    schedulePeriodically(run: Runnable, initialDelay: long, period: long, unit: TimeUnit): Disposable
+    shutdown(): void
+    forkJoin(): Scheduler
+    computation(): Scheduler
+    io(): Scheduler
+    immediate(): Scheduler
+}
+class Worker {
+}
+Scheduler --> "1" Worker : createWorker()
+interface "SupervisedActorRef<T>" as SupervisedActorRef_T_ [[java:com.github.davidmoten.reels.SupervisedActorRef]] {
+    restart(): void
+    clearQueue(): void
+}
+interface "ActorRef<T>" as ActorRef_T_ {
+}
+ActorRef_T_ <|-- SupervisedActorRef_T_
+interface Supervisor [[java:com.github.davidmoten.reels.Supervisor]] {
+    processFailure(context: Context, actorRef: SupervisedActorRef<?>, error: Throwable): void
+    defaultSupervisor(): Supervisor
+}
+interface Worker [[java:com.github.davidmoten.reels.Worker]] {
+    schedule(run: Runnable): Disposable
+    schedule(run: Runnable, delay: long, unit: TimeUnit): Disposable
+    schedulePeriodically(run: Runnable, initialDelay: long, period: long, unit: TimeUnit): Disposable
+}
+interface Disposable {
+}
+Disposable <|-- Worker
+@enduml
