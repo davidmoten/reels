@@ -11,7 +11,7 @@
     <artifactId>reels</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <name>${project.artifactId}</name>
-    <description>Text word wrapping in Java</description>
+    <description>In-memory Actor framework</description>
     <packaging>jar</packaging>
 
     <url>http://github.com/davidmoten/reels</url>
@@ -26,17 +26,13 @@
         <slf4j.version>1.7.36</slf4j.version>
 
         <checkstyle.version>3.2.0</checkstyle.version>
-        <findbugs.version>2.5.4</findbugs.version>
         <javadoc.version>3.4.1</javadoc.version>
+        <spotbugs.version>4.7.1.1</spotbugs.version>
         <pmd.version>3.19.0</pmd.version>
-        <jdepend.version>2.0</jdepend.version>
-        <javancss.version>2.1</javancss.version>
         <project.info.version>3.0.0</project.info.version>
         <jxr.version>3.3.0</jxr.version>
         <taglist.version>3.0.0</taglist.version>
         <m3.site.version>3.12.1</m3.site.version>
-        <changelog.version>2.2</changelog.version>
-        <coverage.reports.dir>${project.build.directory}/target/coverage-reports</coverage.reports.dir>
     </properties>
 
     <licenses>
@@ -181,7 +177,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.7.1.1</version>
+                <version>${spotbugs.version}</version>
                 <configuration>
                     <effort>Max</effort>
                     <threshold>Low</threshold>
@@ -199,7 +195,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.17.0</version>
+                <version>${pmd.version}</version>
                 <configuration>
                     <linkXRef>false</linkXRef>
                 </configuration>
@@ -237,6 +233,11 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs.version}</version>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>${pmd.version}</version>
@@ -244,11 +245,6 @@
                     <targetJdk>${maven.compiler.target}</targetJdk>
                     <aggregate>true</aggregate>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jdepend-maven-plugin</artifactId>
-                <version>${jdepend.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
