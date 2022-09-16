@@ -1,6 +1,8 @@
 package com.github.davidmoten.reels.internal;
 
+import java.util.Enumeration;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -28,12 +30,12 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     private final Context context;
     private final Supervisor supervisor;
     private final AtomicInteger wip = new AtomicInteger();
-    private final CompositeDisposable disposable;
     private final Scheduler scheduler;
     private final Worker worker;
     private final Optional<ActorRef<?>> parent;
     private Actor<T> actor; // mutable because recreated if restart called
-
+    private final ConcurrentHashMap<ActorRef<?>, ActorRef<?>> children;
+    private volatile boolean disposed;
 
     public static <T> ActorRefImpl<T> create(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
             Context context, Supervisor supervisor, Optional<ActorRef<?>> parent) {
@@ -50,25 +52,23 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         this.supervisor = supervisor;
         this.queue = new MpscLinkedQueue<Message<T>>();
         this.worker = scheduler.createWorker();
-        this.disposable = new CompositeDisposable();
         this.parent = parent;
         this.actor = factory.get();
         this.scheduler = scheduler;
-        disposable.add(this);
+        this.children = new ConcurrentHashMap<ActorRef<?>, ActorRef<?>>();
     }
 
     void addChild(ActorRef<?> actor) {
-        disposable.add(actor);
+        children.put(actor, actor);
     }
 
     void removeChild(ActorRef<?> actor) {
-        disposable.remove(actor);
+        children.remove(actor);
     }
 
     @Override
     public void dispose() {
-        if (!disposable.isDisposed()) {
-            disposable.dispose();
+        if (!disposed) {
             worker.dispose();
             queue.clear();
             parent.ifPresent(p -> ((ActorRefImpl<?>) p).removeChild(this));
@@ -83,7 +83,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
 
     @Override
     public void tell(T message, ActorRef<?> sender) {
-        if (disposable.isDisposed()) {
+        if (disposed) {
             return;
         }
         queue.offer(new Message<T>(message, sender));
@@ -108,9 +108,14 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                 while ((message = queue.poll()) != null) {
 //                    info("message polled=" + message.content());
                     if (message.content() == POISON_PILL) {
+                        Enumeration<ActorRef<?>> en = children.keys();
+                        while (en.hasMoreElements()) {
+                            ActorRef<?> child = en.nextElement();
+                            child.stop();
+                        }
                         dispose();
                         return;
-                    } else if (disposable.isDisposed()) {
+                    } else if (disposed) {
                         queue.clear();
                         return;
                     }
@@ -139,7 +144,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
 
     @Override
     public boolean isDisposed() {
-        return disposable.isDisposed();
+        return disposed;
     }
 
     @Override
