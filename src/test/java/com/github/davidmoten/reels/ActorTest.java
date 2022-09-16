@@ -216,10 +216,19 @@ public class ActorTest {
     }
 
     @Test(timeout = 300000)
+    public void testParallel2() throws InterruptedException {
+        Thread.sleep(15000);
+        log.info("starting");
+        while (true) {
+            concurrencyTest2(Scheduler.computation(), 100, 100000);
+        }
+    }
+
+    @Test(timeout = 300000)
     public void testParallel() throws InterruptedException {
         concurrencyTest(Scheduler.computation(), Integer.getInteger("n", 10000));
     }
-    
+
     @Test(timeout = 300000)
     public void testParallelNonSticky() throws InterruptedException {
         concurrencyTest(SchedulerComputationNonSticky.INSTANCE, Integer.getInteger("n", 10000));
@@ -235,7 +244,48 @@ public class ActorTest {
         concurrencyTest(Scheduler.io(), 10000);
     }
 
-    private static void concurrencyTest(Scheduler scheduler, int messagesPerRunner)  throws InterruptedException {
+    private enum Start {
+        VALUE;
+    }
+
+    private static void concurrencyTest2(Scheduler scheduler, int runners, int messagesPerRunner)
+            throws InterruptedException {
+        log.info("=================================================");
+        log.info(" 2: " + scheduler.getClass().getSimpleName());
+        log.info("=================================================");
+        long t = System.currentTimeMillis();
+        CountDownLatch latch = new CountDownLatch(1);
+        Context context = new Context();
+        int[] count = new int[] { runners * messagesPerRunner };
+        ActorRef<Object> root = context //
+                .<Object, Start>match(Start.class, (c, msg) -> {
+                    for (int i = 0; i < runners; i++) {
+                        ActorRef<int[]> actor = c.context() //
+                                .<int[]>processor((c2, msg2) -> {
+                                    c2.sender().get().tell(msg2, c2.self());
+                                }) //
+                                .scheduler(scheduler) //
+                                .build();
+                        for (int j = 0; j < messagesPerRunner; j++) {
+                            actor.tell(new int[] { i, j }, c.self());
+                        }
+                    }
+                }) //
+                .match(int[].class, (c, msg) -> {
+                    count[0]--;
+                    if (count[0] == 0) {
+                        latch.countDown();
+                    }
+                }) //
+                .name("root") //
+                .scheduler(scheduler) //
+                .build();
+        root.tell(Start.VALUE);
+        assertTrue(latch.await(60, TimeUnit.SECONDS));
+        log.info("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
+    }
+
+    private static void concurrencyTest(Scheduler scheduler, int messagesPerRunner) throws InterruptedException {
         log.info("=================================================");
         log.info("" + scheduler.getClass().getSimpleName());
         log.info("=================================================");
@@ -286,9 +336,7 @@ public class ActorTest {
                         }
                     }).build();
             root.tell(start);
-            if (!latch.await(60, TimeUnit.SECONDS)) {
-                org.junit.Assert.fail();
-            }
+            assertTrue(latch.await(60, TimeUnit.SECONDS));
         } finally {
             c.dispose();
         }
