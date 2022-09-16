@@ -121,7 +121,7 @@ public class ActorTest {
             } else {
                 t[1] = System.currentTimeMillis();
             }
-            ctxt.self().worker().schedule(() -> ctxt.self().tell(2), intervalMs, TimeUnit.MILLISECONDS);
+            ctxt.self().scheduler().schedule(() -> ctxt.self().tell(2), intervalMs, TimeUnit.MILLISECONDS);
         }).build();
         a.tell(1);
         assertTrue(latch.await(5, TimeUnit.SECONDS));

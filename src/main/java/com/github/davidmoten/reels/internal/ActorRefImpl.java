@@ -29,9 +29,11 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     private final Supervisor supervisor;
     private final AtomicInteger wip = new AtomicInteger();
     private final CompositeDisposable disposable;
+    private final Scheduler scheduler;
     private final Worker worker;
     private final Optional<ActorRef<?>> parent;
     private Actor<T> actor; // mutable because recreated if restart called
+
 
     public static <T> ActorRefImpl<T> create(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
             Context context, Supervisor supervisor, Optional<ActorRef<?>> parent) {
@@ -51,6 +53,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         this.disposable = new CompositeDisposable();
         this.parent = parent;
         this.actor = factory.get();
+        this.scheduler = scheduler;
         disposable.add(this);
     }
 
@@ -160,8 +163,8 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     }
 
     @Override
-    public Worker worker() {
-        return worker;
+    public Scheduler scheduler() {
+        return scheduler;
     }
 
 }

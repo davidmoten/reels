@@ -45,11 +45,10 @@ public interface ActorRef<T> extends Disposable {
     String name();
 
     /**
-     * Returns the worker that the Actor's messages are processed on. Do not call
-     * {@link Worker#dispose()} because the Worker lifecyle is managed by the Actor.
+     * Returns the scheduler that the Actor uses to process messages.
      * 
-     * @return the worker that the Actor's messages are processed on
+     * @return the scheduler that the Actor uses to process messages
      */
-    Worker worker();
+    Scheduler scheduler();
 
 }
