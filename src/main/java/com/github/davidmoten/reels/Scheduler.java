@@ -7,6 +7,10 @@ import com.github.davidmoten.reels.internal.scheduler.SchedulerIo;
 
 public interface Scheduler {
 
+    Worker createWorker();
+
+    void shutdown();
+    
     static Scheduler forkJoin() {
         return SchedulerForkJoinPool.INSTANCE;
     }
@@ -23,9 +27,5 @@ public interface Scheduler {
     static Scheduler immediate() {
         return SchedulerImmediate.INSTANCE;
     }
-
-    Worker createWorker();
-
-    void shutdown();
 
 }

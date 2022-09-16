@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 
 import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.internal.Util;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
 
 public final class ActorBuilder<T> {
@@ -38,12 +39,19 @@ public final class ActorBuilder<T> {
         this.factory = Optional.of(factory);
         return this;
     }
-    
+
     @SuppressWarnings("unchecked")
     public ActorBuilder<T> processor(BiConsumer<MessageContext<T>, ? super T> consumer) {
         return match((Class<T>) Object.class, consumer);
     }
 
+    /**
+     * Sets the scheduler on which processing of messages for this Actor will be scheduled. The
+     * default scheduler is {@link SchedulerForkJoinPool#INSTANCE}.
+     * 
+     * @param scheduler
+     * @return builder
+     */
     public ActorBuilder<T> scheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
         return this;
