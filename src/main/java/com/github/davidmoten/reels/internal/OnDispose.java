@@ -11,13 +11,14 @@ public final class OnDispose extends AtomicReference<Runnable> implements Dispos
     public OnDispose(Runnable run) {
         super(run);
     }
-    
+
     @Override
     public void dispose() {
         Runnable run = get();
         if (run != null) {
-            compareAndSet(run, null);
-            run.run();
+            if (compareAndSet(run, null)) {
+                run.run();
+            }
         }
     }
 
@@ -25,5 +26,5 @@ public final class OnDispose extends AtomicReference<Runnable> implements Dispos
     public boolean isDisposed() {
         return get() != null;
     }
-    
+
 }
