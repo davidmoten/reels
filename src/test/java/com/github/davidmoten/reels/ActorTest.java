@@ -295,17 +295,11 @@ public class ActorTest {
         Context c = new Context();
         try {
             ActorRef<Integer> b = c.<Integer>processor((ctxt, message) -> {
-                log.info("b " + message);
-                log.info("telling a");
                 ctxt.sender().ifPresent(sender -> sender.tell(message + 1));
-                log.info("told a");
             }).name("b").build();
             ActorRef<Integer> a = c.<Integer>processor((ctxt, message) -> {
-                log.info("a " + message);
                 if (message < maxMessages) {
-                    log.info("telling b");
                     b.tell(message + 1, ctxt.self());
-                    log.info("told b");
                 } else {
                     latch.countDown();
                 }
