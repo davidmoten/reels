@@ -1,7 +1,4 @@
-package com.github.davidmoten.reels.internal;
-
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
+package com.github.davidmoten.reels.internal.util;
 
 public final class Util {
 
@@ -19,17 +16,6 @@ public final class Util {
         }
     }
     
-    public static ThreadFactory createThreadFactory(String prefix) {
-        AtomicInteger count = new AtomicInteger();
-        return r -> {
-            String name = prefix + "-" + count.incrementAndGet();
-            Thread t = new Thread(r, name);
-            t.setPriority(Thread.NORM_PRIORITY);
-            t.setDaemon(true);
-            return t;
-        };
-    }
-
     /**
      * Find the next larger positive power of two value up from the given value. If value is a power of two then
      * this value will be returned.

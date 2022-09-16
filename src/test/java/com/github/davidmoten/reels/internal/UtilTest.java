@@ -7,6 +7,8 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.github.davidmoten.reels.internal.util.Util;
+
 public class UtilTest {
 
     @Test

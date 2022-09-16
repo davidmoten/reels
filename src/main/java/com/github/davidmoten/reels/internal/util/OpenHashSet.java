@@ -16,9 +16,7 @@
  * https://github.com/vigna/fastutil/blob/master/drv/OpenHashSet.drv
  */
 
-package com.github.davidmoten.reels.internal.scheduler;
-
-import com.github.davidmoten.reels.internal.Util;
+package com.github.davidmoten.reels.internal.util;
 
 /**
  * A simple open hash set with add, remove and clear capabilities only.

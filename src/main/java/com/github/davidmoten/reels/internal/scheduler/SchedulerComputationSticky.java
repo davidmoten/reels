@@ -10,7 +10,6 @@ import java.util.stream.IntStream;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
-import com.github.davidmoten.reels.internal.Util;
 
 public final class SchedulerComputationSticky extends AtomicInteger implements Scheduler {
 
@@ -24,7 +23,7 @@ public final class SchedulerComputationSticky extends AtomicInteger implements S
 
     private SchedulerComputationSticky() {
         int size = Integer.getInteger("reels.computation.pool.size", Runtime.getRuntime().availableProcessors());
-        ThreadFactory factory = Util.createThreadFactory("ReelsComputation");
+        ThreadFactory factory = SchedulerHelper.createThreadFactory("ReelsComputation");
         workers = IntStream //
                 .range(0, size) //
                 .mapToObj(n -> new NewThreadWorker(factory)) //

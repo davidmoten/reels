@@ -27,7 +27,6 @@ import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.CompositeDisposable;
-import com.github.davidmoten.reels.internal.Util;
 
 /**
  * Scheduler that creates and caches a set of thread pools and reuses them if
@@ -37,8 +36,8 @@ public final class SchedulerIo implements Scheduler {
 
     private static final String WORKER_THREAD_NAME_PREFIX = "ReelsCachedThreadScheduler";
     private static final String EVICTOR_THREAD_NAME_PREFIX = "ReelsCachedWorkerPoolEvictor";
-    private static final ThreadFactory WORKER_THREAD_FACTORY = Util.createThreadFactory(WORKER_THREAD_NAME_PREFIX);
-    private static final ThreadFactory EVICTOR_THREAD_FACTORY = Util.createThreadFactory(EVICTOR_THREAD_NAME_PREFIX);
+    private static final ThreadFactory WORKER_THREAD_FACTORY = SchedulerHelper.createThreadFactory(WORKER_THREAD_NAME_PREFIX);
+    private static final ThreadFactory EVICTOR_THREAD_FACTORY = SchedulerHelper.createThreadFactory(EVICTOR_THREAD_NAME_PREFIX);
 
     /**
      * The name of the system property for setting the keep-alive time (in seconds)
@@ -257,7 +256,7 @@ public final class SchedulerIo implements Scheduler {
     }
 
     private static ThreadWorker createShutdownWorker() {
-        ThreadWorker w = new ThreadWorker(Util.createThreadFactory("ReelsCachedThreadSchedulerShutdown"));
+        ThreadWorker w = new ThreadWorker(SchedulerHelper.createThreadFactory("ReelsCachedThreadSchedulerShutdown"));
         w.dispose();
         return w;
     }

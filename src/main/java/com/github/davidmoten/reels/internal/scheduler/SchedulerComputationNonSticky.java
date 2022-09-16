@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
-import com.github.davidmoten.reels.internal.Util;
 
 /**
  * This class present for benchmark purposes. SchedulerComputation is more thatn
@@ -22,7 +21,7 @@ public final class SchedulerComputationNonSticky implements Scheduler {
 
     private SchedulerComputationNonSticky() {
         int size = Integer.getInteger("reels.computation.pool.size", Runtime.getRuntime().availableProcessors());
-        executor = Executors.newScheduledThreadPool(size, Util.createThreadFactory("ReelsComputationNonSticky"));
+        executor = Executors.newScheduledThreadPool(size, SchedulerHelper.createThreadFactory("ReelsComputationNonSticky"));
         // this worker will not be constrained to a single thread
         // message ordering to an actor should still be maintained
         worker = new ExecutorWorker(executor);

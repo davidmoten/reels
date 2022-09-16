@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.github.davidmoten.reels.Disposable;
-import com.github.davidmoten.reels.internal.scheduler.OpenHashSet;
+import com.github.davidmoten.reels.internal.util.OpenHashSet;
 
 /**
  * A disposable container that can hold onto multiple other {@link Disposable}s
