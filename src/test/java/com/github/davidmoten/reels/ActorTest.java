@@ -228,7 +228,7 @@ public class ActorTest {
         concurrencyTest(Scheduler.io(), 10000);
     }
 
-    private static void concurrencyTest(Scheduler scheduler, int nmessagesPerRunner)  throws InterruptedException {
+    private static void concurrencyTest(Scheduler scheduler, int messagesPerRunner)  throws InterruptedException {
         log.info("=================================================");
         log.info("" + scheduler.getClass().getName());
         log.info("=================================================");
