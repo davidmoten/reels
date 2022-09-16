@@ -30,7 +30,7 @@ public class SchedulerImmediate implements Scheduler {
     @Override
     public Disposable schedule(Runnable run) {
         run.run();
-        return Disposable.DISPOSED;
+        return Disposable.disposed();
     }
 
     @Override
@@ -39,7 +39,7 @@ public class SchedulerImmediate implements Scheduler {
             unit.sleep(delay);
             return schedule(run);
         } catch (InterruptedException e) {
-            return Disposable.DISPOSED;
+            return Disposable.disposed();
         }
     }
 

@@ -9,7 +9,9 @@ public interface Disposable {
     
     boolean isDisposed();
     
-    static Disposable DISPOSED = new Disposed();
+    static Disposable disposed() {
+        return Disposed.DISPOSED;
+    }
 
     static Disposable onDispose(Runnable run) {
         return new OnDispose(run);

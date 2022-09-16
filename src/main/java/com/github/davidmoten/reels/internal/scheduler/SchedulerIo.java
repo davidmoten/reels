@@ -216,7 +216,7 @@ public final class SchedulerIo implements Scheduler {
         public Disposable schedule(Runnable action, long delayTime, TimeUnit unit) {
             if (tasks.isDisposed()) {
                 // don't schedule, we are unsubscribed
-                return Disposable.DISPOSED;
+                return Disposable.disposed();
             }
             Disposable d = threadWorker.schedule(action, delayTime, unit);
             tasks.add(d);

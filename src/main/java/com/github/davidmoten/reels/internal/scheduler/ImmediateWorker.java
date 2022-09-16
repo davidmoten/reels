@@ -19,7 +19,7 @@ public final class ImmediateWorker implements Worker {
         if (!disposed) {
             run.run();
         }
-        return Disposable.DISPOSED;
+        return Disposable.disposed();
     }
 
     @Override
@@ -28,13 +28,13 @@ public final class ImmediateWorker implements Worker {
             try {
                 unit.sleep(delay);
             } catch (InterruptedException e) {
-                return Disposable.DISPOSED;
+                return Disposable.disposed();
             }
         }
         if (!disposed) {
             run.run();
         }
-        return Disposable.DISPOSED;
+        return Disposable.disposed();
     }
 
     @Override

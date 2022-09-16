@@ -2,8 +2,10 @@ package com.github.davidmoten.reels.internal;
 
 import com.github.davidmoten.reels.Disposable;
 
-public final class Disposed implements Disposable {
+public enum Disposed implements Disposable {
 
+    DISPOSED;
+    
     @Override
     public void dispose() {
         // do nothing

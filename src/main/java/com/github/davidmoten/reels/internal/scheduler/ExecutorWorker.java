@@ -27,7 +27,7 @@ public class ExecutorWorker implements Worker {
     @Override
     public Disposable schedule(Runnable run) {
         if (disposed) {
-            return Disposable.DISPOSED;
+            return Disposable.disposed();
         } else {
             return new FutureTask(executor.submit(run));
         }
@@ -36,7 +36,7 @@ public class ExecutorWorker implements Worker {
     @Override
     public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
         if (disposed) {
-            return Disposable.DISPOSED;
+            return Disposable.disposed();
         } else {
             return new FutureTask(executor.schedule(run, delay, unit));
         }
@@ -45,7 +45,7 @@ public class ExecutorWorker implements Worker {
     @Override
     public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
         if (disposed) {
-            return Disposable.DISPOSED;
+            return Disposable.disposed();
         } else {
             return new FutureTask(executor.scheduleAtFixedRate(run, initialDelay, period, unit));
         }

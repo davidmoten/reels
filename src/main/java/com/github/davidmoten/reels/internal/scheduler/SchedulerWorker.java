@@ -17,7 +17,7 @@ public final class SchedulerWorker implements Worker {
     @Override
     public Disposable schedule(Runnable run) {
         if (disposed) {
-            return Disposable.DISPOSED;
+            return Disposable.disposed();
         }
         return worker.schedule(run);
     }
@@ -25,7 +25,7 @@ public final class SchedulerWorker implements Worker {
     @Override
     public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
         if (disposed) {
-            return Disposable.DISPOSED;
+            return Disposable.disposed();
         }
         return worker.schedule(run, delay, unit);
     }
@@ -33,7 +33,7 @@ public final class SchedulerWorker implements Worker {
     @Override
     public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
         if (disposed) {
-            return Disposable.DISPOSED;
+            return Disposable.disposed();
         }
         return worker.schedulePeriodically(run, initialDelay, period, unit);
     }
