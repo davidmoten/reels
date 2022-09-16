@@ -289,6 +289,7 @@ public class ActorTest {
         root.tell(Start.VALUE);
         assertTrue(latch.await(60, TimeUnit.SECONDS));
         log.info("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
+        context.dispose();
     }
 
     @Test
