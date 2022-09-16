@@ -223,8 +223,10 @@ public class ActorTest {
 
     @Test
     public void testForkJoin() throws InterruptedException {
-        concurrencyTest(SchedulerForkJoinPool.INSTANCE, RUNNERS,
-                Integer.getInteger("fj", Integer.getInteger("n", NUM_MESSAGES)));
+        for (int i = 0; i < Integer.getInteger("fjloops", 1); i++) {
+            concurrencyTest(SchedulerForkJoinPool.INSTANCE, RUNNERS,
+                    Integer.getInteger("fj", Integer.getInteger("n", NUM_MESSAGES)));
+        }
     }
 
     @Test
