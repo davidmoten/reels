@@ -349,7 +349,8 @@ public class ActorTest {
     public void testAsk() throws InterruptedException, ExecutionException, TimeoutException {
         Context context = new Context();
         ActorRef<String> actor = context
-                .<String>matchAll((c, msg) -> c.sender().ifPresent(sender -> sender.tell("boo"))).build();
+                .<String>matchAll((c, msg) -> c.sender().ifPresent(sender -> sender.tell("boo"))) //
+                .build();
         assertEquals("boo", actor.ask("hi").get(1000, TimeUnit.MILLISECONDS));
         context.dispose();
     }
