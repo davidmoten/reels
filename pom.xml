@@ -97,7 +97,7 @@
             <scope>test</scope>
             <optional>true</optional>
         </dependency>
-        
+
         <dependency>
             <groupId>com.github.davidmoten</groupId>
             <artifactId>junit-extras</artifactId>
@@ -115,6 +115,22 @@
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>${spotbugs.version}</version>
+                    <configuration>
+                        <effort>Max</effort>
+                        <threshold>Low</threshold>
+                        <xmlOutput>true</xmlOutput>
+                        <excludeFilterFile>src/main/spotbugs/filter.xml</excludeFilterFile>
+                    </configuration>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -178,12 +194,6 @@
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <version>${spotbugs.version}</version>
-                <configuration>
-                    <effort>Max</effort>
-                    <threshold>Low</threshold>
-                    <xmlOutput>true</xmlOutput>
-                    <excludeFilterFile>src/main/spotbugs/filter.xml</excludeFilterFile>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -211,7 +221,6 @@
             </plugin>
         </plugins>
     </build>
-
     <reporting>
         <plugins>
             <!-- this one should go first so that it is available to other 
