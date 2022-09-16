@@ -13,13 +13,17 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.davidmoten.reels.internal.scheduler.SchedulerComputation;
-import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationForkJoinPool;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationNonSticky;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationSticky;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerImmediate;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerIo;
 
 public class ActorTest {
 
     private static final Logger log = LoggerFactory.getLogger(ActorTest.class);
+    private static final int RUNNERS = 100;
+    private static final int NUM_MESSAGES = 10000;
 
     @Test
     public void test() throws InterruptedException {
@@ -217,42 +221,40 @@ public class ActorTest {
         assertFalse(c.lookupActor("thing").isPresent());
     }
 
-    @Test(timeout = 300000)
-    public void testParallel2() throws InterruptedException {
-        log.info("starting");
-        while (true) {
-            concurrencyTest2(SchedulerComputationForkJoinPool.INSTANCE, 100, 100000);
-        }
+    @Test
+    public void testForkJoin() throws InterruptedException {
+        concurrencyTest(SchedulerForkJoinPool.INSTANCE, RUNNERS,
+                Integer.getInteger("fj", Integer.getInteger("n", NUM_MESSAGES)));
     }
 
-    @Test(timeout = 300000)
-    public void testParallel() throws InterruptedException {
-        concurrencyTest(Scheduler.computation(), Integer.getInteger("n", 10000));
+    @Test
+    public void testParallelSticky() throws InterruptedException {
+        concurrencyTest(SchedulerComputationSticky.INSTANCE, RUNNERS, Integer.getInteger("n", NUM_MESSAGES));
     }
 
-    @Test(timeout = 300000)
+    @Test
     public void testParallelNonSticky() throws InterruptedException {
-        concurrencyTest(SchedulerComputationNonSticky.INSTANCE, Integer.getInteger("n", 10000));
+        concurrencyTest(SchedulerComputationNonSticky.INSTANCE, RUNNERS, Integer.getInteger("n", NUM_MESSAGES));
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testImmediate() throws InterruptedException {
-        concurrencyTest(Scheduler.immediate(), 10000);
+        concurrencyTest(SchedulerImmediate.INSTANCE, RUNNERS, Integer.getInteger("n", NUM_MESSAGES));
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testIo() throws InterruptedException {
-        concurrencyTest(Scheduler.io(), 10000);
+        concurrencyTest(SchedulerIo.INSTANCE, RUNNERS, NUM_MESSAGES);
     }
 
     private enum Start {
         VALUE;
     }
 
-    private static void concurrencyTest2(Scheduler scheduler, int runners, int messagesPerRunner)
+    private static void concurrencyTest(Scheduler scheduler, int runners, int messagesPerRunner)
             throws InterruptedException {
         log.info("=================================================");
-        log.info(" 2: " + scheduler.getClass().getSimpleName());
+        log.info(scheduler.getClass().getSimpleName());
         log.info("=================================================");
         long t = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(1);
@@ -283,64 +285,6 @@ public class ActorTest {
                 .build();
         root.tell(Start.VALUE);
         assertTrue(latch.await(60, TimeUnit.SECONDS));
-        log.info("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
-    }
-
-    private static void concurrencyTest(Scheduler scheduler, int messagesPerRunner) throws InterruptedException {
-        log.info("=================================================");
-        log.info("" + scheduler.getClass().getSimpleName());
-        log.info("=================================================");
-        long t = System.currentTimeMillis();
-        String start = "start";
-        Context c = new Context();
-        try {
-            int runners = 100;
-            CountDownLatch latch = new CountDownLatch(1);
-            AtomicInteger count = new AtomicInteger();
-            int[] countFinished = new int[1];
-            ActorRef<String> root = c.<String>builder() //
-                    .name("root") //
-                    .scheduler(scheduler) //
-                    .match(String.class, (con1, msg) -> {
-                        if (start.equals(msg)) {
-                            for (int i = 1; i <= runners; i++) {
-//                                int finalI = i;
-                                ActorRef<String> r = c.<String>builder() //
-                                        .name("runner" + i) //
-                                        .scheduler(scheduler) //
-                                        .parent(con1.self()) //
-                                        .match(String.class, (con2, m) -> {
-//                                    DecimalFormat df = new DecimalFormat("000");
-//                                    log.info("responding from runner " + finalI + " with value " + m);
-//                                      String reply = "reply from runner " + df.format(finalI) + " to message " + m;
-                                            int n = count.incrementAndGet();
-                                            if (n % 100000 == 0) {
-                                                log.info("runner received count = " + n);
-                                            }
-                                            con2.sender().get().tell("reply");
-//                                        con2.self().kill();
-                                        }).build();
-                                for (int j = 1; j <= messagesPerRunner; j++) {
-//                          log.info("sending runner " + i + ": " + j);
-                                    r.tell(j + "", con1.self());
-                                }
-                            }
-                        } else {
-                            long n = ++countFinished[0];
-                            if (n % 100000 == 0) {
-                                log.info("" + n);
-                            }
-                            if (n == runners * messagesPerRunner) {
-                                latch.countDown();
-                            }
-//                    log.info(msg + ", replies=" + count.incrementAndGet());
-                        }
-                    }).build();
-            root.tell(start);
-            assertTrue(latch.await(60, TimeUnit.SECONDS));
-        } finally {
-            c.dispose();
-        }
         log.info("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
     }
 

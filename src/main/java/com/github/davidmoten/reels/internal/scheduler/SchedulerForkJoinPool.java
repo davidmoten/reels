@@ -11,14 +11,14 @@ import com.github.davidmoten.reels.Worker;
  * This class present for benchmark purposes. SchedulerComputation is more thatn
  * twice as fast on parallel benchmarks so should be used all the time.
  */
-public final class SchedulerComputationForkJoinPool implements Scheduler {
+public final class SchedulerForkJoinPool implements Scheduler {
 
-    public static final SchedulerComputationForkJoinPool INSTANCE = new SchedulerComputationForkJoinPool();
+    public static final SchedulerForkJoinPool INSTANCE = new SchedulerForkJoinPool();
 
     private final ScheduledExecutorService executor;
     private final ExecutorWorker worker;
 
-    private SchedulerComputationForkJoinPool() {
+    private SchedulerForkJoinPool() {
         executor = new PartialScheduledExecutorService(ForkJoinPool.commonPool(),
                 Executors.newSingleThreadScheduledExecutor());
         // this worker will not be constrained to a single thread

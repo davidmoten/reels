@@ -10,17 +10,17 @@ import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.Util;
 
-public final class SchedulerComputation extends AtomicInteger implements Scheduler {
+public final class SchedulerComputationSticky extends AtomicInteger implements Scheduler {
 
     private static final long serialVersionUID = -6316108674515948678L;
 
-    public static final SchedulerComputation INSTANCE = new SchedulerComputation();
+    public static final SchedulerComputationSticky INSTANCE = new SchedulerComputationSticky();
 
     private final List<Worker> workers;
 
     private int index;
 
-    private SchedulerComputation() {
+    private SchedulerComputationSticky() {
         int size = Integer.getInteger("reels.computation.pool.size", Runtime.getRuntime().availableProcessors());
         ThreadFactory factory = Util.createThreadFactory("ReelsComputation");
         workers = IntStream //
