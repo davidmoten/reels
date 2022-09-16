@@ -253,6 +253,7 @@ public class ActorTest {
         VALUE;
     }
 
+    // implements the parallel perf test of actr author
     private static void concurrencyTest(Scheduler scheduler, int runners, int messagesPerRunner)
             throws InterruptedException {
         log.info("========================================================================");
