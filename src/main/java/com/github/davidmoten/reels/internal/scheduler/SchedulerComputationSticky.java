@@ -42,15 +42,19 @@ public final class SchedulerComputationSticky extends AtomicInteger implements S
         }
         workers.clear();
     }
-    
+
     @Override
     public Disposable schedule(Runnable run) {
-       return workers.get(index++).schedule(run);
+        return workers.get(index++).schedule(run);
     }
 
     @Override
     public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
-        return workers.get(index++).schedule(run, delay, unit);
+        if (delay <= 0) {
+            return schedule(run);
+        } else {
+            return workers.get(index++).schedule(run, delay, unit);
+        }
     }
 
     @Override

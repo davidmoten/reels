@@ -15,7 +15,7 @@ public class SchedulerFromExecutor implements Scheduler {
     public SchedulerFromExecutor(ScheduledExecutorService executor) {
         this.executor = executor;
         // this worker will not necessarily be constrained to a single thread,
-        // message ordering to an actor should still be maintained due 
+        // message ordering to an actor should still be maintained due
         this.worker = new ExecutorWorker(executor);
     }
 
@@ -37,7 +37,11 @@ public class SchedulerFromExecutor implements Scheduler {
 
     @Override
     public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
-        return new FutureTask(executor.schedule(run, delay, unit));
+        if (delay <= 0) {
+            return schedule(run);
+        } else {
+            return new FutureTask(executor.schedule(run, delay, unit));
+        }
     }
 
     @Override

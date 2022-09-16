@@ -12,7 +12,7 @@ public final class SchedulerForkJoinPool extends SchedulerFromExecutor {
     public static final SchedulerForkJoinPool INSTANCE = new SchedulerForkJoinPool();
 
     private SchedulerForkJoinPool() {
-        super(new PartialScheduledExecutorService(ForkJoinPool.commonPool(),
+        super(new SplitResponsibilityScheduledExecutorService(ForkJoinPool.commonPool(),
                 Executors.newSingleThreadScheduledExecutor()));
     }
 }

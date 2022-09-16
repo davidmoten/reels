@@ -9,7 +9,7 @@ public final class SchedulerWorker implements Worker {
 
     private final Worker worker;
     private volatile boolean disposed;
-    
+
     public SchedulerWorker(Worker worker) {
         this.worker = worker;
     }
@@ -24,6 +24,9 @@ public final class SchedulerWorker implements Worker {
 
     @Override
     public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
+        if (delay <= 0) {
+            return schedule(run);
+        }
         if (disposed) {
             return Disposable.disposed();
         }
@@ -37,12 +40,12 @@ public final class SchedulerWorker implements Worker {
         }
         return worker.schedulePeriodically(run, initialDelay, period, unit);
     }
-    
+
     @Override
     public void dispose() {
         disposed = true;
     }
-    
+
     @Override
     public boolean isDisposed() {
         return disposed;

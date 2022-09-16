@@ -36,8 +36,10 @@ public final class SchedulerIo implements Scheduler {
 
     private static final String WORKER_THREAD_NAME_PREFIX = "ReelsCachedThreadScheduler";
     private static final String EVICTOR_THREAD_NAME_PREFIX = "ReelsCachedWorkerPoolEvictor";
-    private static final ThreadFactory WORKER_THREAD_FACTORY = SchedulerHelper.createThreadFactory(WORKER_THREAD_NAME_PREFIX);
-    private static final ThreadFactory EVICTOR_THREAD_FACTORY = SchedulerHelper.createThreadFactory(EVICTOR_THREAD_NAME_PREFIX);
+    private static final ThreadFactory WORKER_THREAD_FACTORY = SchedulerHelper
+            .createThreadFactory(WORKER_THREAD_NAME_PREFIX);
+    private static final ThreadFactory EVICTOR_THREAD_FACTORY = SchedulerHelper
+            .createThreadFactory(EVICTOR_THREAD_NAME_PREFIX);
 
     /**
      * The name of the system property for setting the keep-alive time (in seconds)
@@ -276,9 +278,13 @@ public final class SchedulerIo implements Scheduler {
 
     @Override
     public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
-        Worker w = createWorker();
-        Disposable d = w.schedule(run, delay, unit);
-        return new CompositeDisposable(d, w);
+        if (delay <= 0) {
+            return schedule(run);
+        } else {
+            Worker w = createWorker();
+            Disposable d = w.schedule(run, delay, unit);
+            return new CompositeDisposable(d, w);
+        }
     }
 
     @Override

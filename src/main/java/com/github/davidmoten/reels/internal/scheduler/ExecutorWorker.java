@@ -35,6 +35,9 @@ public class ExecutorWorker implements Worker {
 
     @Override
     public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
+        if (delay <= 0) {
+            return schedule(run);
+        }
         if (disposed) {
             return Disposable.disposed();
         } else {

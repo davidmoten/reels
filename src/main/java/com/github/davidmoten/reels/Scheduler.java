@@ -1,9 +1,11 @@
 package com.github.davidmoten.reels;
 
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationSticky;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerFromExecutor;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerImmediate;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerIo;
 
@@ -34,6 +36,10 @@ public interface Scheduler {
 
     static Scheduler immediate() {
         return SchedulerImmediate.INSTANCE;
+    }
+    
+    static Scheduler fromExecutor(ScheduledExecutorService executor) {
+        return new SchedulerFromExecutor(executor);
     }
 
 }
