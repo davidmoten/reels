@@ -1,5 +1,11 @@
 package com.github.davidmoten.reels;
 
+/**
+ * Calling {@link #dispose()} will clear the message queue for the Actor and prevent more
+ * work being queued for the Actor.
+ *
+ * @param <T> the message type for the Actor
+ */
 public interface ActorRef<T> extends Disposable {
 
     /**
