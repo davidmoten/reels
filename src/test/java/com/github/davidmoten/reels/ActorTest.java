@@ -254,7 +254,7 @@ public class ActorTest {
     private static void concurrencyTest(Scheduler scheduler, int runners, int messagesPerRunner)
             throws InterruptedException {
         log.info("========================================================================");
-        log.info(scheduler.getClass().getSimpleName() + ", messagesPerRunner=" + messagesPerRunner);
+        log.info(scheduler.getClass().getSimpleName() + ", runners=" + runners + ", messagesPerRunner=" + messagesPerRunner);
         log.info("========================================================================");
         long t = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(1);
