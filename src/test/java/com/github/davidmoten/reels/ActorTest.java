@@ -228,23 +228,23 @@ public class ActorTest {
     }
 
     @Test
-    public void testParallelSticky() throws InterruptedException {
-        concurrencyTest(SchedulerComputationSticky.INSTANCE, RUNNERS, Integer.getInteger("n", NUM_MESSAGES));
-    }
-
-    @Test
-    public void testParallelNonSticky() throws InterruptedException {
-        concurrencyTest(SchedulerComputationNonSticky.INSTANCE, RUNNERS, Integer.getInteger("n", NUM_MESSAGES));
-    }
-
-    @Test
     public void testImmediate() throws InterruptedException {
         concurrencyTest(SchedulerImmediate.INSTANCE, RUNNERS, Integer.getInteger("n", NUM_MESSAGES));
     }
 
     @Test
+    public void testParallelSticky() throws InterruptedException {
+        concurrencyTest(SchedulerComputationSticky.INSTANCE, RUNNERS, Integer.getInteger("sticky", NUM_MESSAGES));
+    }
+
+    @Test
+    public void testParallelNonSticky() throws InterruptedException {
+        concurrencyTest(SchedulerComputationNonSticky.INSTANCE, RUNNERS, Integer.getInteger("nonsticky", NUM_MESSAGES));
+    }
+
+    @Test
     public void testIo() throws InterruptedException {
-        concurrencyTest(SchedulerIo.INSTANCE, RUNNERS, NUM_MESSAGES);
+        concurrencyTest(SchedulerIo.INSTANCE, RUNNERS, Integer.getInteger("io", NUM_MESSAGES));
     }
 
     private enum Start {
@@ -254,7 +254,8 @@ public class ActorTest {
     private static void concurrencyTest(Scheduler scheduler, int runners, int messagesPerRunner)
             throws InterruptedException {
         log.info("========================================================================");
-        log.info(scheduler.getClass().getSimpleName() + ", runners=" + runners + ", messagesPerRunner=" + messagesPerRunner);
+        log.info(scheduler.getClass().getSimpleName() + ", runners=" + runners + ", messagesPerRunner="
+                + messagesPerRunner);
         log.info("========================================================================");
         long t = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(1);
