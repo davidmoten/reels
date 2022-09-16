@@ -13,6 +13,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.davidmoten.reels.internal.scheduler.SchedulerComputation;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationForkJoinPool;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationNonSticky;
 
 public class ActorTest {
@@ -217,10 +219,9 @@ public class ActorTest {
 
     @Test(timeout = 300000)
     public void testParallel2() throws InterruptedException {
-        Thread.sleep(15000);
         log.info("starting");
         while (true) {
-            concurrencyTest2(Scheduler.computation(), 100, 100000);
+            concurrencyTest2(SchedulerComputationForkJoinPool.INSTANCE, 100, 100000);
         }
     }
 
