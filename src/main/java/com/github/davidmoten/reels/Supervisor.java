@@ -5,8 +5,6 @@ import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
 @FunctionalInterface
 public interface Supervisor {
 
-    final static Supervisor DEFAULT = SupervisorDefault.INSTANCE;
-
     /**
      * Processes a thrown error from Actor.onMessage. This method <b>must not
      * throw</b>.
@@ -28,4 +26,8 @@ public interface Supervisor {
      */
     void processFailure(Context context, SupervisedActorRef<?> actorRef, Throwable error);
 
+    static Supervisor defaultSupervisor() {
+        return SupervisorDefault.INSTANCE;
+    }
+    
 }

@@ -19,7 +19,7 @@ public final class ActorBuilder<T> {
     private final List<Matcher<T, ? extends T>> matches = new ArrayList<>();
     private Consumer<? super Throwable> onError;
     private Scheduler scheduler = Scheduler.forkJoin();
-    private Supervisor supervisor = SupervisorDefault.INSTANCE;
+    private Supervisor supervisor = Supervisor.defaultSupervisor();
     private String name = UUID.randomUUID().toString();
     private Optional<ActorRef<?>> parent = Optional.empty();
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
