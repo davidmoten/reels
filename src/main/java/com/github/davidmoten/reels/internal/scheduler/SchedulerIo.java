@@ -54,7 +54,7 @@ public final class SchedulerIo implements Scheduler {
     private static final CachedWorkerPool NONE = createEmptyCachedWorkerPool();
 
     public static final SchedulerIo INSTANCE = new SchedulerIo();
-    
+
     private SchedulerIo() {
         this(WORKER_THREAD_FACTORY);
     }
@@ -255,7 +255,7 @@ public final class SchedulerIo implements Scheduler {
             this.expirationTime = expirationTime;
         }
     }
-    
+
     private static ThreadWorker createShutdownWorker() {
         ThreadWorker w = new ThreadWorker(Util.createThreadFactory("ReelsCachedThreadSchedulerShutdown"));
         w.dispose();
@@ -266,6 +266,27 @@ public final class SchedulerIo implements Scheduler {
         CachedWorkerPool p = new CachedWorkerPool(0, null, WORKER_THREAD_FACTORY);
         p.shutdown();
         return p;
+    }
+
+    @Override
+    public Disposable schedule(Runnable run) {
+        Worker w = createWorker();
+        Disposable d = w.schedule(run);
+        return new CompositeDisposable(d, w);
+    }
+
+    @Override
+    public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
+        Worker w = createWorker();
+        Disposable d = w.schedule(run, delay, unit);
+        return new CompositeDisposable(d, w);
+    }
+
+    @Override
+    public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
+        Worker w = createWorker();
+        Disposable d = w.schedulePeriodically(run, initialDelay, period, unit);
+        return new CompositeDisposable(d, w);
     }
 
 }

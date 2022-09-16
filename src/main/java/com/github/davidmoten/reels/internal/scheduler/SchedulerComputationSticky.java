@@ -2,10 +2,12 @@ package com.github.davidmoten.reels.internal.scheduler;
 
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.Util;
@@ -40,6 +42,21 @@ public final class SchedulerComputationSticky extends AtomicInteger implements S
             w.dispose();
         }
         workers.clear();
+    }
+    
+    @Override
+    public Disposable schedule(Runnable run) {
+       return workers.get(index++).schedule(run);
+    }
+
+    @Override
+    public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
+        return workers.get(index++).schedule(run, delay, unit);
+    }
+
+    @Override
+    public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
+        return workers.get(index++).schedulePeriodically(run, initialDelay, period, unit);
     }
 
 }
