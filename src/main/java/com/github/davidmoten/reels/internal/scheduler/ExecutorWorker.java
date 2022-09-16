@@ -1,6 +1,5 @@
 package com.github.davidmoten.reels.internal.scheduler;
 
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 

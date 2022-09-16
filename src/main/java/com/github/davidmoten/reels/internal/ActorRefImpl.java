@@ -4,9 +4,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
@@ -21,7 +18,7 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, Disposable {
 
-    private static Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
+//    private static Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
     private static final Object POISON_PILL = new Object();
 
@@ -132,9 +129,9 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
 //        info("exited run, wip=" + wip.get());
     }
 
-    private void info(String s) {
-        log.info(name + ": " + s);
-    }
+//    private void info(String s) {
+//        log.info(name + ": " + s);
+//    }
 
     @Override
     public boolean isDisposed() {
