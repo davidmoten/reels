@@ -24,7 +24,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
 
     private final String name;
     private final Supplier<? extends Actor<T>> factory;
-    private final SimplePlainQueue<Message<T>> queue;
+    private final SimplePlainQueue<Message<T>> queue; // mailbox
     private final Context context;
     private final Supervisor supervisor;
     private final AtomicInteger wip = new AtomicInteger();
@@ -66,6 +66,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     public void dispose() {
         if (!disposable.isDisposed()) {
             disposable.dispose();
+            worker.dispose();
             queue.clear();
             parent.ifPresent(p -> ((ActorRefImpl<?>) p).removeChild(this));
             context.removeActor(name);
