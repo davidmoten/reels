@@ -13,6 +13,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationNonSticky;
+
 public class ActorTest {
 
     private static final Logger log = LoggerFactory.getLogger(ActorTest.class);
@@ -217,6 +219,11 @@ public class ActorTest {
     public void testParallel() throws InterruptedException {
         concurrencyTest(Scheduler.computation(), Integer.getInteger("n", 10000));
     }
+    
+    @Test(timeout = 300000)
+    public void testParallelNonSticky() throws InterruptedException {
+        concurrencyTest(SchedulerComputationNonSticky.INSTANCE, Integer.getInteger("n", 10000));
+    }
 
     @Test(timeout = 30000)
     public void testImmediate() throws InterruptedException {
@@ -230,7 +237,7 @@ public class ActorTest {
 
     private static void concurrencyTest(Scheduler scheduler, int messagesPerRunner)  throws InterruptedException {
         log.info("=================================================");
-        log.info("" + scheduler.getClass().getName());
+        log.info("" + scheduler.getClass().getSimpleName());
         log.info("=================================================");
         long t = System.currentTimeMillis();
         String start = "start";

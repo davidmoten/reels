@@ -7,6 +7,10 @@ import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.Util;
 
+/**
+ * This class present for benchmark purposes. SchedulerComputation is more thatn
+ * twice as fast on parallel benchmarks so should be used all the time.
+ */
 public final class SchedulerComputationNonSticky implements Scheduler {
 
     public static final SchedulerComputationNonSticky INSTANCE = new SchedulerComputationNonSticky();
