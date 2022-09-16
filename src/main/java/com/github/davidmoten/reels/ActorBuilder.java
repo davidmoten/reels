@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 
 import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
-import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
 import com.github.davidmoten.reels.internal.util.Util;
 
 public final class ActorBuilder<T> {
