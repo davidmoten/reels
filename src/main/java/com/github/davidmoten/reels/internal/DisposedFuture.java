@@ -16,7 +16,7 @@ public final class DisposedFuture<T> implements Future<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public static final <T> DisposedFuture<T> instance() {
+    public static <T> DisposedFuture<T> instance() {
         return (DisposedFuture<T>) INSTANCE;
     }
 

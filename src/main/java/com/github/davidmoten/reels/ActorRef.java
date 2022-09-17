@@ -67,7 +67,7 @@ public interface ActorRef<T> extends Disposable {
     
     @SuppressWarnings("unchecked")
     default <S> ActorRef<S> as(Class<S> cls) {
-        return ((ActorRef<S>) this);
+        return (ActorRef<S>) this;
     }
 
 }

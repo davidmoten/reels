@@ -9,12 +9,9 @@ public enum WorkerDoNothing implements Worker {
     
     INSTANCE;
     
-    private WorkerDoNothing() {
-    }
-
     @Override
     public void dispose() {
-        
+        // do nothing
     }
 
     @Override
