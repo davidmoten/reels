@@ -19,7 +19,7 @@ public final class ActorBuilder<T> {
     private Supervisor supervisor;
     private Consumer<? super Throwable> onError;
     private Scheduler scheduler = Scheduler.forkJoin();
-    private String name = UUID.randomUUID().toString();
+    private String name = UUID.randomUUID().toString().replace("-", "");
     private Optional<ActorRef<?>> parent = Optional.empty();
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
 
