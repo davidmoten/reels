@@ -1,7 +1,5 @@
 package com.github.davidmoten.reels;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
