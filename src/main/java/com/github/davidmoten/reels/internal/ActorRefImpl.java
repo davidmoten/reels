@@ -2,7 +2,6 @@ package com.github.davidmoten.reels.internal;
 
 import java.util.Enumeration;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -76,6 +75,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     @Override
     public void dispose() {
         if (!disposed) {
+            disposed = true;
             worker.dispose();
             queue.clear();
             parent.ifPresent(p -> ((ActorRefImpl<?>) p).removeChild(this));
@@ -191,7 +191,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     private static final class AskFuture<T> extends CountDownLatch implements Future<T> {
 
         private final AtomicBoolean disposed;
-        private Disposable disposable;
+        private Disposable disposable = Disposable.disposed();
         private volatile T value;
 
         public AskFuture() {
