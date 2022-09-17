@@ -24,11 +24,9 @@ import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
 import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
-public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef<T>, Runnable, Disposable {
+public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, Disposable {
 
 //    private static Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
-
-    private static final long serialVersionUID = -1120489812845739572L;
 
     private static final Object POISON_PILL = new Object();
 
@@ -41,6 +39,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     private final Worker worker;
     private final Optional<ActorRef<?>> parent;
     private final ConcurrentHashMap<ActorRef<?>, ActorRef<?>> children;
+    private final AtomicInteger wip;
     private Actor<T> actor; // mutable because recreated if restart called
     private volatile boolean disposed;
 
@@ -63,6 +62,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         this.actor = factory.get();
         this.scheduler = scheduler;
         this.children = new ConcurrentHashMap<ActorRef<?>, ActorRef<?>>();
+        this.wip = new AtomicInteger();
     }
 
     void addChild(ActorRef<?> actor) {
@@ -108,7 +108,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     public void run() {
         // drain queue
 //        info("run called");
-        if (getAndIncrement() == 0) {
+        if (wip.getAndIncrement() == 0) {
 //            info("starting drain");
             while (true) {
                 int missed = 1;
@@ -133,7 +133,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                         supervisor.processFailure(context, this, e);
                     }
                 }
-                missed = addAndGet(-missed);
+                missed = wip.addAndGet(-missed);
                 if (missed == 0) {
                     break;
                 }
