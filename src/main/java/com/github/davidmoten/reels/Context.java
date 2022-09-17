@@ -176,7 +176,7 @@ public final class Context implements Disposable {
         return new CountDownFuture(latch);
     }
 
-    public Future<Void> shutdown(long timeout, TimeUnit unit) {
+    public Future<Void> shutdownGracefully() {
         if (state.compareAndSet(STATE_ACTIVE, STATE_STOPPED)) {
             synchronized (lock) {
                 actors.values().forEach(actor -> actor.stop());

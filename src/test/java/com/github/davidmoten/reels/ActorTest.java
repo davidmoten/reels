@@ -224,7 +224,7 @@ public class ActorTest {
     }
 
     @Test
-    public void testForkJoin() throws InterruptedException {
+    public void testForkJoin() throws InterruptedException, ExecutionException, TimeoutException {
         for (int i = 0; i < Integer.getInteger("fjloops", 1); i++) {
             concurrencyTest(SchedulerForkJoinPool.INSTANCE, RUNNERS,
                     Integer.getInteger("fj", Integer.getInteger("n", NUM_MESSAGES)));
@@ -232,22 +232,22 @@ public class ActorTest {
     }
 
     @Test
-    public void testImmediate() throws InterruptedException {
+    public void testImmediate() throws InterruptedException, TimeoutException, ExecutionException {
         concurrencyTest(SchedulerImmediate.INSTANCE, RUNNERS, Integer.getInteger("n", NUM_MESSAGES));
     }
 
     @Test
-    public void testParallelSticky() throws InterruptedException {
+    public void testParallelSticky() throws InterruptedException, ExecutionException, TimeoutException {
         concurrencyTest(SchedulerComputationSticky.INSTANCE, RUNNERS, Integer.getInteger("sticky", NUM_MESSAGES));
     }
 
     @Test
-    public void testParallelNonSticky() throws InterruptedException {
+    public void testParallelNonSticky() throws InterruptedException, ExecutionException, TimeoutException {
         concurrencyTest(SchedulerComputationNonSticky.INSTANCE, RUNNERS, Integer.getInteger("nonsticky", NUM_MESSAGES));
     }
 
     @Test
-    public void testIo() throws InterruptedException {
+    public void testIo() throws InterruptedException, ExecutionException, TimeoutException {
         concurrencyTest(SchedulerIo.INSTANCE, RUNNERS, Integer.getInteger("io", NUM_MESSAGES));
     }
 
@@ -257,7 +257,7 @@ public class ActorTest {
 
     // implements the parallel perf test of actr author
     private static void concurrencyTest(Scheduler scheduler, int runners, int messagesPerRunner)
-            throws InterruptedException {
+            throws InterruptedException, ExecutionException, TimeoutException {
         log.info("========================================================================");
         log.info(scheduler.getClass().getSimpleName() + ", runners=" + runners + ", messagesPerRunner="
                 + messagesPerRunner);
@@ -292,7 +292,7 @@ public class ActorTest {
         root.tell(Start.VALUE);
         assertTrue(latch.await(60, TimeUnit.SECONDS));
         log.info("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
-        context.dispose();
+        context.shutdownGracefully().get(10, TimeUnit.SECONDS);
     }
 
     @Test
