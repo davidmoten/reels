@@ -70,7 +70,7 @@ public class Benchmarks {
         groupRandomMessages(Scheduler.computation());
     }
 
-    private void groupRandomMessages(Scheduler forkJoin) throws InterruptedException {
+    private void groupRandomMessages(Scheduler scheduler) throws InterruptedException {
         int numMessages = 10000;
         int numActors = 10;
         Random random = new Random();
