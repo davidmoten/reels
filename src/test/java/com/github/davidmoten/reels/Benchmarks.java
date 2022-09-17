@@ -67,28 +67,38 @@ public class Benchmarks {
         contendedConcurrency(Scheduler.immediate());
     }
 
-    @Benchmark
+//    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesForkJoin() throws InterruptedException {
         groupRandomMessages(Scheduler.forkJoin());
     }
 
-    @Benchmark
+//    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesComputationSticky() throws InterruptedException {
         groupRandomMessages(Scheduler.computation());
     }
 
-    @Benchmark
+//    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesImmediate() throws InterruptedException {
         groupRandomMessages(Scheduler.immediate());
     }
 
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    public void actorCreateAndStop() throws InterruptedException {
+        context //
+                .matchAll((c, m) -> c.self().stop()) //
+                .scheduler(Scheduler.immediate()) //
+                .build() //
+                .tell(Boolean.TRUE);
+    }
+
     private void groupRandomMessages(Scheduler scheduler) throws InterruptedException {
         int numMessages = 100000;
         int numActors = 10;
-        
+
         // this is how many messages are pinging around simultaneously at any one time
         int starters = Runtime.getRuntime().availableProcessors();
         CountDownLatch latch = new CountDownLatch(starters);
