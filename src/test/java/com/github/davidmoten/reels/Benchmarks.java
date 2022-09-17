@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 @State(Scope.Benchmark)
 public class Benchmarks {
-    
+
     private static final Logger log = LoggerFactory.getLogger(Benchmarks.class);
 
     private Context context;
@@ -96,13 +96,12 @@ public class Benchmarks {
                 } else {
                     c.context() //
                             .lookupActor(Integer.toString(random.nextInt(numActors))) //
-                            .get() //
-                            .tell(msg + 1);
+                            .ifPresent(x -> x.tell(msg + 1));
                 }
             }).name(Integer.toString(i)).build();
         }
         ActorRef<Integer> a = context.<Integer>lookupActor("0").get();
-        for (int i= 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+        for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
             a.tell(0);
         }
         assertTrue(latch.await(60, TimeUnit.SECONDS));
@@ -111,7 +110,7 @@ public class Benchmarks {
     private enum Start {
         VALUE;
     }
-    
+
     private void contendedConcurrency(Scheduler scheduler) throws InterruptedException {
         int runners = 100;
         int messagesPerRunner = 10000;
