@@ -34,7 +34,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
 
     private final String name;
     private final Supplier<? extends Actor<T>> factory;
-    private final SimplePlainQueue<Message<T>> queue; // mailbox
+    private transient final SimplePlainQueue<Message<T>> queue; // mailbox
     private final Context context;
     private final Supervisor supervisor;
     private final Scheduler scheduler;
