@@ -40,15 +40,24 @@ public class Benchmarks {
                 .build();
         return actor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS);
     }
-    
+
     private enum Start {
         VALUE;
     }
-    
+
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyForkJoin() throws InterruptedException {
-        Scheduler scheduler = Scheduler.forkJoin();
+        contendedConcurrency(Scheduler.forkJoin());
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    public void contendedConcurrencyComputationSticky() throws InterruptedException {
+        contendedConcurrency(Scheduler.computation());
+    }
+
+    private void contendedConcurrency(Scheduler scheduler) throws InterruptedException {
         int runners = 100;
         int messagesPerRunner = 10000;
         CountDownLatch latch = new CountDownLatch(1);
