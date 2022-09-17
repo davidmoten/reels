@@ -40,7 +40,7 @@ public final class ActorBuilder<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public ActorBuilder<T> processor(BiConsumer<MessageContext<T>, ? super T> consumer) {
+    public ActorBuilder<T> matchAll(BiConsumer<MessageContext<T>, ? super T> consumer) {
         return match((Class<T>) Object.class, consumer);
     }
 
