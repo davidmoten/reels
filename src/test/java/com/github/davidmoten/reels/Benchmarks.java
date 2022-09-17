@@ -16,16 +16,20 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @State(Scope.Benchmark)
 public class Benchmarks {
+    
+    private static final Logger log = LoggerFactory.getLogger(Benchmarks.class);
 
     private Context context;
 
     @Setup(Level.Invocation)
     public void setup() {
         context = new Context((c, actor, error) -> {
-            error.printStackTrace();
+            log.error(actor.name() + ":" + error.getMessage(), error);
         });
     }
 
