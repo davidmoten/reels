@@ -13,18 +13,19 @@ import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.util.Util;
 
 public final class ActorBuilder<T> {
-
+    
     private final Context context;
     private final List<Matcher<T, ? extends T>> matches = new ArrayList<>();
+    private Supervisor supervisor;
     private Consumer<? super Throwable> onError;
     private Scheduler scheduler = Scheduler.forkJoin();
-    private Supervisor supervisor = Supervisor.defaultSupervisor();
     private String name = UUID.randomUUID().toString();
     private Optional<ActorRef<?>> parent = Optional.empty();
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
 
     ActorBuilder(Context context) {
         this.context = context;
+        this.supervisor = context.supervisor();
     }
 
     public <S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, ? super S> consumer) {
@@ -45,8 +46,8 @@ public final class ActorBuilder<T> {
     }
 
     /**
-     * Sets the scheduler on which processing of messages for this Actor will be scheduled. The
-     * default scheduler is {@link SchedulerForkJoinPool#INSTANCE}.
+     * Sets the scheduler on which processing of messages for this Actor will be
+     * scheduled. The default scheduler is {@link SchedulerForkJoinPool#INSTANCE}.
      * 
      * @param scheduler
      * @return builder

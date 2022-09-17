@@ -22,8 +22,9 @@ public final class Context implements Disposable {
     public static final Context DEFAULT = new Context();
 
     private final Supervisor supervisor;
-
+    
     private final AtomicLong counter = new AtomicLong();
+    
     private final Map<String, ActorRef<?>> actors = new ConcurrentHashMap<>();
 
     private volatile boolean disposed;
@@ -45,7 +46,7 @@ public final class Context implements Disposable {
     }
 
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name) {
-        return createActor(actorClass, name, Scheduler.computation());
+        return createActor(actorClass, name, Scheduler.defaultScheduler());
     }
 
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn) {
@@ -158,6 +159,10 @@ public final class Context implements Disposable {
     
     public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
         return new ActorBuilder<T>(this).factory(factory);
+    }
+
+    public Supervisor supervisor() {
+        return supervisor;
     }
 
 }

@@ -115,11 +115,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                 while ((message = queue.poll()) != null) {
 //                    info("message polled=" + message.content());
                     if (message.content() == POISON_PILL) {
-                        Enumeration<ActorRef<?>> en = children.keys();
-                        while (en.hasMoreElements()) {
-                            ActorRef<?> child = en.nextElement();
-                            child.stop();
-                        }
+                        stopChildren();
                         dispose();
                         return;
                     } else if (disposed) {
@@ -143,6 +139,14 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
             }
         }
 //        info("exited run, wip=" + wip.get());
+    }
+
+    private void stopChildren() {
+        Enumeration<ActorRef<?>> en = children.keys();
+        while (en.hasMoreElements()) {
+            ActorRef<?> child = en.nextElement();
+            child.stop();
+        }
     }
 
 //    private void info(String s) {

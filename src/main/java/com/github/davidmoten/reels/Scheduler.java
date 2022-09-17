@@ -21,6 +21,10 @@ public interface Scheduler {
 
     void shutdown();
     
+    static Scheduler defaultScheduler() {
+        return forkJoin();
+    }
+    
     static Scheduler forkJoin() {
         return SchedulerForkJoinPool.INSTANCE;
     }
