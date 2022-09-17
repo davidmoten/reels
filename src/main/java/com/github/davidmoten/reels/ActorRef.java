@@ -24,7 +24,17 @@ public interface ActorRef<T> extends Disposable {
      * @param sender  message sender (for replies as an example)
      */
     void tell(T message, ActorRef<?> sender);
-    
+
+    /**
+     * Creates a temporary actor that sends the message to {@code this} and the
+     * returned Future waits on a response. The arrival of the response to the
+     * Future or a timeout on Future.get also disposes the temporary actor as does
+     * cancelling the Future.
+     * 
+     * @param <S>     type of response
+     * @param message message to send to {@code this}
+     * @return future
+     */
     <S> Future<S> ask(T message);
 
     /**
