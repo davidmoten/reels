@@ -4,6 +4,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationSticky;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerDoNothing;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerFromExecutor;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerImmediate;
@@ -44,6 +45,10 @@ public interface Scheduler {
     
     static Scheduler fromExecutor(ScheduledExecutorService executor) {
         return new SchedulerFromExecutor(executor);
+    }
+    
+    static Scheduler doNothing() {
+        return SchedulerDoNothing.INSTANCE;
     }
 
 }

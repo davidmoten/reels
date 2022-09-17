@@ -11,6 +11,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import com.github.davidmoten.guavamini.Preconditions;
+import com.github.davidmoten.reels.internal.ActorRefDisposed;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
 
@@ -24,6 +25,8 @@ public final class Context implements Disposable {
     private final Supervisor supervisor;
 
     private final AtomicLong counter = new AtomicLong();
+
+    private final Object lock = new Object();
 
     private final Map<String, ActorRef<?>> actors = new ConcurrentHashMap<>();
 
@@ -91,8 +94,14 @@ public final class Context implements Disposable {
     }
 
     private <T> ActorRef<T> insert(String name, ActorRef<T> actorRef) {
-        actors.put(name, actorRef);
-        return actorRef;
+        synchronized (lock) {
+            if (disposed) {
+                return new ActorRefDisposed<T>(this, name);
+            } else {
+                actors.put(name, actorRef);
+                return actorRef;
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -122,8 +131,10 @@ public final class Context implements Disposable {
     public void dispose() {
         if (!disposed) {
             disposed = true;
-            actors.forEach((name, actorRef) -> actorRef.dispose());
-            actors.clear();
+            synchronized (lock) {
+                actors.forEach((name, actorRef) -> actorRef.dispose());
+                actors.clear();
+            }
         }
     }
 
