@@ -5,6 +5,7 @@
             <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
             <Bug pattern="SE_BAD_FIELD" />
             <Bug pattern="EI_EXPOSE_REP"/>
+            <Bug pattern="EI_EXPOSE_REP2"/>
         </Or>
     </Match>
 </FindBugsFilter>
