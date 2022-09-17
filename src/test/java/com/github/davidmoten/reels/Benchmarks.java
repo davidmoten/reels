@@ -47,11 +47,10 @@ public class Benchmarks {
     
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
-    public void contendedConcurrencyForkJoin() {
+    public void contendedConcurrencyForkJoin() throws InterruptedException {
         Scheduler scheduler = Scheduler.forkJoin();
         int runners = 100;
         int messagesPerRunner = 10000;
-        long t = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(1);
         int[] count = new int[] { runners * messagesPerRunner };
         ActorRef<Object> root = context //
