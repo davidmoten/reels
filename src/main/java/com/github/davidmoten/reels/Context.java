@@ -6,6 +6,10 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -13,6 +17,7 @@ import java.util.function.Supplier;
 import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.internal.ActorRefDisposed;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
+import com.github.davidmoten.reels.internal.CountDownFuture;
 import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
 
 /**
@@ -31,6 +36,8 @@ public final class Context implements Disposable {
     private final Map<String, ActorRef<?>> actors = new ConcurrentHashMap<>();
 
     private volatile boolean disposed;
+
+    private final CountDownLatch latch = new CountDownLatch(1);
 
     public Context() {
         this(SupervisorDefault.INSTANCE);
@@ -174,6 +181,11 @@ public final class Context implements Disposable {
 
     public Supervisor supervisor() {
         return supervisor;
+    }
+
+    public Future<Void> shutdownNow(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
+        dispose();
+        return new CountDownFuture(latch);
     }
 
 }
