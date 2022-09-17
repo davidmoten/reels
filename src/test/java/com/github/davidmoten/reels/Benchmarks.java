@@ -25,6 +25,7 @@ public class Benchmarks {
     private static final Logger log = LoggerFactory.getLogger(Benchmarks.class);
 
     private Context context;
+    private final Random random = new Random();
 
     @Setup(Level.Invocation)
     public void setup() {
@@ -87,8 +88,9 @@ public class Benchmarks {
     private void groupRandomMessages(Scheduler scheduler) throws InterruptedException {
         int numMessages = 100000;
         int numActors = 10;
+        
+        // this is how many messages are pinging around simultaneously at any one time
         int starters = Runtime.getRuntime().availableProcessors();
-        Random random = new Random();
         CountDownLatch latch = new CountDownLatch(starters);
         for (int i = 0; i < numActors; i++) {
             context.<Integer>matchAll((c, msg) -> {
