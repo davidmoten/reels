@@ -64,5 +64,10 @@ public interface ActorRef<T> extends Disposable {
      * @return the scheduler that the Actor uses to process messages
      */
     Scheduler scheduler();
+    
+    @SuppressWarnings("unchecked")
+    default <S> ActorRef<S> as(Class<S> cls) {
+        return ((ActorRef<S>) this);
+    }
 
 }

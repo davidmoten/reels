@@ -10,6 +10,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -35,7 +36,18 @@ public final class Context implements Disposable {
 
     private final Map<String, ActorRef<?>> actors = new ConcurrentHashMap<>();
 
-    private volatile boolean disposed;
+    private final AtomicInteger state = new AtomicInteger();
+
+    // actors active, can create
+    private static final int STATE_ACTIVE = 0;
+
+    // graceful shutdown via a poison pill to all actors, no more actor creation
+    private static final int STATE_STOPPED = 1;
+
+    // stop further activity, actors may be continuing with their current task
+    private static final int STATE_DISPOSED = 2;
+
+    // final state is TERMINATED indicated by latch having counted down to 0
 
     private final CountDownLatch latch = new CountDownLatch(1);
 
@@ -76,7 +88,7 @@ public final class Context implements Disposable {
         Preconditions.checkArgument(processMessagesOn != null, "processMessagesOn scheduler cannot be null");
         Preconditions.checkArgument(supervisor != null, "supervisor cannot be null");
         Preconditions.checkArgument(parent != null, "parent cannot be null");
-        if (disposed) {
+        if (state.get() != STATE_ACTIVE) {
             throw new CreateException("cannot create actor because Context shutdown");
         }
         return insert(name, ActorRefImpl.create(name, actorFactory, processMessagesOn, this, supervisor, parent));
@@ -102,7 +114,7 @@ public final class Context implements Disposable {
 
     private <T> ActorRef<T> insert(String name, ActorRef<T> actorRef) {
         synchronized (lock) {
-            if (disposed) {
+            if (state.get() != STATE_ACTIVE) {
                 return new ActorRefDisposed<T>(this, name);
             } else {
                 actors.put(name, actorRef);
@@ -117,9 +129,10 @@ public final class Context implements Disposable {
     }
 
     public void disposeActor(String name) {
-        ActorRef<?> a = actors.remove(name);
+        ActorRef<?> a = actors.get(name);
         if (a != null) {
             a.dispose();
+            actors.remove(name);
         }
     }
 
@@ -131,13 +144,17 @@ public final class Context implements Disposable {
      * @return the removed ActorRef
      */
     public ActorRef<?> removeActor(String name) {
-        return actors.remove(name);
+        ActorRef<?> a = actors.remove(name);
+        if (state.get() != STATE_ACTIVE && actors.isEmpty()) {
+            latch.countDown();
+        }
+        // TODO null return?
+        return a;
     }
 
     @Override
     public void dispose() {
-        if (!disposed) {
-            disposed = true;
+        if (state.compareAndSet(STATE_ACTIVE, STATE_DISPOSED) || state.compareAndSet(STATE_STOPPED, STATE_DISPOSED)) {
             synchronized (lock) {
                 actors.forEach((name, actorRef) -> actorRef.dispose());
                 actors.clear();
@@ -147,7 +164,7 @@ public final class Context implements Disposable {
 
     @Override
     public boolean isDisposed() {
-        return disposed;
+        return state.get() == STATE_DISPOSED;
     }
 
     /////////////////////////////
@@ -185,6 +202,15 @@ public final class Context implements Disposable {
 
     public Future<Void> shutdownNow(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
         dispose();
+        return new CountDownFuture(latch);
+    }
+
+    public Future<Void> shutdown(long timeout, TimeUnit unit) {
+        if (state.compareAndSet(STATE_ACTIVE, STATE_STOPPED)) {
+            synchronized (lock) {
+                actors.values().forEach(actor -> actor.stop());
+            }
+        }
         return new CountDownFuture(latch);
     }
 

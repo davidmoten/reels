@@ -28,7 +28,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
 
 //    private static Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
-    private static final Object POISON_PILL = new Object();
+    public static final Object POISON_PILL = new Object();
 
     private final String name;
     private final Supplier<? extends Actor<T>> factory;
