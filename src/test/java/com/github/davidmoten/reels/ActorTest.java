@@ -250,6 +250,21 @@ public class ActorTest {
     public void testIo() throws InterruptedException, ExecutionException, TimeoutException {
         concurrencyTest(SchedulerIo.INSTANCE, RUNNERS, Integer.getInteger("io", NUM_MESSAGES));
     }
+    
+    @Test
+    public void testContextShutdownGracefully() {
+        AtomicInteger count = new AtomicInteger();
+        Context context = new Context();
+        ActorRef<Integer> ref = context.<Integer>matchAll((c, m) -> {
+            try {
+                Thread.sleep(300);
+                
+            } catch (InterruptedException e) {
+                log.warn(e.getMessage());
+            }
+        }).build();
+        
+    }
 
     private enum Start {
         VALUE;
