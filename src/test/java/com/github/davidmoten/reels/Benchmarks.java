@@ -2,6 +2,7 @@ package com.github.davidmoten.reels;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -45,16 +46,49 @@ public class Benchmarks {
         VALUE;
     }
 
-    @Benchmark
+//    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyForkJoin() throws InterruptedException {
         contendedConcurrency(Scheduler.forkJoin());
     }
 
-    @Benchmark
+//    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyComputationSticky() throws InterruptedException {
         contendedConcurrency(Scheduler.computation());
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    public void groupRandomMessagesForkJoin() throws InterruptedException {
+        groupRandomMessages(Scheduler.forkJoin());
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    public void groupRandomMessagesComputationSticky() throws InterruptedException {
+        groupRandomMessages(Scheduler.computation());
+    }
+
+    private void groupRandomMessages(Scheduler forkJoin) throws InterruptedException {
+        int numMessages = 10000;
+        int numActors = 10;
+        Random random = new Random();
+        CountDownLatch latch = new CountDownLatch(1);
+        for (int i = 0; i < numActors; i++) {
+            context.<Integer>matchAll((c, msg) -> {
+                if (msg == numMessages) {
+                    latch.countDown();
+                } else {
+                    c.context() //
+                            .lookupActor(Integer.toString(random.nextInt(numActors))) //
+                            .get() //
+                            .tell(msg + 1);
+                }
+            }).name(Integer.toString(i)).build();
+        }
+        context.<Integer>lookupActor("0").get().tell(0);
+        assertTrue(latch.await(60, TimeUnit.SECONDS));
     }
 
     private void contendedConcurrency(Scheduler scheduler) throws InterruptedException {
