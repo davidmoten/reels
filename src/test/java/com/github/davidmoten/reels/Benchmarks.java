@@ -24,7 +24,9 @@ public class Benchmarks {
 
     @Setup(Level.Invocation)
     public void setup() {
-        context = new Context();
+        context = new Context((c, actor, error) -> {
+            error.printStackTrace();
+        });
     }
 
     @TearDown(Level.Invocation)

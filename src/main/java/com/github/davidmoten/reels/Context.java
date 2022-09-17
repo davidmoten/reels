@@ -22,21 +22,21 @@ public final class Context implements Disposable {
     public static final Context DEFAULT = new Context();
 
     private final Supervisor supervisor;
-    
+
     private final AtomicLong counter = new AtomicLong();
-    
+
     private final Map<String, ActorRef<?>> actors = new ConcurrentHashMap<>();
 
     private volatile boolean disposed;
+
+    public Context() {
+        this(SupervisorDefault.INSTANCE);
+    }
 
     public Context(Supervisor supervisor) {
         this.supervisor = supervisor;
     }
 
-    public Context() {
-        this(SupervisorDefault.INSTANCE);
-    }
-    
     public static Context create() {
         return new Context();
     }
@@ -156,7 +156,7 @@ public final class Context implements Disposable {
     public <T> ActorBuilder<T> matchAll(BiConsumer<MessageContext<T>, ? super T> consumer) {
         return new ActorBuilder<T>(this).matchAll(consumer);
     }
-    
+
     public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
         return new ActorBuilder<T>(this).factory(factory);
     }
