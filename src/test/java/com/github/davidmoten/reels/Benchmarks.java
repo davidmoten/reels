@@ -87,8 +87,9 @@ public class Benchmarks {
     private void groupRandomMessages(Scheduler scheduler) throws InterruptedException {
         int numMessages = 100000;
         int numActors = 10;
+        int starters = Runtime.getRuntime().availableProcessors();
         Random random = new Random();
-        CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch latch = new CountDownLatch(starters);
         for (int i = 0; i < numActors; i++) {
             context.<Integer>matchAll((c, msg) -> {
                 if (msg == numMessages) {
@@ -101,7 +102,7 @@ public class Benchmarks {
             }).name(Integer.toString(i)).build();
         }
         ActorRef<Integer> a = context.<Integer>lookupActor("0").get();
-        for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+        for (int i = 0; i < starters; i++) {
             a.tell(0);
         }
         assertTrue(latch.await(60, TimeUnit.SECONDS));
