@@ -66,7 +66,7 @@ public class Benchmarks {
     public void contendedConcurrencyImmediate() throws InterruptedException {
         contendedConcurrency(Scheduler.immediate());
     }
-
+    
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesForkJoin() throws InterruptedException {
@@ -77,6 +77,12 @@ public class Benchmarks {
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesComputationSticky() throws InterruptedException {
         groupRandomMessages(Scheduler.computation());
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    public void groupRandomMessagesIo() throws InterruptedException {
+        groupRandomMessages(Scheduler.io());
     }
 
     @Benchmark
