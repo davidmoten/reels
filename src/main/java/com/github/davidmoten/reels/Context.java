@@ -95,35 +95,6 @@ public final class Context implements Disposable {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass) {
-        Preconditions.checkArgument(actorClass != null, "actorFactory cannot be null");
-        try {
-            Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors())
-                    .filter(x -> x.getParameterCount() == 0).findFirst();
-            if (!c.isPresent()) {
-                throw new CreateException(
-                        "Actor class must have a public no-arg constructor to be created with this method."
-                                + " Another method is available to create ActorRef for an Actor instance that you provide.");
-            }
-            return (Actor<T>) c.get().newInstance();
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e) {
-            throw new CreateException(e);
-        }
-    }
-
-    private <T> ActorRef<T> insert(String name, ActorRef<T> actorRef) {
-        synchronized (lock) {
-            if (state.get() != STATE_ACTIVE) {
-                return new ActorRefDisposed<T>(this, name);
-            } else {
-                actors.put(name, actorRef);
-                return actorRef;
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
     public <T> Optional<ActorRef<T>> lookupActor(String name) {
         return Optional.ofNullable((ActorRef<T>) actors.get(name));
     }
@@ -214,4 +185,33 @@ public final class Context implements Disposable {
         return new CountDownFuture(latch);
     }
 
+    @SuppressWarnings("unchecked")
+    private static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass) {
+        Preconditions.checkArgument(actorClass != null, "actorFactory cannot be null");
+        try {
+            Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors())
+                    .filter(x -> x.getParameterCount() == 0).findFirst();
+            if (!c.isPresent()) {
+                throw new CreateException(
+                        "Actor class must have a public no-arg constructor to be created with this method."
+                                + " Another method is available to create ActorRef for an Actor instance that you provide.");
+            }
+            return (Actor<T>) c.get().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            throw new CreateException(e);
+        }
+    }
+
+    private <T> ActorRef<T> insert(String name, ActorRef<T> actorRef) {
+        synchronized (lock) {
+            if (state.get() != STATE_ACTIVE) {
+                return new ActorRefDisposed<T>(this, name);
+            } else {
+                actors.put(name, actorRef);
+                return actorRef;
+            }
+        }
+    }
+    
 }
