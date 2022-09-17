@@ -33,7 +33,7 @@ public class Benchmarks {
         context = null;
     }
 
-    @Benchmark
+//    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public String ask() throws InterruptedException, ExecutionException, TimeoutException {
         ActorRef<String> actor = context
@@ -42,23 +42,19 @@ public class Benchmarks {
         return actor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS);
     }
 
-    private enum Start {
-        VALUE;
-    }
-
-    @Benchmark
+//    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyForkJoin() throws InterruptedException {
         contendedConcurrency(Scheduler.forkJoin());
     }
 
-    @Benchmark
+//    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyComputationSticky() throws InterruptedException {
         contendedConcurrency(Scheduler.computation());
     }
 
-    @Benchmark
+//    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyImmediate() throws InterruptedException {
         contendedConcurrency(Scheduler.immediate());
@@ -83,7 +79,7 @@ public class Benchmarks {
     }
 
     private void groupRandomMessages(Scheduler scheduler) throws InterruptedException {
-        int numMessages = 10000;
+        int numMessages = 100000;
         int numActors = 10;
         Random random = new Random();
         CountDownLatch latch = new CountDownLatch(1);
@@ -99,10 +95,17 @@ public class Benchmarks {
                 }
             }).name(Integer.toString(i)).build();
         }
-        context.<Integer>lookupActor("0").get().tell(0);
+        ActorRef<Integer> a = context.<Integer>lookupActor("0").get();
+        for (int i= 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+            a.tell(0);
+        }
         assertTrue(latch.await(60, TimeUnit.SECONDS));
     }
 
+    private enum Start {
+        VALUE;
+    }
+    
     private void contendedConcurrency(Scheduler scheduler) throws InterruptedException {
         int runners = 100;
         int messagesPerRunner = 10000;
