@@ -40,7 +40,7 @@ public class Benchmarks {
         context = null;
     }
 
-//    @Benchmark
+    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public String ask() throws InterruptedException, ExecutionException, TimeoutException {
         ActorRef<String> actor = context
@@ -49,37 +49,37 @@ public class Benchmarks {
         return actor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS);
     }
 
-//    @Benchmark
+    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyForkJoin() throws InterruptedException {
         contendedConcurrency(Scheduler.forkJoin());
     }
 
-//    @Benchmark
+    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyComputationSticky() throws InterruptedException {
         contendedConcurrency(Scheduler.computation());
     }
 
-//    @Benchmark
+    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyImmediate() throws InterruptedException {
         contendedConcurrency(Scheduler.immediate());
     }
 
-//    @Benchmark
+    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesForkJoin() throws InterruptedException {
         groupRandomMessages(Scheduler.forkJoin());
     }
 
-//    @Benchmark
+    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesComputationSticky() throws InterruptedException {
         groupRandomMessages(Scheduler.computation());
     }
 
-//    @Benchmark
+    @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesImmediate() throws InterruptedException {
         groupRandomMessages(Scheduler.immediate());
