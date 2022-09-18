@@ -100,18 +100,20 @@ public final class Context implements Disposable {
 
     /**
      * Remove actor from context (so that when context is disposed actor.dispose()
-     * is not called).
+     * is not called). Note that this method does not dispose the removed actor.
      * 
      * @param name name of the actor
      * @return the removed ActorRef
      */
-    public ActorRef<?> removeActor(String name) {
+    // TODO make internal method (called from ActorRefImpl)
+    public boolean removeActor(String name) {
         ActorRef<?> a = actors.remove(name);
-        if (state.get() != STATE_ACTIVE && actors.isEmpty()) {
+        if (a == null) {
+            return false;
+        } else if (state.get() != STATE_ACTIVE && actors.isEmpty()) {
             latch.countDown();
         }
-        // TODO null return?
-        return a;
+        return true;
     }
 
     @Override
