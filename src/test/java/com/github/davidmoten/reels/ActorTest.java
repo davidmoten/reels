@@ -273,7 +273,7 @@ public class ActorTest {
         Thread.sleep(100);
         assertEquals(3, count.get());
     }
-    
+
     @Test
     public void testContextShutdownNow() throws InterruptedException, ExecutionException, TimeoutException {
         AtomicInteger count = new AtomicInteger();
@@ -296,6 +296,44 @@ public class ActorTest {
         actor.tell(4);
         Thread.sleep(500);
         assertEquals(1, count.get());
+    }
+
+    @Test
+    public void testDisposeWhileProcessingMessageClearsQueue()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        AtomicInteger count = new AtomicInteger();
+        Context context = new Context();
+        ActorRef<Integer> actor = context.<Integer>matchAll((c, m) -> {
+            if (m == 1) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    log.warn(e.getMessage());
+                }
+                count.incrementAndGet();
+            }
+        }).build();
+        actor.tell(1);
+        actor.tell(2);
+        Thread.sleep(100);
+        actor.dispose();
+        Thread.sleep(500);
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    public void testContextShutsDownImmediatelyIfNoActors() throws InterruptedException, ExecutionException {
+        Context context = new Context();
+        context.shutdownGracefully().get();
+    }
+    
+    @Test(expected=CreateException.class)
+    public void testActorCreateAfterContextShutdown() throws InterruptedException, ExecutionException {
+        Context context = new Context();
+        context.shutdownGracefully().get();
+        ActorRef<Object> a = context //
+                .matchAll((c, m) -> {}) //
+                .build();
     }
 
     private enum Start {

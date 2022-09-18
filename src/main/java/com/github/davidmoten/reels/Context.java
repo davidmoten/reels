@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -18,7 +17,8 @@ import java.util.function.Supplier;
 import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.internal.ActorRefDisposed;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
-import com.github.davidmoten.reels.internal.CountDownFuture;
+import com.github.davidmoten.reels.internal.supervisor.CountDownFuture;
+import com.github.davidmoten.reels.internal.supervisor.DoneFuture;
 import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
 
 /**
@@ -179,7 +179,11 @@ public final class Context implements Disposable {
     public Future<Void> shutdownGracefully() {
         if (state.compareAndSet(STATE_ACTIVE, STATE_STOPPED)) {
             synchronized (lock) {
-                actors.values().forEach(actor -> actor.stop());
+                if (actors.isEmpty()) {
+                    return new DoneFuture();
+                } else {
+                    actors.values().forEach(actor -> actor.stop());
+                }
             }
         }
         return new CountDownFuture(latch);
@@ -213,5 +217,5 @@ public final class Context implements Disposable {
             }
         }
     }
-    
+
 }

@@ -1,4 +1,4 @@
-package com.github.davidmoten.reels.internal;
+package com.github.davidmoten.reels.internal.supervisor;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
