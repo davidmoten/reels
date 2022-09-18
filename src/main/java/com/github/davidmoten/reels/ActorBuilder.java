@@ -35,13 +35,14 @@ public final class ActorBuilder<T> {
     }
 
     public ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
-        Preconditions.checkArgument(matches.isEmpty(), "cannot set both matches and factory in builder");
+        Preconditions.checkArgument(!matches.isEmpty(), "cannot set both matches and factory in builder");
         this.factory = Optional.of(factory);
         return this;
     }
 
     @SuppressWarnings("unchecked")
     public ActorBuilder<T> matchAll(BiConsumer<MessageContext<T>, ? super T> consumer) {
+        Preconditions.checkArgument(!matches.isEmpty(), "cannot set both matches and factory in builder");
         return match((Class<T>) Object.class, consumer);
     }
 
