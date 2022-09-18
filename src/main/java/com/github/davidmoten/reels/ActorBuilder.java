@@ -83,12 +83,6 @@ public final class ActorBuilder<T> {
         return this;
     }
 
-    public ActorBuilder<T> parent(Optional<ActorRef<?>> parent) {
-        Preconditions.checkNotNull(parent);
-        this.parent = parent;
-        return this;
-    }
-
     public ActorRef<T> build() {
         Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError));
         return context.createActor(f, name, scheduler, supervisor, parent);
