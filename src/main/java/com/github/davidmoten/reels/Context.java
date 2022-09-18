@@ -171,7 +171,7 @@ public final class Context implements Disposable {
         return supervisor;
     }
 
-    public Future<Void> shutdownNow(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
+    public Future<Void> shutdownNow() throws InterruptedException, TimeoutException {
         dispose();
         return new CountDownFuture(latch);
     }

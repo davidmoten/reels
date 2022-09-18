@@ -273,6 +273,30 @@ public class ActorTest {
         Thread.sleep(100);
         assertEquals(3, count.get());
     }
+    
+    @Test
+    public void testContextShutdownNow() throws InterruptedException, ExecutionException, TimeoutException {
+        AtomicInteger count = new AtomicInteger();
+        Context context = new Context();
+        ActorRef<Integer> actor = context.<Integer>matchAll((c, m) -> {
+            if (m == 1) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    log.warn(e.getMessage());
+                }
+                count.incrementAndGet();
+            }
+        }).build();
+        actor.tell(1);
+        actor.tell(2);
+        actor.tell(3);
+        Thread.sleep(200);
+        context.shutdownNow().get(1000, TimeUnit.MILLISECONDS);
+        actor.tell(4);
+        Thread.sleep(500);
+        assertEquals(1, count.get());
+    }
 
     private enum Start {
         VALUE;
