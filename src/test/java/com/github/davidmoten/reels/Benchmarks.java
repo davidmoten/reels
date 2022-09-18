@@ -36,7 +36,7 @@ public class Benchmarks {
 
     @TearDown(Level.Invocation)
     public void tearDown() {
-        context.dispose();
+        context.shutdownGracefully();
         context = null;
     }
 
