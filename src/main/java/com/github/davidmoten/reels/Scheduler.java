@@ -1,5 +1,6 @@
 package com.github.davidmoten.reels;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -13,7 +14,7 @@ import com.github.davidmoten.reels.internal.scheduler.SchedulerIo;
 public interface Scheduler {
 
     Worker createWorker();
-    
+
     Disposable schedule(Runnable run);
 
     Disposable schedule(Runnable run, long delay, TimeUnit unit);
@@ -21,11 +22,11 @@ public interface Scheduler {
     Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit);
 
     void shutdown();
-    
+
     static Scheduler defaultScheduler() {
         return forkJoin();
     }
-    
+
     static Scheduler forkJoin() {
         return SchedulerForkJoinPool.INSTANCE;
     }
@@ -42,11 +43,15 @@ public interface Scheduler {
     static Scheduler immediate() {
         return SchedulerImmediate.INSTANCE;
     }
-    
+
+    static Scheduler single() {
+        return fromExecutor(Executors.newSingleThreadScheduledExecutor());
+    }
+
     static Scheduler fromExecutor(ScheduledExecutorService executor) {
         return new SchedulerFromExecutor(executor);
     }
-    
+
     static Scheduler doNothing() {
         return SchedulerDoNothing.INSTANCE;
     }
