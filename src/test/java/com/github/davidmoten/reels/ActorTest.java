@@ -432,7 +432,7 @@ public class ActorTest {
     }
 
     @Test
-    public void testChildActor() {
+    public void testDisposeParentDisposesChild() {
         Context context = new Context();
         AtomicBoolean called = new AtomicBoolean();
         ActorRef<Object> a = context.matchAll((c, m) -> {
@@ -440,6 +440,24 @@ public class ActorTest {
         ActorRef<Object> b = context.matchAll((c, m) -> called.set(true)).scheduler(Scheduler.immediate()).parent(a)
                 .build();
         a.dispose();
+        b.tell(1);
+        assertFalse(called.get());
+    }
+
+    @Test
+    public void testStopParentStopsChild() {
+        Context context = new Context();
+        AtomicBoolean called = new AtomicBoolean();
+        ActorRef<Object> a = context.matchAll((c, m) -> {
+        }) //
+                .scheduler(Scheduler.immediate()) //
+                .build();
+        ActorRef<Object> b = context //
+                .matchAll((c, m) -> called.set(true)) //
+                .scheduler(Scheduler.immediate()) //
+                .parent(a) //
+                .build();
+        a.stop();
         b.tell(1);
         assertFalse(called.get());
     }
