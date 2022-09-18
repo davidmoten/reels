@@ -10,6 +10,6 @@ public final class Constants {
         // prevent instantiation
     }
     
-    public static Scheduler SINGLE = Scheduler.fromExecutor(Executors.newSingleThreadScheduledExecutor());
+    public static final Scheduler SINGLE = Scheduler.fromExecutor(Executors.newSingleThreadScheduledExecutor());
     
 }
