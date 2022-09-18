@@ -25,13 +25,10 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.swing.Action;
-
 import org.junit.Test;
 
 import com.github.davidmoten.reels.Disposable;
-
-import io.reactivex.rxjava3.testsupport.TestHelper;
+import com.github.davidmoten.reels.internal.util.Util;
 
 public class CompositeDisposableTest {
 
@@ -181,8 +178,8 @@ public class CompositeDisposableTest {
 
     @Test
     public void removeUnsubscribes() {
-        Disposable d1 = Disposable.disposed();
-        Disposable d2 = Disposable.disposed();
+        Disposable d1 = Disposable.simple();
+        Disposable d2 = Disposable.simple();
 
         CompositeDisposable cd = new CompositeDisposable();
         cd.add(d1);
@@ -196,8 +193,8 @@ public class CompositeDisposableTest {
 
     @Test
     public void clear() {
-        Disposable d1 = Disposable.disposed();
-        Disposable d2 = Disposable.disposed();
+        Disposable d1 = Disposable.simple();
+        Disposable d2 = Disposable.simple();
 
         CompositeDisposable cd = new CompositeDisposable();
         cd.add(d1);
@@ -212,7 +209,7 @@ public class CompositeDisposableTest {
         assertTrue(d2.isDisposed());
         assertFalse(cd.isDisposed());
 
-        Disposable d3 = Disposable.disposed();
+        Disposable d3 = Disposable.simple();
 
         cd.add(d3);
         cd.dispose();
@@ -243,8 +240,7 @@ public class CompositeDisposableTest {
     }
 
     @Test
-    public void unsubscribeIdempotenceConcurrently()
-            throws InterruptedException {
+    public void unsubscribeIdempotenceConcurrently() throws InterruptedException {
         final AtomicInteger counter = new AtomicInteger();
         final CompositeDisposable cd = new CompositeDisposable();
 
@@ -307,8 +303,8 @@ public class CompositeDisposableTest {
 
     @Test
     public void initializeVarargs() {
-        Disposable d1 = Disposable.disposed();
-        Disposable d2 = Disposable.disposed();
+        Disposable d1 = Disposable.simple();
+        Disposable d2 = Disposable.simple();
 
         CompositeDisposable cd = new CompositeDisposable(d1, d2);
 
@@ -321,8 +317,8 @@ public class CompositeDisposableTest {
         assertTrue(d1.isDisposed());
         assertTrue(d2.isDisposed());
 
-        Disposable d3 = Disposable.disposed();
-        Disposable d4 = Disposable.disposed();
+        Disposable d3 = Disposable.simple();
+        Disposable d4 = Disposable.simple();
 
         cd = new CompositeDisposable(d3, d4);
 
@@ -336,8 +332,8 @@ public class CompositeDisposableTest {
 
     @Test
     public void initializeIterable() {
-        Disposable d1 = Disposable.disposed();
-        Disposable d2 = Disposable.disposed();
+        Disposable d1 = Disposable.simple();
+        Disposable d2 = Disposable.simple();
 
         CompositeDisposable cd = new CompositeDisposable(Arrays.asList(d1, d2));
 
@@ -350,8 +346,8 @@ public class CompositeDisposableTest {
         assertTrue(d1.isDisposed());
         assertTrue(d2.isDisposed());
 
-        Disposable d3 = Disposable.disposed();
-        Disposable d4 = Disposable.disposed();
+        Disposable d3 = Disposable.simple();
+        Disposable d4 = Disposable.simple();
 
         cd = new CompositeDisposable(Arrays.asList(d3, d4));
 
@@ -369,9 +365,9 @@ public class CompositeDisposableTest {
     public void addAll() {
         CompositeDisposable cd = new CompositeDisposable();
 
-        Disposable d1 = Disposable.disposed();
-        Disposable d2 = Disposable.disposed();
-        Disposable d3 = Disposable.disposed();
+        Disposable d1 = Disposable.simple();
+        Disposable d2 = Disposable.simple();
+        Disposable d3 = Disposable.simple();
 
         cd.addAll(d1, d2);
         cd.addAll(d3);
@@ -385,8 +381,8 @@ public class CompositeDisposableTest {
         assertTrue(d1.isDisposed());
         assertTrue(d2.isDisposed());
 
-        d1 = Disposable.disposed();
-        d2 = Disposable.disposed();
+        d1 = Disposable.simple();
+        d2 = Disposable.simple();
 
         cd = new CompositeDisposable();
 
@@ -412,14 +408,14 @@ public class CompositeDisposableTest {
         CompositeDisposable cd = new CompositeDisposable();
         cd.dispose();
 
-        Disposable d1 = Disposable.disposed();
+        Disposable d1 = Disposable.simple();
 
         assertFalse(cd.add(d1));
 
         assertTrue(d1.isDisposed());
 
-        d1 = Disposable.disposed();
-        Disposable d2 = Disposable.disposed();
+        d1 = Disposable.simple();
+        Disposable d2 = Disposable.simple();
 
         assertFalse(cd.addAll(d1, d2));
 
@@ -433,11 +429,11 @@ public class CompositeDisposableTest {
 
         CompositeDisposable cd = new CompositeDisposable();
 
-        Disposable d1 = Disposable.disposed();
+        Disposable d1 = Disposable.simple();
 
         assertFalse(cd.delete(d1));
 
-        Disposable d2 = Disposable.disposed();
+        Disposable d2 = Disposable.simple();
 
         cd.add(d2);
 
@@ -472,7 +468,7 @@ public class CompositeDisposableTest {
             Runnable run = new Runnable() {
                 @Override
                 public void run() {
-                    cd.add(Disposable.disposed());
+                    cd.add(Disposable.simple());
                 }
             };
 
@@ -488,7 +484,7 @@ public class CompositeDisposableTest {
             Runnable run = new Runnable() {
                 @Override
                 public void run() {
-                    cd.addAll(Disposable.disposed());
+                    cd.addAll(Disposable.simple());
                 }
             };
 
@@ -501,7 +497,7 @@ public class CompositeDisposableTest {
         for (int i = 0; i < TestHelper.RACE_DEFAULT_LOOPS; i++) {
             final CompositeDisposable cd = new CompositeDisposable();
 
-            final Disposable d1 = Disposable.disposed();
+            final Disposable d1 = Disposable.simple();
 
             cd.add(d1);
 
@@ -521,7 +517,7 @@ public class CompositeDisposableTest {
         for (int i = 0; i < TestHelper.RACE_DEFAULT_LOOPS; i++) {
             final CompositeDisposable cd = new CompositeDisposable();
 
-            final Disposable d1 = Disposable.disposed();
+            final Disposable d1 = Disposable.simple();
 
             cd.add(d1);
 
@@ -541,7 +537,7 @@ public class CompositeDisposableTest {
         for (int i = 0; i < TestHelper.RACE_DEFAULT_LOOPS; i++) {
             final CompositeDisposable cd = new CompositeDisposable();
 
-            final Disposable d1 = Disposable.disposed();
+            final Disposable d1 = Disposable.simple();
 
             cd.add(d1);
 
@@ -571,7 +567,7 @@ public class CompositeDisposableTest {
             Runnable run2 = new Runnable() {
                 @Override
                 public void run() {
-                    cd.add(Disposable.disposed());
+                    cd.add(Disposable.simple());
                 }
             };
 
@@ -594,7 +590,7 @@ public class CompositeDisposableTest {
             Runnable run2 = new Runnable() {
                 @Override
                 public void run() {
-                    cd.addAll(Disposable.disposed());
+                    cd.addAll(Disposable.simple());
                 }
             };
 
@@ -607,7 +603,7 @@ public class CompositeDisposableTest {
         for (int i = 0; i < TestHelper.RACE_DEFAULT_LOOPS; i++) {
             final CompositeDisposable cd = new CompositeDisposable();
 
-            final Disposable d1 = Disposable.disposed();
+            final Disposable d1 = Disposable.simple();
 
             cd.add(d1);
 
@@ -634,7 +630,7 @@ public class CompositeDisposableTest {
         for (int i = 0; i < TestHelper.RACE_DEFAULT_LOOPS; i++) {
             final CompositeDisposable cd = new CompositeDisposable();
 
-            final Disposable d1 = Disposable.disposed();
+            final Disposable d1 = Disposable.simple();
 
             cd.add(d1);
 
@@ -661,7 +657,7 @@ public class CompositeDisposableTest {
         for (int i = 0; i < TestHelper.RACE_DEFAULT_LOOPS; i++) {
             final CompositeDisposable cd = new CompositeDisposable();
 
-            final Disposable d1 = Disposable.disposed();
+            final Disposable d1 = Disposable.simple();
 
             cd.add(d1);
 
@@ -688,7 +684,7 @@ public class CompositeDisposableTest {
         for (int i = 0; i < TestHelper.RACE_DEFAULT_LOOPS; i++) {
             final CompositeDisposable cd = new CompositeDisposable();
 
-            final Disposable d1 = Disposable.disposed();
+            final Disposable d1 = Disposable.simple();
 
             cd.add(d1);
 
@@ -714,14 +710,14 @@ public class CompositeDisposableTest {
     public void disposeThrowsIAE() {
         CompositeDisposable cd = new CompositeDisposable();
 
-        cd.add(Disposable.fromAction(new Action() {
+        cd.add(fromAction(new Action() {
             @Override
             public void run() throws Exception {
                 throw new IllegalArgumentException();
             }
         }));
 
-        Disposable d1 = Disposable.disposed();
+        Disposable d1 = Disposable.simple();
 
         cd.add(d1);
 
@@ -739,14 +735,14 @@ public class CompositeDisposableTest {
     public void disposeThrowsError() {
         CompositeDisposable cd = new CompositeDisposable();
 
-        cd.add(Disposable.fromAction(new Action() {
+        cd.add(fromAction(new Action() {
             @Override
             public void run() throws Exception {
                 throw new AssertionError();
             }
         }));
 
-        Disposable d1 = Disposable.disposed();
+        Disposable d1 = Disposable.simple();
 
         cd.add(d1);
 
@@ -764,14 +760,14 @@ public class CompositeDisposableTest {
     public void disposeThrowsCheckedException() {
         CompositeDisposable cd = new CompositeDisposable();
 
-        cd.add(Disposable.fromAction(new Action() {
+        cd.add(fromAction(new Action() {
             @Override
             public void run() throws Exception {
                 throw new IOException();
             }
         }));
 
-        Disposable d1 = Disposable.disposed();
+        Disposable d1 = Disposable.simple();
 
         cd.add(d1);
 
@@ -790,7 +786,7 @@ public class CompositeDisposableTest {
 
     @SuppressWarnings("unchecked")
     static <E extends Throwable> void throwSneaky() throws E {
-        throw (E)new IOException();
+        throw (E) new IOException();
     }
 
     @Test
@@ -810,7 +806,7 @@ public class CompositeDisposableTest {
             }
         });
 
-        Disposable d1 = Disposable.disposed();
+        Disposable d1 = Disposable.simple();
 
         cd.add(d1);
 
@@ -825,5 +821,21 @@ public class CompositeDisposableTest {
         }
 
         assertTrue(d1.isDisposed());
+    }
+
+    private static Disposable fromAction(Action action) {
+        return Disposable.fromRunnable(() -> {
+            try {
+                action.run();
+            } catch (Throwable e) {
+                Util.rethrow(e);
+            }
+        });
+    }
+
+    @FunctionalInterface
+    private static interface Action {
+
+        void run() throws Exception;
     }
 }

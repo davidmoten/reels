@@ -1,9 +1,9 @@
 package com.github.davidmoten.reels;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.github.davidmoten.reels.internal.Constants;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationSticky;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerDoNothing;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
@@ -45,7 +45,7 @@ public interface Scheduler {
     }
 
     static Scheduler single() {
-        return fromExecutor(Executors.newSingleThreadScheduledExecutor());
+        return Constants.SINGLE;
     }
 
     static Scheduler fromExecutor(ScheduledExecutorService executor) {
