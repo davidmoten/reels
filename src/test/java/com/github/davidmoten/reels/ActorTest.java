@@ -326,13 +326,14 @@ public class ActorTest {
         Context context = new Context();
         context.shutdownGracefully().get();
     }
-    
-    @Test(expected=CreateException.class)
+
+    @Test(expected = CreateException.class)
     public void testActorCreateAfterContextShutdown() throws InterruptedException, ExecutionException {
         Context context = new Context();
         context.shutdownGracefully().get();
-        ActorRef<Object> a = context //
-                .matchAll((c, m) -> {}) //
+        context //
+                .matchAll((c, m) -> {
+                }) //
                 .build();
     }
 

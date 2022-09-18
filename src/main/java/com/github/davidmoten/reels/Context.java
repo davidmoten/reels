@@ -52,7 +52,7 @@ public final class Context implements Disposable {
     private final CountDownLatch latch = new CountDownLatch(1);
 
     public Context() {
-        this(SupervisorDefault.INSTANCE);
+        this(Supervisor.defaultSupervisor());
     }
 
     public Context(Supervisor supervisor) {
