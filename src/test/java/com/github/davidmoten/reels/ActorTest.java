@@ -432,6 +432,19 @@ public class ActorTest {
     }
 
     @Test
+    public void testChildActor() {
+        Context context = new Context();
+        AtomicBoolean called = new AtomicBoolean();
+        ActorRef<Object> a = context.matchAll((c, m) -> {
+        }).build();
+        ActorRef<Object> b = context.matchAll((c, m) -> called.set(true)).scheduler(Scheduler.immediate()).parent(a)
+                .build();
+        a.dispose();
+        b.tell(1);
+        assertFalse(called.get());
+    }
+
+    @Test
     public void testAsk() throws InterruptedException, ExecutionException, TimeoutException {
         Context context = new Context();
         ActorRef<String> actor = context

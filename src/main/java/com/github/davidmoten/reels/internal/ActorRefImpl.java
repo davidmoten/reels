@@ -75,6 +75,19 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
 
     @Override
     public void dispose() {
+        disposeThis();
+        disposeChildren();
+    }
+
+    private void disposeChildren() {
+        Enumeration<ActorRef<?>> en = children.keys();
+        while (en.hasMoreElements()) {
+            ActorRef<?> child = en.nextElement();
+            child.dispose();
+        }
+    }
+
+    private void disposeThis() {
         if (!disposed) {
             disposed = true;
             worker.dispose();
@@ -117,7 +130,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
 //                    info("message polled=" + message.content());
                     if (message.content() == POISON_PILL) {
                         stopChildren();
-                        dispose();
+                        disposeThis();
                         return;
                     } else if (disposed) {
                         queue.clear();
