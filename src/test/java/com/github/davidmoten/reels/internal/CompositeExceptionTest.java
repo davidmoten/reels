@@ -293,11 +293,11 @@ public class CompositeExceptionTest  {
         String overview = composite.getCause().getMessage();
 
         assertTrue(overview, overview.contains("Multiple exceptions (3)"));
-        assertTrue(overview, overview.contains("io.reactivex.rxjava3.exceptions.TestException: ex1"));
-        assertTrue(overview, overview.contains("io.reactivex.rxjava3.exceptions.TestException: ex2"));
-        assertTrue(overview, overview.contains("io.reactivex.rxjava3.exceptions.TestException: ex3"));
-        assertTrue(overview, overview.contains("io.reactivex.rxjava3.exceptions.TestException: ex4"));
-        assertTrue(overview, overview.contains("at io.reactivex.rxjava3.exceptions.CompositeExceptionTest.exceptionOverview"));
+        assertTrue(overview, overview.contains("com.github.davidmoten.reels.internal.TestException: ex1"));
+        assertTrue(overview, overview.contains("com.github.davidmoten.reels.internal.TestException: ex2"));
+        assertTrue(overview, overview.contains("com.github.davidmoten.reels.internal.TestException: ex3"));
+        assertTrue(overview, overview.contains("com.github.davidmoten.reels.internal.TestException: ex4"));
+        assertTrue(overview, overview.contains("at com.github.davidmoten.reels.internal.CompositeExceptionTest.exceptionOverview"));
     }
 
     @Test
@@ -308,10 +308,11 @@ public class CompositeExceptionTest  {
         );
 
         String overview = composite.getCause().getMessage();
+        System.out.println(overview);
 
         assertTrue(overview, overview.contains("Multiple exceptions (2)"));
-        assertTrue(overview, overview.contains("io.reactivex.rxjava3.exceptions.TestException: ex1"));
-        assertTrue(overview, overview.contains("io.reactivex.rxjava3.exceptions.CompositeException.ExceptionOverview: example"));
+        assertTrue(overview, overview.contains("com.github.davidmoten.reels.internal.TestException: ex1"));
+        assertTrue(overview, overview.contains("com.github.davidmoten.reels.internal.CompositeException.ExceptionOverview: example"));
 
         assertEquals(overview, 2, overview.split("at\\s").length);
     }
@@ -329,10 +330,10 @@ public class CompositeExceptionTest  {
         System.err.println(overview);
 
         assertTrue(overview, overview.contains("Multiple exceptions (2)"));
-        assertTrue(overview, overview.contains("io.reactivex.rxjava3.exceptions.TestException: ex0"));
-        assertTrue(overview, overview.contains("io.reactivex.rxjava3.exceptions.TestException: ex1"));
-        assertTrue(overview, overview.contains("io.reactivex.rxjava3.exceptions.TestException: ex2"));
-        assertTrue(overview, overview.contains("(cause not expanded again) io.reactivex.rxjava3.exceptions.TestException: ex0"));
+        assertTrue(overview, overview.contains("com.github.davidmoten.reels.internal.TestException: ex0"));
+        assertTrue(overview, overview.contains("com.github.davidmoten.reels.internal.TestException: ex1"));
+        assertTrue(overview, overview.contains("com.github.davidmoten.reels.internal.TestException: ex2"));
+        assertTrue(overview, overview.contains("(cause not expanded again) com.github.davidmoten.reels.internal.TestException: ex0"));
         assertEquals(overview, 5, overview.split("at\\s").length);
     }
 
@@ -356,8 +357,8 @@ public class CompositeExceptionTest  {
         System.err.println(overview);
 
         assertTrue(overview, overview.contains("        Multiple exceptions (2)"));
-        assertTrue(overview, overview.contains("        |-- io.reactivex.rxjava3.exceptions.TestException: ex1"));
-        assertTrue(overview, overview.contains("        |-- io.reactivex.rxjava3.exceptions.TestException: ex2"));
+        assertTrue(overview, overview.contains("        |-- com.github.davidmoten.reels.internal.TestException: ex1"));
+        assertTrue(overview, overview.contains("        |-- com.github.davidmoten.reels.internal.TestException: ex2"));
     }
 
     @Test
