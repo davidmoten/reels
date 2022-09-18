@@ -13,7 +13,7 @@ import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.util.Util;
 
 public final class ActorBuilder<T> {
-    
+
     private final Context context;
     private final List<Matcher<T, ? extends T>> matches = new ArrayList<>();
     private Supervisor supervisor;
@@ -35,14 +35,14 @@ public final class ActorBuilder<T> {
     }
 
     public ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
-        Preconditions.checkArgument(!matches.isEmpty(), "cannot set both matches and factory in builder");
+        Preconditions.checkArgument(matches.isEmpty(), "cannot set both matches and factory in builder");
         this.factory = Optional.of(factory);
         return this;
     }
 
     @SuppressWarnings("unchecked")
     public ActorBuilder<T> matchAll(BiConsumer<MessageContext<T>, ? super T> consumer) {
-        Preconditions.checkArgument(!matches.isEmpty(), "cannot set both matches and factory in builder");
+        Preconditions.checkArgument(!factory.isPresent(), "cannot set both matches and factory in builder");
         return match((Class<T>) Object.class, consumer);
     }
 
@@ -84,10 +84,8 @@ public final class ActorBuilder<T> {
     }
 
     public ActorRef<T> build() {
-        if (!factory.isPresent()) {
-            factory = Optional.of(() -> new MatchingActor<T>(matches, onError));
-        }
-        return context.createActor(factory.get(), name, scheduler, supervisor, parent);
+        Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError));
+        return context.createActor(f, name, scheduler, supervisor, parent);
     }
 
     private static final class Matcher<T, S extends T> {
