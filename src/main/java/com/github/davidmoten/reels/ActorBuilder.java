@@ -54,31 +54,37 @@ public final class ActorBuilder<T> {
      * @return builder
      */
     public ActorBuilder<T> scheduler(Scheduler scheduler) {
+        Preconditions.checkNotNull(scheduler);
         this.scheduler = scheduler;
         return this;
     }
 
     public ActorBuilder<T> supervisor(Supervisor supervisor) {
+        Preconditions.checkNotNull(supervisor);
         this.supervisor = supervisor;
         return this;
     }
 
     public ActorBuilder<T> name(String name) {
+        Preconditions.checkNotNull(name);
         this.name = name;
         return this;
     }
 
     public ActorBuilder<T> onError(Consumer<? super Throwable> onError) {
+        Preconditions.checkNotNull(onError);
         this.onError = onError;
         return this;
     }
 
     public ActorBuilder<T> parent(ActorRef<?> parent) {
+        Preconditions.checkNotNull(parent);
         this.parent = Optional.of(parent);
         return this;
     }
 
     public ActorBuilder<T> parent(Optional<ActorRef<?>> parent) {
+        Preconditions.checkNotNull(parent);
         this.parent = parent;
         return this;
     }
