@@ -19,7 +19,6 @@ import com.github.davidmoten.reels.internal.ActorRefDisposed;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.supervisor.CountDownFuture;
 import com.github.davidmoten.reels.internal.supervisor.DoneFuture;
-import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
 
 /**
  * Creates actors, disposes actors and looks actors up by name.
