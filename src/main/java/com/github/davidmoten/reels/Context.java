@@ -98,14 +98,6 @@ public final class Context implements Disposable {
         return Optional.ofNullable((ActorRef<T>) actors.get(name));
     }
 
-    public void disposeActor(String name) {
-        ActorRef<?> a = actors.get(name);
-        if (a != null) {
-            a.dispose();
-            actors.remove(name);
-        }
-    }
-
     /**
      * Remove actor from context (so that when context is disposed actor.dispose()
      * is not called).
