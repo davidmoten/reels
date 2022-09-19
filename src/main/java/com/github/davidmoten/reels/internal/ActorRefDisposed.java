@@ -1,5 +1,6 @@
 package com.github.davidmoten.reels.internal;
 
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 import com.github.davidmoten.reels.ActorRef;
@@ -59,6 +60,11 @@ public final class ActorRefDisposed<T> implements ActorRef<T> {
     @Override
     public Scheduler scheduler() {
         return Scheduler.doNothing();
+    }
+
+    @Override
+    public Optional<ActorRef<?>> parent() {
+        return Optional.empty();
     }
 
 }

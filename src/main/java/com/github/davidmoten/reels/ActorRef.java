@@ -1,5 +1,6 @@
 package com.github.davidmoten.reels;
 
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 /**
@@ -64,6 +65,8 @@ public interface ActorRef<T> extends Disposable {
      * @return the scheduler that the Actor uses to process messages
      */
     Scheduler scheduler();
+    
+    Optional<ActorRef<?>> parent(); 
     
     @SuppressWarnings("unchecked")
     default <S> ActorRef<S> as(Class<S> cls) {

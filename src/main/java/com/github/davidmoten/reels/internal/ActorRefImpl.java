@@ -289,4 +289,9 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         }
     }
 
+    @Override
+    public Optional<ActorRef<?>> parent() {
+        return parent;
+    }
+
 }
