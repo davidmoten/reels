@@ -76,17 +76,17 @@ public final class Context implements Disposable {
 
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn,
             Supervisor supervisor, Optional<ActorRef<?>> parent) {
-        Preconditions.checkArgument(actorClass != null, "actorFactory cannot be null");
+        Preconditions.checkParameterNotNull(actorClass, "actorFactory");
         return createActor(() -> createActorObject(actorClass), name, processMessagesOn, supervisor, parent);
     }
 
     public <T> ActorRef<T> createActor(Supplier<? extends Actor<T>> actorFactory, String name,
             Scheduler processMessagesOn, Supervisor supervisor, Optional<ActorRef<?>> parent) {
-        Preconditions.checkArgument(actorFactory != null, "actorFactory cannot be null");
-        Preconditions.checkArgument(name != null, "name cannot be null");
-        Preconditions.checkArgument(processMessagesOn != null, "processMessagesOn scheduler cannot be null");
-        Preconditions.checkArgument(supervisor != null, "supervisor cannot be null");
-        Preconditions.checkArgument(parent != null, "parent cannot be null");
+        Preconditions.checkParameterNotNull(actorFactory, "actorFactory");
+        Preconditions.checkParameterNotNull(name, "name");
+        Preconditions.checkParameterNotNull(processMessagesOn, "processMessagesOn");
+        Preconditions.checkParameterNotNull(supervisor, "supervisor");
+        Preconditions.checkParameterNotNull(parent, "parent");
         if (state.get() != STATE_ACTIVE) {
             throw new CreateException("cannot create actor because Context shutdown");
         }
