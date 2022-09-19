@@ -176,7 +176,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     }
 
     private void log(String s) {
-        log.info(name + ": " + s);
+//        log.debug("{}: {}", name, s);
     }
 
     @Override
