@@ -130,6 +130,28 @@ public final class Context implements Disposable {
     public boolean isDisposed() {
         return state.get() == STATE_DISPOSED;
     }
+    
+    public Supervisor supervisor() {
+        return supervisor;
+    }
+    
+    public Future<Void> shutdownNow() throws InterruptedException, TimeoutException {
+        dispose();
+        return new CountDownFuture(latch);
+    }
+
+    public Future<Void> shutdownGracefully() {
+        if (state.compareAndSet(STATE_ACTIVE, STATE_STOPPED)) {
+            synchronized (lock) {
+                if (actors.isEmpty()) {
+                    return new DoneFuture();
+                } else {
+                    actors.values().forEach(actor -> actor.stop());
+                }
+            }
+        }
+        return new CountDownFuture(latch);
+    }
 
     /////////////////////////////
     // builder entry methods
@@ -149,39 +171,17 @@ public final class Context implements Disposable {
      * @return builder builder
      */
     public <T, S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, S> consumer) {
-        return new ActorBuilder<T>(this).match(matchClass, consumer);
+        return this.<T>builder().match(matchClass, consumer);
     }
 
     public <T> ActorBuilder<T> matchAll(BiConsumer<MessageContext<T>, ? super T> consumer) {
-        return new ActorBuilder<T>(this).matchAll(consumer);
+        return this.<T>builder().matchAll(consumer);
     }
 
     public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
-        return new ActorBuilder<T>(this).factory(factory);
+        return this.<T>builder().factory(factory);
     }
-
-    public Supervisor supervisor() {
-        return supervisor;
-    }
-
-    public Future<Void> shutdownNow() throws InterruptedException, TimeoutException {
-        dispose();
-        return new CountDownFuture(latch);
-    }
-
-    public Future<Void> shutdownGracefully() {
-        if (state.compareAndSet(STATE_ACTIVE, STATE_STOPPED)) {
-            synchronized (lock) {
-                if (actors.isEmpty()) {
-                    return new DoneFuture();
-                } else {
-                    actors.values().forEach(actor -> actor.stop());
-                }
-            }
-        }
-        return new CountDownFuture(latch);
-    }
-
+    
     @SuppressWarnings("unchecked")
     private static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass) {
         Preconditions.checkArgument(actorClass != null, "actorFactory cannot be null");
@@ -210,5 +210,5 @@ public final class Context implements Disposable {
             }
         }
     }
-
+    
 }
