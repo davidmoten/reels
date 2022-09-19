@@ -36,7 +36,7 @@ public class CompositeDisposableTest {
     public void success() {
         final AtomicInteger counter = new AtomicInteger();
         CompositeDisposable cd = new CompositeDisposable();
-        cd.add(Disposable.fromRunnable(new Runnable() {
+        cd.add(Disposable.onDispose(new Runnable() {
 
             @Override
             public void run() {
@@ -45,7 +45,7 @@ public class CompositeDisposableTest {
 
         }));
 
-        cd.add(Disposable.fromRunnable(new Runnable() {
+        cd.add(Disposable.onDispose(new Runnable() {
 
             @Override
             public void run() {
@@ -66,7 +66,7 @@ public class CompositeDisposableTest {
         final int count = 10;
         final CountDownLatch start = new CountDownLatch(1);
         for (int i = 0; i < count; i++) {
-            cd.add(Disposable.fromRunnable(new Runnable() {
+            cd.add(Disposable.onDispose(new Runnable() {
 
                 @Override
                 public void run() {
@@ -104,7 +104,7 @@ public class CompositeDisposableTest {
     public void exception() {
         final AtomicInteger counter = new AtomicInteger();
         CompositeDisposable cd = new CompositeDisposable();
-        cd.add(Disposable.fromRunnable(new Runnable() {
+        cd.add(Disposable.onDispose(new Runnable() {
 
             @Override
             public void run() {
@@ -113,7 +113,7 @@ public class CompositeDisposableTest {
 
         }));
 
-        cd.add(Disposable.fromRunnable(new Runnable() {
+        cd.add(Disposable.onDispose(new Runnable() {
 
             @Override
             public void run() {
@@ -138,7 +138,7 @@ public class CompositeDisposableTest {
     public void compositeException() {
         final AtomicInteger counter = new AtomicInteger();
         CompositeDisposable cd = new CompositeDisposable();
-        cd.add(Disposable.fromRunnable(new Runnable() {
+        cd.add(Disposable.onDispose(new Runnable() {
 
             @Override
             public void run() {
@@ -147,7 +147,7 @@ public class CompositeDisposableTest {
 
         }));
 
-        cd.add(Disposable.fromRunnable(new Runnable() {
+        cd.add(Disposable.onDispose(new Runnable() {
 
             @Override
             public void run() {
@@ -155,7 +155,7 @@ public class CompositeDisposableTest {
             }
         }));
 
-        cd.add(Disposable.fromRunnable(new Runnable() {
+        cd.add(Disposable.onDispose(new Runnable() {
 
             @Override
             public void run() {
@@ -222,7 +222,7 @@ public class CompositeDisposableTest {
     public void unsubscribeIdempotence() {
         final AtomicInteger counter = new AtomicInteger();
         CompositeDisposable cd = new CompositeDisposable();
-        cd.add(Disposable.fromRunnable(new Runnable() {
+        cd.add(Disposable.onDispose(new Runnable() {
 
             @Override
             public void run() {
@@ -246,7 +246,7 @@ public class CompositeDisposableTest {
 
         final int count = 10;
         final CountDownLatch start = new CountDownLatch(1);
-        cd.add(Disposable.fromRunnable(new Runnable() {
+        cd.add(Disposable.onDispose(new Runnable() {
 
             @Override
             public void run() {
@@ -710,7 +710,7 @@ public class CompositeDisposableTest {
     public void disposeThrowsIAE() {
         CompositeDisposable cd = new CompositeDisposable();
 
-        cd.add(fromAction(new Action() {
+        cd.add(onDispose(new Action() {
             @Override
             public void run() throws Exception {
                 throw new IllegalArgumentException();
@@ -735,7 +735,7 @@ public class CompositeDisposableTest {
     public void disposeThrowsError() {
         CompositeDisposable cd = new CompositeDisposable();
 
-        cd.add(fromAction(new Action() {
+        cd.add(onDispose(new Action() {
             @Override
             public void run() throws Exception {
                 throw new AssertionError();
@@ -760,7 +760,7 @@ public class CompositeDisposableTest {
     public void disposeThrowsCheckedException() {
         CompositeDisposable cd = new CompositeDisposable();
 
-        cd.add(fromAction(new Action() {
+        cd.add(onDispose(new Action() {
             @Override
             public void run() throws Exception {
                 throw new IOException();
@@ -823,8 +823,8 @@ public class CompositeDisposableTest {
         assertTrue(d1.isDisposed());
     }
 
-    private static Disposable fromAction(Action action) {
-        return Disposable.fromRunnable(() -> {
+    private static Disposable onDispose(Action action) {
+        return Disposable.onDispose(() -> {
             try {
                 action.run();
             } catch (Throwable e) {

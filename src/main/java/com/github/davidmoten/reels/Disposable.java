@@ -18,7 +18,7 @@ public interface Disposable {
         return new SimpleDisposable();
     }
     
-    static Disposable fromRunnable(Runnable run) {
+    static Disposable onDispose(Runnable run) {
         return new OnDispose(run);
     }
 
