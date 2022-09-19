@@ -14,6 +14,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.davidmoten.reels.internal.ActorRefDisposed;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.Preconditions;
@@ -24,6 +27,8 @@ import com.github.davidmoten.reels.internal.supervisor.DoneFuture;
  * Creates actors, disposes actors and looks actors up by name.
  */
 public final class Context implements Disposable {
+    
+    private static final Logger log = LoggerFactory.getLogger(Context.class);
 
     public static final Context DEFAULT = new Context();
 
@@ -107,6 +112,7 @@ public final class Context implements Disposable {
      */
     // TODO make internal method (called from ActorRefImpl)
     public boolean removeActor(String name) {
+        log.info("removing actor " + name);
         ActorRef<?> a = actors.remove(name);
         if (a == null) {
             return false;

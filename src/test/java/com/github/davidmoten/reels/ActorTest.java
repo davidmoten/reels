@@ -121,11 +121,15 @@ public class ActorTest {
                     count.incrementAndGet();
                     throw new RuntimeException("boo");
                 }) //
+                .name("testactor") //
                 .supervisor(supervisor) //
                 .build();
         a.tell(123);
         a.tell(456);
-        c.shutdownGracefully().get(500, TimeUnit.SECONDS);
+        // sleep a bit so that supervisor handles exception (and clears queue)
+        // otherwise stop signal will get cleared as well
+        Thread.sleep(300);
+        c.shutdownGracefully().get(1, TimeUnit.SECONDS);
         assertEquals(1, count.get());
     }
 
