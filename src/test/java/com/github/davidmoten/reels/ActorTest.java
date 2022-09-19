@@ -114,7 +114,6 @@ public class ActorTest {
         AtomicInteger count = new AtomicInteger();
         Supervisor supervisor = (context, actor, error) -> {
             actor.clearQueue();
-            error.printStackTrace();
         };
         ActorRef<Integer> a = c //
                 .match(Integer.class, (ctxt, n) -> {
