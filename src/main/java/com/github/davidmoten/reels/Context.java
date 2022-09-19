@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.internal.ActorRefDisposed;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
+import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.supervisor.CountDownFuture;
 import com.github.davidmoten.reels.internal.supervisor.DoneFuture;
 

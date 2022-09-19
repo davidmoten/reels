@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.github.davidmoten.guavamini.Preconditions;
+import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.util.Util;
 

@@ -22,11 +22,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.CompositeDisposable;
+import com.github.davidmoten.reels.internal.Preconditions;
 
 /**
  * Scheduler that creates and caches a set of thread pools and reuses them if
