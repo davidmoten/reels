@@ -476,6 +476,16 @@ public class ActorTest {
         assertEquals("boo", actor.ask("hi").get(1000, TimeUnit.MILLISECONDS));
         context.dispose();
     }
+    
+    @Test
+    public void testAs() {
+        Context context = new Context();
+        ActorRef<Number> a = context
+                .<Number>matchAll((c, msg) -> {}) //
+                .build();
+        @SuppressWarnings("unused")
+        ActorRef<Integer> b = a.as(Integer.class);
+    }
 
     public static final class MyActor implements Actor<Integer> {
 
