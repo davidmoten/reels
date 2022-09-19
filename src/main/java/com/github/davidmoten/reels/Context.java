@@ -14,9 +14,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.davidmoten.reels.internal.ActorRefDisposed;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.Preconditions;
@@ -28,7 +25,7 @@ import com.github.davidmoten.reels.internal.supervisor.DoneFuture;
  */
 public final class Context implements Disposable {
     
-    private static final Logger log = LoggerFactory.getLogger(Context.class);
+//    private static final Logger log = LoggerFactory.getLogger(Context.class);
 
     public static final Context DEFAULT = new Context();
 
