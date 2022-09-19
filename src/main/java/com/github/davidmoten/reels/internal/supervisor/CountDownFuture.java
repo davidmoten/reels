@@ -26,7 +26,7 @@ public final class CountDownFuture implements Future<Void> {
 
     @Override
     public boolean isDone() {
-        return latch.getCount() > 0;
+        return latch.getCount() == 0;
     }
 
     @Override

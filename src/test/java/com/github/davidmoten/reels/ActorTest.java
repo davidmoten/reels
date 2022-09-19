@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -272,6 +273,10 @@ public class ActorTest {
         actor.tell(4);
         Thread.sleep(100);
         assertEquals(3, count.get());
+        Future<Void> future = context.shutdownGracefully();
+        future.get(10, TimeUnit.SECONDS);
+        assertTrue(future.isDone());
+        assertFalse(future.isCancelled());
     }
 
     @Test

@@ -41,7 +41,7 @@ public final class Context implements Disposable {
     private static final int STATE_ACTIVE = 0;
 
     // graceful shutdown via a poison pill to all actors, no more actor creation
-    private static final int STATE_STOPPED = 1;
+    private static final int STATE_STOPPING = 1;
 
     // stop further activity, actors may be continuing with their current task
     private static final int STATE_DISPOSED = 2;
@@ -118,7 +118,7 @@ public final class Context implements Disposable {
 
     @Override
     public void dispose() {
-        if (state.compareAndSet(STATE_ACTIVE, STATE_DISPOSED) || state.compareAndSet(STATE_STOPPED, STATE_DISPOSED)) {
+        if (state.compareAndSet(STATE_ACTIVE, STATE_DISPOSED) || state.compareAndSet(STATE_STOPPING, STATE_DISPOSED)) {
             synchronized (lock) {
                 actors.forEach((name, actorRef) -> actorRef.dispose());
                 actors.clear();
@@ -141,7 +141,7 @@ public final class Context implements Disposable {
     }
 
     public Future<Void> shutdownGracefully() {
-        if (state.compareAndSet(STATE_ACTIVE, STATE_STOPPED)) {
+        if (state.compareAndSet(STATE_ACTIVE, STATE_STOPPING)) {
             synchronized (lock) {
                 if (actors.isEmpty()) {
                     return new DoneFuture();
