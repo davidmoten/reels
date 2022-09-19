@@ -27,7 +27,7 @@ public final class DisposedFuture<T> implements Future<T> {
 
     @Override
     public boolean isCancelled() {
-        return true;
+        return false;
     }
 
     @Override
@@ -37,12 +37,12 @@ public final class DisposedFuture<T> implements Future<T> {
 
     @Override
     public T get() throws InterruptedException, ExecutionException {
-        throw new ExecutionException(new DisposedException("already disposed, cannot create Future"));
+        throw new DisposedException("already disposed, cannot create Future");
     }
 
     @Override
     public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        throw new ExecutionException(new DisposedException("already disposed, cannot create Future"));
+        throw new DisposedException("already disposed, cannot create Future");
     }
 
 }
