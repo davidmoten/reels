@@ -227,7 +227,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     static final class AskFuture<T> extends CountDownLatch implements Future<T> {
 
         private final AtomicBoolean disposed;
-        private Disposable disposable = Disposable.disposed();
+        private Disposable disposable = Disposable.disposed(); // mutable
         private volatile T value;
 
         public AskFuture() {
