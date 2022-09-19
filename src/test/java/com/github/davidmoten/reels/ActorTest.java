@@ -234,12 +234,12 @@ public class ActorTest {
 
     @Test
     public void testImmediate() throws InterruptedException, TimeoutException, ExecutionException {
-        concurrencyTest(SchedulerImmediate.INSTANCE, RUNNERS, Integer.getInteger("n", NUM_MESSAGES));
+        concurrencyTest(Scheduler.immediate(), RUNNERS, Integer.getInteger("n", NUM_MESSAGES));
     }
 
     @Test
     public void testParallelSticky() throws InterruptedException, ExecutionException, TimeoutException {
-        concurrencyTest(SchedulerComputationSticky.INSTANCE, RUNNERS, Integer.getInteger("sticky", NUM_MESSAGES));
+        concurrencyTest(Scheduler.computation(), RUNNERS, Integer.getInteger("sticky", NUM_MESSAGES));
     }
 
     @Test
@@ -249,7 +249,7 @@ public class ActorTest {
 
     @Test
     public void testIo() throws InterruptedException, ExecutionException, TimeoutException {
-        concurrencyTest(SchedulerIo.INSTANCE, RUNNERS, Integer.getInteger("io", NUM_MESSAGES));
+        concurrencyTest(Scheduler.io(), RUNNERS, Integer.getInteger("io", NUM_MESSAGES));
     }
 
     @Test
