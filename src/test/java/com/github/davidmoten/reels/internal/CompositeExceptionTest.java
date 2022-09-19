@@ -367,6 +367,7 @@ public class CompositeExceptionTest  {
         CompositeException composite = new CompositeException(ex);
 
         assertSame(composite.getCause(), ex);
+        assertEquals(1, composite.size());
     }
 }
 
