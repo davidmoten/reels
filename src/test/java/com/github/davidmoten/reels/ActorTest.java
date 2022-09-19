@@ -17,10 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationNonSticky;
-import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationSticky;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
-import com.github.davidmoten.reels.internal.scheduler.SchedulerImmediate;
-import com.github.davidmoten.reels.internal.scheduler.SchedulerIo;
 
 public class ActorTest {
 
@@ -109,6 +106,27 @@ public class ActorTest {
         a.tell(123);
         a.tell(345);
         assertTrue(latch.await(30, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void testSupervisorClearsQueue() throws InterruptedException, ExecutionException, TimeoutException {
+        Context c = new Context();
+        AtomicInteger count = new AtomicInteger();
+        Supervisor supervisor = (context, actor, error) -> {
+            actor.clearQueue();
+            error.printStackTrace();
+        };
+        ActorRef<Integer> a = c //
+                .match(Integer.class, (ctxt, n) -> {
+                    count.incrementAndGet();
+                    throw new RuntimeException("boo");
+                }) //
+                .supervisor(supervisor) //
+                .build();
+        a.tell(123);
+        a.tell(456);
+        c.shutdownGracefully().get(500, TimeUnit.SECONDS);
+        assertEquals(1, count.get());
     }
 
     @Test
@@ -251,7 +269,7 @@ public class ActorTest {
     public void testIo() throws InterruptedException, ExecutionException, TimeoutException {
         concurrencyTest(Scheduler.io(), RUNNERS, Integer.getInteger("io", NUM_MESSAGES));
     }
-    
+
     @Test
     public void testContextShutdownGracefully() throws InterruptedException, ExecutionException, TimeoutException {
         AtomicInteger count = new AtomicInteger();
@@ -479,12 +497,12 @@ public class ActorTest {
         assertEquals("boo", actor.ask("hi").get(1000, TimeUnit.MILLISECONDS));
         context.dispose();
     }
-    
+
     @Test
     public void testAs() {
         Context context = new Context();
-        ActorRef<Number> a = context
-                .<Number>matchAll((c, msg) -> {}) //
+        ActorRef<Number> a = context.<Number>matchAll((c, msg) -> {
+        }) //
                 .build();
         @SuppressWarnings("unused")
         ActorRef<Integer> b = a.as(Integer.class);
