@@ -251,7 +251,7 @@ public class ActorTest {
     public void testIo() throws InterruptedException, ExecutionException, TimeoutException {
         concurrencyTest(Scheduler.io(), RUNNERS, Integer.getInteger("io", NUM_MESSAGES));
     }
-
+    
     @Test
     public void testContextShutdownGracefully() throws InterruptedException, ExecutionException, TimeoutException {
         AtomicInteger count = new AtomicInteger();
