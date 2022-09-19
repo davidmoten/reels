@@ -112,7 +112,6 @@ public final class Context implements Disposable {
      */
     // TODO make internal method (called from ActorRefImpl)
     public boolean removeActor(String name) {
-        log.info("removing actor " + name);
         ActorRef<?> a = actors.remove(name);
         if (a == null) {
             return false;
