@@ -31,7 +31,7 @@ public final class Preconditions {
     }
 
     public static void checkArgument(boolean b, String message) {
-        if (b) {
+        if (!b) {
             throw new IllegalArgumentException(message);
         }
     }
