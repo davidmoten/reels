@@ -321,7 +321,9 @@ public class ActorTest {
         actor.tell(1);
         actor.tell(2);
         Thread.sleep(100);
+        assertFalse(actor.isDisposed());
         actor.dispose();
+        assertTrue(actor.isDisposed());
         Thread.sleep(500);
         assertEquals(1, count.get());
     }
@@ -380,6 +382,7 @@ public class ActorTest {
                 .name("root") //
                 .scheduler(scheduler) //
                 .build();
+        assertEquals("root", root.name());
         root.tell(Start.VALUE);
         assertTrue(latch.await(60, TimeUnit.SECONDS));
         log.info("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
