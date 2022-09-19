@@ -1,8 +1,8 @@
 package com.github.davidmoten.reels.internal;
 
-import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -41,7 +41,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     private final Scheduler scheduler;
     private final Worker worker;
     private final Optional<ActorRef<?>> parent;
-    private final ConcurrentHashMap<ActorRef<?>, ActorRef<?>> children;
+    private final Set<ActorRef<?>> children; // synchronized
     private final AtomicInteger wip;
     private Actor<T> actor; // mutable because recreated if restart called
     private volatile boolean disposed;
@@ -64,28 +64,36 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         this.parent = parent;
         this.actor = factory.get();
         this.scheduler = scheduler;
-        this.children = new ConcurrentHashMap<ActorRef<?>, ActorRef<?>>();
+        this.children = new HashSet<ActorRef<?>>();
         this.wip = new AtomicInteger();
     }
 
     void addChild(ActorRef<?> actor) {
-        children.put(actor, actor);
+        synchronized (children) {
+            if (disposed) {
+                actor.dispose();
+            } else {
+                children.add(actor);
+            }
+        }
     }
 
     void removeChild(ActorRef<?> actor) {
-        children.remove(actor);
+        synchronized (children) {
+            children.remove(actor);
+        }
     }
 
     @Override
     public void dispose() {
-        disposeThis();
-        disposeChildren();
+        synchronized (children) {
+            disposeThis();
+            disposeChildren();
+        }
     }
 
     private void disposeChildren() {
-        Enumeration<ActorRef<?>> en = children.keys();
-        while (en.hasMoreElements()) {
-            ActorRef<?> child = en.nextElement();
+        for (ActorRef<?> child : children) {
             child.dispose();
         }
     }
@@ -133,8 +141,16 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                 while ((message = queue.poll()) != null) {
 //                    info("message polled=" + message.content());
                     if (message.content() == POISON_PILL) {
-                        stopChildren();
-                        disposeThis();
+                        Set<ActorRef<?>> copy;
+                        synchronized (children) {
+                            copy = new HashSet<>(children);
+                            disposeThis();
+                        }
+                        // we send stop message outside of synchronized block
+                        // because immediate scheduler might be in use
+                        for (ActorRef<?> child : copy) {
+                            child.stop();
+                        }
                         return;
                     } else if (disposed) {
                         queue.clear();
@@ -157,14 +173,6 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
             }
         }
 //        info("exited run, wip=" + wip.get());
-    }
-
-    private void stopChildren() {
-        Enumeration<ActorRef<?>> en = children.keys();
-        while (en.hasMoreElements()) {
-            ActorRef<?> child = en.nextElement();
-            child.stop();
-        }
     }
 
     private void log(String s) {
@@ -209,13 +217,14 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         tell(message, actor);
         return future;
     }
-    
+
     @Override
     public String toString() {
-        return "ActorRef["+ name + "]";
+        return "ActorRef[" + name + "]";
     }
 
-    private static final class AskFuture<T> extends CountDownLatch implements Future<T> {
+    // VisibleForTesting
+    static final class AskFuture<T> extends CountDownLatch implements Future<T> {
 
         private final AtomicBoolean disposed;
         private Disposable disposable = Disposable.disposed();
@@ -277,10 +286,11 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
 
     }
 
+    // VisibleForTesting
     static final class PoisonPill {
         public String toString() {
             return "PoisonPill";
         }
     }
-    
+
 }
