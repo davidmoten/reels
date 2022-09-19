@@ -21,7 +21,7 @@ public final class Exceptions {
 
     /** Utility class. */
     private Exceptions() {
-        throw new IllegalStateException("No instances!");
+        // prevent instantiation
     }
     
     /**
