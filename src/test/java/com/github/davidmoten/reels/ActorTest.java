@@ -50,6 +50,7 @@ public class ActorTest {
                 .build();
         a.tell(123);
         assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertEquals("ActorRef[test]", a.toString());
     }
 
     @Test
