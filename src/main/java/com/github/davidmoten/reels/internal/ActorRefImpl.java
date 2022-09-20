@@ -158,8 +158,8 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                             child.stop();
                         }
                         return;
-                    } 
-                    
+                    }
+
                     try {
 //                        info("calling onMessage");
                         actor.onMessage(messageContext, message.content());

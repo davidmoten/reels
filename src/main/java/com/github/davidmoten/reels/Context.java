@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 
 import com.github.davidmoten.reels.internal.ActorRefDisposed;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
+import com.github.davidmoten.reels.internal.DeadLetterActor;
 import com.github.davidmoten.reels.internal.Heirarchy;
 import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.RootActor;
@@ -51,9 +52,11 @@ public final class Context implements Disposable {
     // final state is TERMINATED indicated by latch having counted down to 0
 
     private final CountDownLatch latch = new CountDownLatch(1);
-
+    
     final ActorRef<?> root;
 
+    final ActorRef<Object> deadLetterActor;
+    
     public Context() {
         this(Supervisor.defaultSupervisor());
     }
@@ -63,6 +66,8 @@ public final class Context implements Disposable {
         this.actors = new Heirarchy();
         this.root = createActor(RootActor.class);
         actors.setRoot(root);
+        this.deadLetterActor = createActor(DeadLetterActor.class);
+        //TODO allow custom deadLetterActor
     }
 
     public static Context create() {
@@ -215,6 +220,10 @@ public final class Context implements Disposable {
                 return actor;
             }
         }
+    }
+
+    public ActorRef<Object> deadLetterActor() {
+        return deadLetterActor;
     }
 
 }
