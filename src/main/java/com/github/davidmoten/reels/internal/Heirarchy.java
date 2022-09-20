@@ -36,7 +36,7 @@ public final class Heirarchy {
 
     public boolean remove(ActorRef<?> actor) {
         synchronized (parents) {
-            if (actors.remove(actor.name()) != null) {
+            if (actors.remove(actor.name()) == null) {
                 return false;
             }
             ActorRef<?> p = parents.remove(actor);
