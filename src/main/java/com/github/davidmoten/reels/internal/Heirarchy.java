@@ -34,6 +34,18 @@ public final class Heirarchy {
         }
     }
 
+    public void addChildTo(ActorRef<?> child, ActorRef<?> parent) {
+        synchronized (parents) {
+            parents.put(child, parent);
+            List<ActorRef<?>> list = children.get(parent);
+            if (list == null) {
+                list = new ArrayList<>();
+                children.put(parent, list);
+            }
+            list.add(child);
+        }
+    }
+
     public boolean remove(ActorRef<?> actor) {
         synchronized (parents) {
             if (actors.remove(actor.name()) == null) {
@@ -44,18 +56,6 @@ public final class Heirarchy {
                 children.get(p).remove(actor);
             }
             return true;
-        }
-    }
-
-    public void addChildTo(ActorRef<?> child, ActorRef<?> parent) {
-        synchronized (parents) {
-            parents.put(child, parent);
-            List<ActorRef<?>> list = children.get(parent);
-            if (list == null) {
-                list = new ArrayList<>();
-                children.put(parent, list);
-            }
-            list.add(child);
         }
     }
 
@@ -97,6 +97,7 @@ public final class Heirarchy {
                     children.get(p).remove(a);
                 }
                 list = children.get(a);
+                actors.remove(a.name(), a);
             }
             if (list != null) {
                 for (ActorRef<?> child : list) {
