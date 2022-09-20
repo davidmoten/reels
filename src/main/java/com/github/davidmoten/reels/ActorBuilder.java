@@ -22,6 +22,7 @@ public final class ActorBuilder<T> {
     private String name = UUID.randomUUID().toString().replace("-", "");
     private Optional<ActorRef<?>> parent;
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
+    private Consumer<? super MessageContext<T>> onStop = null;
 
     ActorBuilder(Context context) {
         this.context = context;
@@ -78,6 +79,12 @@ public final class ActorBuilder<T> {
         return this;
     }
 
+    public ActorBuilder<T> onStop(Consumer<? super MessageContext<T>> onStop) {
+        Preconditions.checkParameterNotNull(onStop, "onStop");
+        this.onStop = onStop;
+        return this;
+    }
+
     public ActorBuilder<T> parent(ActorRef<?> parent) {
         Preconditions.checkParameterNotNull(parent, "parent");
         this.parent = Optional.of(parent);
@@ -85,7 +92,7 @@ public final class ActorBuilder<T> {
     }
 
     public ActorRef<T> build() {
-        Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError));
+        Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError, onStop));
         return context.createActor(f, name, scheduler, supervisor, parent);
     }
 
@@ -93,9 +100,9 @@ public final class ActorBuilder<T> {
         final Class<S> matchClass;
         final BiConsumer<MessageContext<T>, ? super S> consumer;
 
-        Matcher(Class<S> matchClass, BiConsumer<MessageContext<T>, ? super S> consumer2) {
+        Matcher(Class<S> matchClass, BiConsumer<MessageContext<T>, ? super S> consumer) {
             this.matchClass = matchClass;
-            this.consumer = consumer2;
+            this.consumer = consumer;
         }
     }
 
@@ -103,10 +110,13 @@ public final class ActorBuilder<T> {
 
         private final List<Matcher<T, ? extends T>> matchers;
         private final Consumer<? super Throwable> onError;
+        private final Consumer<? super MessageContext<T>> onStop;
 
-        public MatchingActor(List<Matcher<T, ? extends T>> matchers, Consumer<? super Throwable> onError) {
+        public MatchingActor(List<Matcher<T, ? extends T>> matchers, Consumer<? super Throwable> onError,
+                Consumer<? super MessageContext<T>> onStop) {
             this.matchers = matchers;
             this.onError = onError;
+            this.onStop = onStop;
         }
 
         @SuppressWarnings("unchecked")
@@ -125,6 +135,13 @@ public final class ActorBuilder<T> {
                     }
                     return;
                 }
+            }
+        }
+
+        @Override
+        public void onStop(MessageContext<T> context) {
+            if (onStop != null) {
+                onStop.accept(context);
             }
         }
     }

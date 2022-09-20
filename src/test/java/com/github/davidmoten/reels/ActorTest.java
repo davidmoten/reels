@@ -95,11 +95,19 @@ public class ActorTest {
         Context c = new Context();
         Supervisor supervisor = (context, actor, error) -> actor.restart();
         ActorRef<Integer> a = c //
-                .<Integer>factory(() -> {
-                    latch.countDown();
-                    return (context, message) -> {
+                .<Integer>factory(() -> new Actor<Integer>() {
+
+                    @Override
+                    public void onMessage(MessageContext<Integer> context, Integer message) {
+                        latch.countDown();
                         throw new RuntimeException("boo");
-                    };
+                    }
+
+                    @Override
+                    public void onStop(MessageContext<Integer> context) {
+                        // do nothing
+                    }
+
                 }) //
                 .scheduler(Scheduler.computation()) //
                 .supervisor(supervisor) //
@@ -351,13 +359,15 @@ public class ActorTest {
     }
 
     @Test
-    public void testContextShutsDownImmediatelyIfNoActors() throws InterruptedException, ExecutionException, TimeoutException {
+    public void testContextShutsDownImmediatelyIfNoActors()
+            throws InterruptedException, ExecutionException, TimeoutException {
         Context context = new Context();
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
     }
 
     @Test(expected = CreateException.class)
-    public void testActorCreateAfterContextShutdown() throws InterruptedException, ExecutionException, TimeoutException {
+    public void testActorCreateAfterContextShutdown()
+            throws InterruptedException, ExecutionException, TimeoutException {
         Context context = new Context();
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
         context //
@@ -520,6 +530,11 @@ public class ActorTest {
         public void onMessage(MessageContext<Integer> context, Integer message) {
             last = message;
         }
+
+        @Override
+        public void onStop(MessageContext<Integer> context) {
+            
+        }
     }
 
     public static final class MyActorBad implements Actor<Integer> {
@@ -530,6 +545,11 @@ public class ActorTest {
 
         @Override
         public void onMessage(MessageContext<Integer> context, Integer message) {
+        }
+
+        @Override
+        public void onStop(MessageContext<Integer> context) {
+            
         }
     }
 

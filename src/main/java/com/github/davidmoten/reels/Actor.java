@@ -1,6 +1,5 @@
 package com.github.davidmoten.reels;
 
-@FunctionalInterface
 public interface Actor<T> {
 
     /**
@@ -15,5 +14,7 @@ public interface Actor<T> {
      * @param message message to be processed
      */
     void onMessage(MessageContext<T> context, T message);
+    
+    void onStop(MessageContext<T> context);
 
 }

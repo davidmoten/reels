@@ -13,4 +13,10 @@ public final class RootActor implements Actor<Object> {
     public void onMessage(MessageContext<Object> context, Object message) {
         // TODO
     }
+
+    @Override
+    public void onStop(MessageContext<Object> context) {
+        // TODO Auto-generated method stub
+        
+    }
 }

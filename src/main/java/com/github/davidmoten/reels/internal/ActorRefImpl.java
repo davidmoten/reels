@@ -26,7 +26,7 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, Disposable {
 
-//    private static Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
+//    private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
     public static final Object POISON_PILL = new PoisonPill();
 
@@ -136,7 +136,17 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                 Message<T> message;
                 while ((message = queue.poll()) != null) {
 //                    info("message polled=" + message.content());
+                    if (disposed) {
+                        queue.clear();
+                        return;
+                    }
+                    MessageContext<T> messageContext = new MessageContext<T>(this, message.sender());
                     if (message.content() == POISON_PILL) {
+                        try {
+                            actor.onStop(messageContext);
+                        } catch (Throwable e) {
+                            supervisor.processFailure(context, this, e);
+                        }
                         Set<ActorRef<?>> copy;
                         synchronized (children) {
                             copy = new HashSet<>(children);
@@ -148,13 +158,11 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                             child.stop();
                         }
                         return;
-                    } else if (disposed) {
-                        queue.clear();
-                        return;
-                    }
+                    } 
+                    
                     try {
 //                        info("calling onMessage");
-                        actor.onMessage(new MessageContext<T>(this, message.sender()), message.content());
+                        actor.onMessage(messageContext, message.content());
 //                        info("called onMessage");
                     } catch (Throwable e) {
                         // if the line below throws then the actor will no longer process messages
