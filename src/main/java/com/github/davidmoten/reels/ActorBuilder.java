@@ -20,12 +20,13 @@ public final class ActorBuilder<T> {
     private Consumer<? super Throwable> onError;
     private Scheduler scheduler = Scheduler.forkJoin();
     private String name = UUID.randomUUID().toString().replace("-", "");
-    private Optional<ActorRef<?>> parent = Optional.empty();
+    private Optional<ActorRef<?>> parent;
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
 
     ActorBuilder(Context context) {
         this.context = context;
         this.supervisor = context.supervisor();
+        this.parent = Optional.ofNullable(context.root);
     }
 
     public <S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, ? super S> consumer) {

@@ -351,15 +351,15 @@ public class ActorTest {
     }
 
     @Test
-    public void testContextShutsDownImmediatelyIfNoActors() throws InterruptedException, ExecutionException {
+    public void testContextShutsDownImmediatelyIfNoActors() throws InterruptedException, ExecutionException, TimeoutException {
         Context context = new Context();
-        context.shutdownGracefully().get();
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
     }
 
     @Test(expected = CreateException.class)
-    public void testActorCreateAfterContextShutdown() throws InterruptedException, ExecutionException {
+    public void testActorCreateAfterContextShutdown() throws InterruptedException, ExecutionException, TimeoutException {
         Context context = new Context();
-        context.shutdownGracefully().get();
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
         context //
                 .matchAll((c, m) -> {
                 }) //

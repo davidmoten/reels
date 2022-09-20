@@ -101,7 +101,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
             worker.dispose();
             queue.clear();
             parent.ifPresent(p -> ((ActorRefImpl<?>) p).removeChild(this));
-            context.removeActor(name);
+            context.removeActor(this);
         }
     }
 

@@ -3,38 +3,47 @@ package com.github.davidmoten.reels.internal;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 import com.github.davidmoten.reels.ActorRef;
+import com.github.davidmoten.reels.CreateException;
 
 public final class Heirarchy {
 
     private final Map<ActorRef<?>, ActorRef<?>> parents = new HashMap<>();
     private final Map<ActorRef<?>, List<ActorRef<?>>> children = new HashMap<>();
-    private final Set<ActorRef<?>> actors = new HashSet<>();
+    private final Map<String, ActorRef<?>> actors = new HashMap<>();
+    private ActorRef<?> root;
 
     public Heirarchy() {
+    }
 
+    public void setRoot(ActorRef<?> root) {
+        this.root = root;
     }
 
     public void add(ActorRef<?> actor) {
         synchronized (parents) {
-            actors.add(actor);
+            if (actors.put(actor.name(), actor) != null) {
+                throw new CreateException("actor with that name already exists");
+            }
             actor.parent().ifPresent(p -> addChildTo(actor, p));
         }
     }
 
-    public void remove(ActorRef<?> actor) {
+    public boolean remove(ActorRef<?> actor) {
         synchronized (parents) {
-            actors.remove(actor);
+            if (actors.remove(actor.name()) != null) {
+                return false;
+            }
             ActorRef<?> p = parents.remove(actor);
             if (p != null) {
                 children.get(p).remove(actor);
             }
+            return true;
         }
     }
 
@@ -60,7 +69,10 @@ public final class Heirarchy {
             a.stop();
             List<ActorRef<?>> list;
             synchronized (parents) {
-                list = new ArrayList<>(children.get(a));
+                list = children.get(a);
+                if (list != null) {
+                    list = new ArrayList<>(list);
+                }
             }
             if (list != null) {
                 for (ActorRef<?> child : list) {
@@ -92,5 +104,26 @@ public final class Heirarchy {
                 }
             }
         }
+    }
+
+    public boolean isEmpty() {
+        synchronized (parents) {
+            return actors.isEmpty();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> Optional<ActorRef<T>> get(String name) {
+        synchronized (parents) {
+            return (Optional<ActorRef<T>>) (Optional<?>) Optional.ofNullable(actors.get(name));
+        }
+    }
+
+    public void dispose() {
+        dispose(root);
+    }
+
+    public void stop() {
+        stop(root);
     }
 }
