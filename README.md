@@ -5,6 +5,13 @@
 
 Actor framework for Java, non-blocking, performant
 
+# Actor lifecycle
+
+An Actor is created by a Context object. The Context object has a singleton root actor that is not accessible but is the parent for an Actor you create unless you provide it with an explicit parent. 
+
+An Actor is either Active, Stopped or Disposed. Once created an Actor is Active and will process messages sent to it (via `ActorRef.tell`). If the Actor is disposed (via `ActorRef.dispose()` then the Actor will stop processing messages.
+
+
 ```
 Benchmarks.actorCreateAndStop                     thrpt   10  1036159.638 ± 11147.430  ops/s
 Benchmarks.ask                                    thrpt   10    49202.346 ±  1347.799  ops/s
