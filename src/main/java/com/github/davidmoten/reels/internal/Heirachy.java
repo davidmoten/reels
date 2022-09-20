@@ -20,9 +20,9 @@ public final class Heirachy {
     public Heirachy() {
 
     }
-    
+
     public void add(ActorRef<?> actor) {
-        synchronized(parents) {
+        synchronized (parents) {
             actors.add(actor);
             actor.parent().ifPresent(p -> addChildTo(actor, p));
         }
@@ -45,13 +45,14 @@ public final class Heirachy {
         stack.push(actor);
         ActorRef<?> a;
         while ((a = stack.poll()) != null) {
+            List<ActorRef<?>> list;
             synchronized (parents) {
                 ActorRef<?> p = parents.remove(a);
                 if (p != null) {
                     children.get(p).remove(a);
                 }
+                list = children.get(a);
             }
-            List<ActorRef<?>> list = children.get(a);
             if (list != null) {
                 for (ActorRef<?> child : list) {
                     stack.offer(child);
