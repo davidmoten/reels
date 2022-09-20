@@ -95,7 +95,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         }
     }
 
-    private void disposeThis() {
+    public void disposeThis() {
         if (!disposed) {
             disposed = true;
             worker.dispose();
