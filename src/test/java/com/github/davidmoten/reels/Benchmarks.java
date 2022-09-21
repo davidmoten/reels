@@ -16,6 +16,7 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.infra.Blackhole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +56,10 @@ public class Benchmarks {
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
-    public String ask() throws InterruptedException, ExecutionException, TimeoutException {
-        return askActor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS);
+    public void ask(Blackhole bh) throws InterruptedException, ExecutionException, TimeoutException {
+        for (int i = 0; i < 10000; i++) {
+            bh.consume(askActor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS));
+        }
     }
 
     @Benchmark
