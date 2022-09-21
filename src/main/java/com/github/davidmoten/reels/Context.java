@@ -17,7 +17,6 @@ import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.Constants;
 import com.github.davidmoten.reels.internal.DeadLetterActor;
 import com.github.davidmoten.reels.internal.Heirarchy;
-import com.github.davidmoten.reels.internal.Message;
 import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.RootActor;
 import com.github.davidmoten.reels.internal.supervisor.CountDownFuture;

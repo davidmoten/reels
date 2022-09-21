@@ -16,6 +16,7 @@ import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
 import com.github.davidmoten.reels.Disposable;
+import com.github.davidmoten.reels.Message;
 import com.github.davidmoten.reels.OnStopException;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.SupervisedActorRef;

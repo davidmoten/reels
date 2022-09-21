@@ -1,7 +1,5 @@
 package com.github.davidmoten.reels;
 
-import com.github.davidmoten.reels.internal.Message;
-
 public interface Actor<T> {
 
     /**

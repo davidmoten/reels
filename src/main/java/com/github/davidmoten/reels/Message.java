@@ -1,10 +1,6 @@
-package com.github.davidmoten.reels.internal;
+package com.github.davidmoten.reels;
 
 import java.util.Optional;
-
-import com.github.davidmoten.reels.ActorRef;
-import com.github.davidmoten.reels.Context;
-import com.github.davidmoten.reels.MessageContext;
 
 public class Message<T> implements MessageContext<T> {
 
@@ -12,6 +8,13 @@ public class Message<T> implements MessageContext<T> {
     private final ActorRef<?> sender; // nullable
     private final ActorRef<T> self;
 
+    /**
+     * Constructor. Not part of public API.
+     * 
+     * @param content message content
+     * @param self    message receiver
+     * @param sender  message sender
+     */
     public Message(T content, ActorRef<T> self, ActorRef<?> sender) {
         this.content = content;
         this.self = self;
