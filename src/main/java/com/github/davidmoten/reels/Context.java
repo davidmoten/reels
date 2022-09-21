@@ -87,7 +87,7 @@ public final class Context implements Disposable {
         return createActor(actorClass, name, Scheduler.defaultScheduler());
     }
 
-    private ActorRef<Object> createActor(Supplier<? extends Actor<Object>> actorFactory, String name) {
+    public ActorRef<Object> createActor(Supplier<? extends Actor<Object>> actorFactory, String name) {
         return createActor(actorFactory, name, Scheduler.defaultScheduler(), supervisor, Optional.ofNullable(root));
     }
 
@@ -173,6 +173,18 @@ public final class Context implements Disposable {
         return new CountDownFuture(latch);
     }
 
+    public ActorRef<Object> deadLetterActor() {
+        return deadLetterActor;
+    }
+
+    // TODO internal
+    public void actorStopped(ActorRefImpl<?> actor) {
+        actors.actorStopped(actor);
+        if (actors.allTerminated()) {
+            latch.countDown();
+        }
+    }
+
     /////////////////////////////
     // builder entry methods
     ////////////////////////////
@@ -202,6 +214,10 @@ public final class Context implements Disposable {
         return this.<T>builder().factory(factory);
     }
 
+    /////////////////////////////
+    // private methods
+    ////////////////////////////
+
     @SuppressWarnings("unchecked")
     private static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass) {
         Preconditions.checkArgument(actorClass != null, "actorFactory cannot be null");
@@ -228,18 +244,6 @@ public final class Context implements Disposable {
                 actors.add(actor);
                 return actor;
             }
-        }
-    }
-
-    public ActorRef<Object> deadLetterActor() {
-        return deadLetterActor;
-    }
-
-    //TODO internal
-    public void actorStopped(ActorRefImpl<?> actor) {
-        actors.actorStopped(actor);
-        if (actors.allTerminated()) {
-            latch.countDown();
         }
     }
 
