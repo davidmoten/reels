@@ -59,5 +59,17 @@ Benchmarks.groupRandomMessagesForkJoin            thrpt   10      16.982 ±    0
 Benchmarks.groupRandomMessagesImmediate           thrpt   10      22.215 ±    0.992  ops/s
 Benchmarks.groupRandomMessagesIo                  thrpt   10       0.789 ±    0.017  ops/s
 
+post Actor method signature changes (allocation work):
+
+Benchmark                                          Mode  Cnt       Score      Error  Units
+Benchmarks.actorCreateAndStop                     thrpt   10  847536.701 ± 4350.074  ops/s
+Benchmarks.ask                                    thrpt   10       5.284 ±    0.020  ops/s
+Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.525 ±    0.011  ops/s
+Benchmarks.contendedConcurrencyForkJoin           thrpt   10       3.396 ±    0.421  ops/s
+Benchmarks.contendedConcurrencyImmediate          thrpt   10       3.021 ±    0.252  ops/s
+Benchmarks.groupRandomMessagesComputationSticky   thrpt   10       1.690 ±    0.019  ops/s
+Benchmarks.groupRandomMessagesForkJoin            thrpt   10      16.928 ±    0.332  ops/s
+Benchmarks.groupRandomMessagesImmediate           thrpt   10      21.397 ±    0.031  ops/s
+Benchmarks.groupRandomMessagesIo                  thrpt   10       0.814 ±    0.019  ops/s
 ```
 
