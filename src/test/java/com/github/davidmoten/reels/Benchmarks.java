@@ -24,14 +24,17 @@ public class Benchmarks {
 
     private static final Logger log = LoggerFactory.getLogger(Benchmarks.class);
 
-    private Context context;
     private final Random random = new Random();
+    private Context context;
+    private ActorRef<String> askActor;
 
     @Setup(Level.Invocation)
     public void setup() {
         context = new Context((c, actor, error) -> {
             log.error(actor.name() + ":" + error.getMessage(), error);
         });
+        askActor = context.<String>matchAll((c, msg) -> c.sender().ifPresent(sender -> sender.tell("boo"))) //
+                .build();
     }
 
     @TearDown(Level.Invocation)
@@ -43,10 +46,7 @@ public class Benchmarks {
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public String ask() throws InterruptedException, ExecutionException, TimeoutException {
-        ActorRef<String> actor = context
-                .<String>matchAll((c, msg) -> c.sender().ifPresent(sender -> sender.tell("boo"))) //
-                .build();
-        return actor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS);
+        return askActor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS);
     }
 
     @Benchmark
@@ -66,7 +66,7 @@ public class Benchmarks {
     public void contendedConcurrencyImmediate() throws InterruptedException {
         contendedConcurrency(Scheduler.immediate());
     }
-    
+
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesForkJoin() throws InterruptedException {
