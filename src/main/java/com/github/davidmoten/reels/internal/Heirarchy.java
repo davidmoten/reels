@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.CreateException;
@@ -17,7 +19,9 @@ public final class Heirarchy {
     private final Map<ActorRef<?>, List<ActorRef<?>>> children = new HashMap<>();
     private final Map<String, ActorRef<?>> actors = new HashMap<>();
     private ActorRef<?> root;
-
+    private final Set<ActorRef<?>> active = ConcurrentHashMap.newKeySet();
+    
+    
     public Heirarchy() {
     }
 
@@ -32,6 +36,7 @@ public final class Heirarchy {
             }
             actor.parent().ifPresent(p -> addChildTo(actor, p));
         }
+        active.add(actor);
     }
 
     public void addChildTo(ActorRef<?> child, ActorRef<?> parent) {
@@ -55,6 +60,7 @@ public final class Heirarchy {
             if (p != null) {
                 children.get(p).remove(actor);
             }
+            active.remove(actor);
             return true;
         }
     }
@@ -126,5 +132,15 @@ public final class Heirarchy {
 
     public void stop() {
         stop(root);
+    }
+
+    public void actorStopped(ActorRefImpl<?> actor) {
+        if (actor.isDisposed() || actor.isStopped()) {
+            active.remove(actor);
+        }
+    }
+
+    public boolean allTerminated() {
+        return active.isEmpty();
     }
 }

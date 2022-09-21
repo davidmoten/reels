@@ -9,7 +9,8 @@ public final class Constants {
     private Constants() {
         // prevent instantiation
     }
-    
+
     public static final Scheduler SINGLE = Scheduler.fromExecutor(Executors.newSingleThreadScheduledExecutor());
-    
+
+    public static final String DEAD_LETTER_ACTOR_NAME = "reels-dead-letter";
 }

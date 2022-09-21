@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 
 import com.github.davidmoten.reels.internal.ActorRefDisposed;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
+import com.github.davidmoten.reels.internal.Constants;
 import com.github.davidmoten.reels.internal.DeadLetterActor;
 import com.github.davidmoten.reels.internal.Heirarchy;
 import com.github.davidmoten.reels.internal.Preconditions;
@@ -39,7 +40,7 @@ public final class Context implements Disposable {
     private final AtomicInteger state = new AtomicInteger();
 
     private final Heirarchy actors;
-
+    
     // actors active, can create
     private static final int STATE_ACTIVE = 0;
 
@@ -66,7 +67,7 @@ public final class Context implements Disposable {
         this.actors = new Heirarchy();
         this.root = createActor(RootActor.class);
         actors.setRoot(root);
-        this.deadLetterActor = createActor(DeadLetterActor.class);
+        this.deadLetterActor = createActor(DeadLetterActor.class, Constants.DEAD_LETTER_ACTOR_NAME);
         //TODO allow custom deadLetterActor
     }
 
@@ -117,7 +118,7 @@ public final class Context implements Disposable {
      * @return the removed ActorRef
      */
     // TODO make internal method (called from ActorRefImpl)
-    public boolean removeActor(ActorRef<?> actor) {
+    public boolean disposed(ActorRef<?> actor) {
         if (actors.remove(actor)) {
             if (state.get() != STATE_ACTIVE && actors.isEmpty()) {
                 latch.countDown();
@@ -154,7 +155,7 @@ public final class Context implements Disposable {
     public Future<Void> shutdownGracefully() {
         if (state.compareAndSet(STATE_ACTIVE, STATE_STOPPING)) {
             synchronized (lock) {
-                if (actors.isEmpty()) {
+                if (actors.allTerminated()) {
                     return new DoneFuture();
                 } else {
                     actors.stop();
@@ -224,6 +225,13 @@ public final class Context implements Disposable {
 
     public ActorRef<Object> deadLetterActor() {
         return deadLetterActor;
+    }
+
+    public void actorStopped(ActorRefImpl<?> actor) {
+        actors.actorStopped(actor);
+        if (actors.allTerminated()) {
+            latch.countDown();
+        }
     }
 
 }

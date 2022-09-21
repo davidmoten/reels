@@ -17,6 +17,7 @@ import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.MessageContext;
+import com.github.davidmoten.reels.OnStopException;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.SupervisedActorRef;
 import com.github.davidmoten.reels.Supervisor;
@@ -42,6 +43,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     private final AtomicInteger wip;
     private Actor<T> actor; // mutable because recreated if restart called
     private volatile boolean disposed;
+    private volatile boolean stopped; 
 
     public static <T> ActorRefImpl<T> create(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
             Context context, Supervisor supervisor, Optional<ActorRef<?>> parent) {
@@ -101,7 +103,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
             worker.dispose();
             queue.clear();
             parent.ifPresent(p -> ((ActorRefImpl<?>) p).removeChild(this));
-            context.removeActor(this);
+            context.disposed(this);
         }
     }
 
@@ -142,32 +144,36 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                     }
                     MessageContext<T> messageContext = new MessageContext<T>(this, message.sender());
                     if (message.content() == POISON_PILL) {
+                        stopped = true;
                         try {
                             actor.onStop(messageContext);
                         } catch (Throwable e) {
-                            supervisor.processFailure(context, this, e);
+                            supervisor.processFailure(context, this, new OnStopException(e));
                         }
                         Set<ActorRef<?>> copy;
                         synchronized (children) {
                             copy = new HashSet<>(children);
-                            disposeThis();
                         }
+                        context.actorStopped(this);
                         // we send stop message outside of synchronized block
                         // because immediate scheduler might be in use
                         for (ActorRef<?> child : copy) {
                             child.stop();
                         }
                         return;
-                    }
-
-                    try {
+                    } else if (stopped) {
+                        Message<T> m = message;
+                        context.lookupActor(Constants.DEAD_LETTER_ACTOR_NAME).ifPresent(x -> x.tell(m, this));
+                    } else {
+                        try {
 //                        info("calling onMessage");
-                        actor.onMessage(messageContext, message.content());
+                            actor.onMessage(messageContext, message.content());
 //                        info("called onMessage");
-                    } catch (Throwable e) {
-                        // if the line below throws then the actor will no longer process messages
-                        // (because wip will be != 0)
-                        supervisor.processFailure(context, this, e);
+                        } catch (Throwable e) {
+                            // if the line below throws then the actor will no longer process messages
+                            // (because wip will be != 0)
+                            supervisor.processFailure(context, this, e);
+                        }
                     }
                 }
                 missed = wip.addAndGet(-missed);
@@ -186,6 +192,10 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     @Override
     public boolean isDisposed() {
         return disposed;
+    }
+
+    public boolean isStopped() {
+        return stopped;
     }
 
     @Override
