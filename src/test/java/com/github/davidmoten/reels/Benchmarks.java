@@ -45,6 +45,16 @@ public class Benchmarks {
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
+    public void actorCreateAndStop() throws InterruptedException {
+        context //
+                .matchAll((c, m) -> c.self().stop()) //
+                .scheduler(Scheduler.immediate()) //
+                .build() //
+                .tell(Boolean.TRUE);
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public String ask() throws InterruptedException, ExecutionException, TimeoutException {
         return askActor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS);
     }
@@ -89,16 +99,6 @@ public class Benchmarks {
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesImmediate() throws InterruptedException {
         groupRandomMessages(Scheduler.immediate());
-    }
-
-    @Benchmark
-    @BenchmarkMode(Mode.Throughput)
-    public void actorCreateAndStop() throws InterruptedException {
-        context //
-                .matchAll((c, m) -> c.self().stop()) //
-                .scheduler(Scheduler.immediate()) //
-                .build() //
-                .tell(Boolean.TRUE);
     }
 
     private void groupRandomMessages(Scheduler scheduler) throws InterruptedException {
@@ -160,6 +160,18 @@ public class Benchmarks {
                 .build();
         root.tell(Start.VALUE);
         assertTrue(latch.await(60, TimeUnit.SECONDS));
+    }
+
+    public static void main(String[] args) throws InterruptedException, ExecutionException, TimeoutException {
+        Context context = new Context((c, actor, error) -> {
+            log.error(actor.name() + ":" + error.getMessage(), error);
+        });
+        ActorRef<String> askActor = context
+                .<String>matchAll((c, msg) -> c.sender().ifPresent(sender -> sender.tell("boo"))) //
+                .build();
+        while (true) {
+            askActor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS);
+        }
     }
 
 }

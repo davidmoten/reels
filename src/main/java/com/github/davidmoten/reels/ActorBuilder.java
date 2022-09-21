@@ -3,7 +3,7 @@ package com.github.davidmoten.reels;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -13,13 +13,15 @@ import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.util.Util;
 
 public final class ActorBuilder<T> {
+    
+    private final Random random = new Random();
 
     private final Context context;
     private final List<Matcher<T, ? extends T>> matches = new ArrayList<>();
     private Supervisor supervisor;
     private Consumer<? super Throwable> onError;
     private Scheduler scheduler = Scheduler.forkJoin();
-    private String name = UUID.randomUUID().toString().replace("-", "");
+    private String name = random.nextInt() + "-" + System.currentTimeMillis();
     private Optional<ActorRef<?>> parent;
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
     private Consumer<? super MessageContext<T>> onStop = null;
