@@ -20,7 +20,7 @@ package com.github.davidmoten.reels.internal.util;
 
 /**
  * A simple open hash set with add, remove and clear capabilities only.
- * <p>Doesn't support nor checks for {@code null}s.
+ * <p>Doesn't support nor check for {@code null}s.
  *
  * @param <T> the element type
  */
