@@ -71,6 +71,7 @@ public final class Context implements Disposable {
         this.actors = new Heirarchy();
         this.root = createActor(RootActor.class);
         actors.setRoot(root);
+        // must have set root before calling createActor
         this.deadLetterActor = createActor(deadLetterActorFactory, Constants.DEAD_LETTER_ACTOR_NAME);
     }
 
