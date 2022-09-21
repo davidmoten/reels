@@ -1,5 +1,7 @@
 package com.github.davidmoten.reels;
 
+import com.github.davidmoten.reels.internal.Message;
+
 public interface Actor<T> {
 
     /**
@@ -13,7 +15,7 @@ public interface Actor<T> {
      *                actors for example)
      * @param message message to be processed
      */
-    void onMessage(MessageContext<T> context, T message);
+    void onMessage(Message<T> message);
     
     void onStop(MessageContext<T> context);
 

@@ -9,7 +9,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.github.davidmoten.reels.internal.ActorRefDisposed;
@@ -17,6 +17,7 @@ import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.Constants;
 import com.github.davidmoten.reels.internal.DeadLetterActor;
 import com.github.davidmoten.reels.internal.Heirarchy;
+import com.github.davidmoten.reels.internal.Message;
 import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.RootActor;
 import com.github.davidmoten.reels.internal.supervisor.CountDownFuture;
@@ -202,11 +203,11 @@ public final class Context implements Disposable {
      * @param consumer   consumes messages of type S
      * @return builder builder
      */
-    public <T, S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, S> consumer) {
+    public <T, S extends T> ActorBuilder<T> match(Class<S> matchClass, Consumer<? super Message<T>> consumer) {
         return this.<T>builder().match(matchClass, consumer);
     }
 
-    public <T> ActorBuilder<T> matchAll(BiConsumer<MessageContext<T>, ? super T> consumer) {
+    public <T> ActorBuilder<T> matchAll(Consumer<? super Message<T>> consumer) {
         return this.<T>builder().matchAll(consumer);
     }
 

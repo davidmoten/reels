@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.github.davidmoten.reels.internal.Message;
 import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.util.Util;
@@ -32,7 +32,7 @@ public final class ActorBuilder<T> {
         this.parent = Optional.ofNullable(context.root);
     }
 
-    public <S extends T> ActorBuilder<T> match(Class<S> matchClass, BiConsumer<MessageContext<T>, ? super S> consumer) {
+    public <S extends T> ActorBuilder<T> match(Class<S> matchClass, Consumer<? super Message<T>> consumer) {
         Preconditions.checkArgument(!factory.isPresent(), "cannot set both matches and factory in builder");
         matches.add(new Matcher<T, S>(matchClass, consumer));
         return this;
@@ -45,7 +45,7 @@ public final class ActorBuilder<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public ActorBuilder<T> matchAll(BiConsumer<MessageContext<T>, ? super T> consumer) {
+    public ActorBuilder<T> matchAll(Consumer<? super Message<T>> consumer) {
         Preconditions.checkArgument(!factory.isPresent(), "cannot set both matches and factory in builder");
         return match((Class<T>) Object.class, consumer);
     }
@@ -100,9 +100,9 @@ public final class ActorBuilder<T> {
 
     private static final class Matcher<T, S extends T> {
         final Class<S> matchClass;
-        final BiConsumer<MessageContext<T>, ? super S> consumer;
+        final Consumer<? super Message<T>> consumer;
 
-        Matcher(Class<S> matchClass, BiConsumer<MessageContext<T>, ? super S> consumer) {
+        Matcher(Class<S> matchClass, Consumer<? super Message<T>> consumer) {
             this.matchClass = matchClass;
             this.consumer = consumer;
         }
@@ -123,11 +123,11 @@ public final class ActorBuilder<T> {
 
         @SuppressWarnings("unchecked")
         @Override
-        public void onMessage(MessageContext<T> context, T message) {
+        public void onMessage(Message<T> message) {
             for (Matcher<T, ? extends T> matcher : matchers) {
-                if (matcher.matchClass.isInstance(message)) {
+                if (matcher.matchClass.isInstance(message.content())) {
                     try {
-                        ((Matcher<T, T>) matcher).consumer.accept((MessageContext<T>) context, message);
+                        ((Matcher<T, T>) matcher).consumer.accept(message);
                     } catch (Throwable e) {
                         if (onError != null) {
                             onError.accept(e);

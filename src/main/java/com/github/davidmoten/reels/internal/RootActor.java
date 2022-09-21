@@ -10,7 +10,7 @@ public final class RootActor implements Actor<Object> {
     }
 
     @Override
-    public void onMessage(MessageContext<Object> context, Object message) {
+    public void onMessage(Message<Object> message) {
         // TODO
     }
 

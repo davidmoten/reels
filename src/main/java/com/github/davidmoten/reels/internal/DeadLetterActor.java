@@ -11,8 +11,8 @@ public final class DeadLetterActor implements Actor<Object> {
     private static final Logger log = LoggerFactory.getLogger(DeadLetterActor.class);
 
     @Override
-    public void onMessage(MessageContext<Object> context, Object message) {
-        log.info("dead letter message={}", message);
+    public void onMessage(Message<Object> message) {
+        log.info("dead letter message={}", message.content());
     }
 
     @Override

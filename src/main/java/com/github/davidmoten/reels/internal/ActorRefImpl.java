@@ -16,7 +16,6 @@ import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
 import com.github.davidmoten.reels.Disposable;
-import com.github.davidmoten.reels.MessageContext;
 import com.github.davidmoten.reels.OnStopException;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.SupervisedActorRef;
@@ -117,7 +116,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         if (disposed) {
             return;
         }
-        queue.offer(new Message<T>(message, sender));
+        queue.offer(new Message<T>(message, this, sender));
         worker.schedule(this);
     }
 
@@ -142,11 +141,10 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                         queue.clear();
                         return;
                     }
-                    MessageContext<T> messageContext = new MessageContext<T>(this, message.sender());
                     if (message.content() == POISON_PILL) {
                         stopped = true;
                         try {
-                            actor.onStop(messageContext);
+                            actor.onStop(message);
                         } catch (Throwable e) {
                             supervisor.processFailure(context, this, new OnStopException(e));
                         }
@@ -167,7 +165,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                     } else {
                         try {
 //                        info("calling onMessage");
-                            actor.onMessage(messageContext, message.content());
+                            actor.onMessage(message);
 //                        info("called onMessage");
                         } catch (Throwable e) {
                             // if the line below throws then the actor will no longer process messages
@@ -226,7 +224,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     @Override
     public <S> Future<S> ask(T message) {
         AskFuture<S> future = new AskFuture<S>();
-        ActorRef<S> actor = context.<S>matchAll((c, msg) -> future.setValue(msg)).build();
+        ActorRef<S> actor = context.<S>matchAll(m -> future.setValue(m.content())).build();
         future.setDisposable(actor);
         tell(message, actor);
         return future;
