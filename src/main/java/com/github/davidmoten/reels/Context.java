@@ -235,6 +235,7 @@ public final class Context implements Disposable {
         return deadLetterActor;
     }
 
+    //TODO internal
     public void actorStopped(ActorRefImpl<?> actor) {
         actors.actorStopped(actor);
         if (actors.allTerminated()) {
