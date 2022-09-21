@@ -37,7 +37,7 @@ Benchmarks.groupRandomMessagesIo                  thrpt   10      10.398 ±    0
 
 Benchmark                                          Mode  Cnt       Score     Error  Units
 Benchmarks.actorCreateAndStop                     thrpt   10  246988.715 ± 920.241  ops/s
-Benchmarks.ask                                    thrpt   10   43706.042 ± 133.526  ops/s
+Benchmarks.ask                                    thrpt   10   51283.671 ±2435.835  ops/s
 Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.477 ±   0.052  ops/s
 Benchmarks.contendedConcurrencyForkJoin           thrpt   10       1.609 ±   0.120  ops/s
 Benchmarks.contendedConcurrencyImmediate          thrpt   10       2.702 ±   0.133  ops/s
