@@ -40,7 +40,7 @@ public final class Context implements Disposable {
     private final AtomicInteger state = new AtomicInteger();
 
     private final Heirarchy actors;
-    
+
     // actors active, can create
     private static final int STATE_ACTIVE = 0;
 
@@ -53,22 +53,25 @@ public final class Context implements Disposable {
     // final state is TERMINATED indicated by latch having counted down to 0
 
     private final CountDownLatch latch = new CountDownLatch(1);
-    
+
+    private final ActorRef<Object> deadLetterActor;
+
     final ActorRef<?> root;
 
-    final ActorRef<Object> deadLetterActor;
-    
     public Context() {
         this(Supervisor.defaultSupervisor());
     }
 
     public Context(Supervisor supervisor) {
+        this(supervisor, () -> createActorObject(DeadLetterActor.class));
+    }
+
+    public Context(Supervisor supervisor, Supplier<? extends Actor<Object>> deadLetterActorFactory) {
         this.supervisor = supervisor;
         this.actors = new Heirarchy();
         this.root = createActor(RootActor.class);
         actors.setRoot(root);
-        this.deadLetterActor = createActor(DeadLetterActor.class, Constants.DEAD_LETTER_ACTOR_NAME);
-        //TODO allow custom deadLetterActor
+        this.deadLetterActor = createActor(deadLetterActorFactory, Constants.DEAD_LETTER_ACTOR_NAME);
     }
 
     public static Context create() {
@@ -81,6 +84,10 @@ public final class Context implements Disposable {
 
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name) {
         return createActor(actorClass, name, Scheduler.defaultScheduler());
+    }
+
+    private ActorRef<Object> createActor(Supplier<? extends Actor<Object>> actorFactory, String name) {
+        return createActor(actorFactory, name, Scheduler.defaultScheduler(), supervisor, Optional.ofNullable(root));
     }
 
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn) {
