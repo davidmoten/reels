@@ -175,7 +175,7 @@ public class Benchmarks {
         Benchmarks b = new Benchmarks();
         while (true) {
             b.setup();
-            b.groupRandomMessagesComputationSticky();
+            b.contendedConcurrency(Scheduler.forkJoin());
             b.tearDown();
         }
     }
