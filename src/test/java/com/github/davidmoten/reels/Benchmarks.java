@@ -117,7 +117,10 @@ public class Benchmarks {
                             .lookupActor(Integer.toString(random.nextInt(numActors))) //
                             .ifPresent(x -> x.tell(msg + 1));
                 }
-            }).name(Integer.toString(i)).build();
+            }) //
+                    .scheduler(scheduler) //
+                    .name(Integer.toString(i)) //
+                    .build();
         }
         ActorRef<Integer> a = context.<Integer>lookupActor("0").get();
         for (int i = 0; i < starters; i++) {
@@ -166,11 +169,14 @@ public class Benchmarks {
         Context context = new Context((c, actor, error) -> {
             log.error(actor.name() + ":" + error.getMessage(), error);
         });
-        ActorRef<String> askActor = context
-                .<String>matchAll((c, msg) -> c.sender().ifPresent(sender -> sender.tell("boo"))) //
-                .build();
+//        ActorRef<String> askActor = context
+//                .<String>matchAll((c, msg) -> c.sender().ifPresent(sender -> sender.tell("boo"))) //
+//                .build();
+        Benchmarks b = new Benchmarks();
         while (true) {
-            askActor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS);
+            b.setup();
+            b.groupRandomMessagesComputationSticky();
+            b.tearDown();
         }
     }
 
