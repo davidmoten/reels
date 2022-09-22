@@ -26,9 +26,11 @@ public interface Supervisor {
      * A {@link SupervisedActorRef} also has methods to restart the actor (recreate
      * the actor object which discards current state in the actor) but retain the
      * queued messages, and also the ability to clear the current message queue.
+     * These methods should only be called synchronously in the processFailure
+     * method because of type safety contraints. 
      * 
-     * 
-     * @param message  message the actor failed to process (includes context reference)
+     * @param message  message the actor failed to process (includes context
+     *                 reference)
      * @param actorRef reference to the actor where the error occurred
      * @param error    the error throw in the Actor.onMessage method. Wrapped in
      *                 OnStopException if thrown by onStop method.
