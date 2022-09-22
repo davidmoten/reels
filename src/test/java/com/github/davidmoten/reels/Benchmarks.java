@@ -34,7 +34,7 @@ public class Benchmarks {
         context = new Context((c, actor, error) -> {
             log.error(actor.name() + ":" + error.getMessage(), error);
         });
-        askActor = context.<String>matchAll(m -> m.sender().ifPresent(sender -> sender.tell("boo"))) //
+        askActor = context.<String>matchAll(m -> m.senderRaw().tell("boo")) //
                 .build();
     }
 
@@ -146,7 +146,7 @@ public class Benchmarks {
                     for (int i = 0; i < runners; i++) {
                         ActorRef<int[]> actor = m.context() //
                                 .<int[]>matchAll(m2 -> {
-                                    m2.sender().get().tell(m2.content(), m2.self());
+                                    m2.senderRaw().tell(m2.content(), m2.self());
                                 }) //
                                 .scheduler(scheduler) //
                                 .build();
@@ -178,7 +178,7 @@ public class Benchmarks {
         Benchmarks b = new Benchmarks();
         while (true) {
             b.setup();
-            b.contendedConcurrency(Scheduler.forkJoin());
+            b.contendedConcurrency(Scheduler.computation());
             b.tearDown();
         }
     }

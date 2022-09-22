@@ -34,7 +34,7 @@ public class Message<T> implements MessageContext<T> {
         return Optional.ofNullable((ActorRef<S>) sender);
     }
 
-    public ActorRef<?> senderRaw() {
+    public <S> ActorRef<S> senderRaw() {
         return sender;
     }
 
