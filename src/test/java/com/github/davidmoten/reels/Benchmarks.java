@@ -178,7 +178,7 @@ public class Benchmarks {
         Benchmarks b = new Benchmarks();
         while (true) {
             b.setup();
-            b.contendedConcurrency(Scheduler.computation());
+            b.contendedConcurrency(Scheduler.immediate());
             b.tearDown();
         }
     }
