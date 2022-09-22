@@ -70,7 +70,7 @@ public class Benchmarks {
     
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
-    public void a_contendedConcurrencyForkJoinLong() throws InterruptedException {
+    public void contendedConcurrencyForkJoinLong() throws InterruptedException {
         contendedConcurrency(Scheduler.forkJoin(), 100000);
     }
 
