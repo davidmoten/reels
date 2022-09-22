@@ -28,7 +28,7 @@ public interface Supervisor {
      * queued messages, and also the ability to clear the current message queue.
      * 
      * 
-     * @param context  context the actor
+     * @param message  message the actor failed to process (includes context reference)
      * @param actorRef reference to the actor where the error occurred
      * @param error    the error throw in the Actor.onMessage method. Wrapped in
      *                 OnStopException if thrown by onStop method.

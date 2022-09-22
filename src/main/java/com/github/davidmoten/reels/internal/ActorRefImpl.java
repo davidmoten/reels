@@ -43,7 +43,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     private final AtomicInteger wip;
     private Actor<T> actor; // mutable because recreated if restart called
     private volatile boolean disposed;
-    private volatile boolean stopped; 
+    private volatile boolean stopped;
 
     public static <T> ActorRefImpl<T> create(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
             Context context, Supervisor supervisor, Optional<ActorRef<?>> parent) {
@@ -148,6 +148,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                             actor.onStop(message);
                         } catch (Throwable e) {
                             supervisor.processFailure(message, this, new OnStopException(e));
+                            // TODO catch throw
                         }
                         Set<ActorRef<?>> copy;
                         synchronized (children) {
@@ -172,6 +173,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                             // if the line below throws then the actor will no longer process messages
                             // (because wip will be != 0)
                             supervisor.processFailure(message, this, e);
+                            // TODO catch throw
                         }
                     }
                 }
