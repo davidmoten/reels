@@ -33,6 +33,7 @@
         <jxr.version>3.3.0</jxr.version>
         <taglist.version>3.0.0</taglist.version>
         <m3.site.version>3.12.1</m3.site.version>
+        <heap>1000m</heap>
     </properties>
 
     <licenses>
@@ -196,7 +197,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M7</version>
                 <configuration>
-                    <argLine>-Xmx600m</argLine>
+                    <argLine>-Xmx${heap}</argLine>
                 </configuration>
             </plugin>
             <plugin>
