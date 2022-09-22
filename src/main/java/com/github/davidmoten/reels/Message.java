@@ -34,8 +34,9 @@ public class Message<T> implements MessageContext<T> {
         return Optional.ofNullable((ActorRef<S>) sender);
     }
 
+    @SuppressWarnings("unchecked")
     public <S> ActorRef<S> senderRaw() {
-        return sender;
+        return (ActorRef<S>) sender;
     }
 
     @Override
