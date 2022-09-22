@@ -113,7 +113,7 @@ public class Benchmarks {
     }
 
     private void groupRandomMessages(Scheduler scheduler) throws InterruptedException {
-        int numMessages = 10000;
+        int numMessages = 100000;
         int numActors = 10;
 
         // this is how many messages are pinging around simultaneously at any one time
