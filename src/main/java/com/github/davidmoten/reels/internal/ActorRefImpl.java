@@ -18,6 +18,7 @@ import com.github.davidmoten.reels.Context;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Message;
 import com.github.davidmoten.reels.OnStopException;
+import com.github.davidmoten.reels.PoisonPill;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.SupervisedActorRef;
 import com.github.davidmoten.reels.Supervisor;
@@ -28,8 +29,6 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, Disposable {
 
 //    private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
-
-    public static final Object POISON_PILL = new PoisonPill();
 
     private final String name;
     private final Supplier<? extends Actor<T>> factory;
@@ -124,7 +123,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     @SuppressWarnings("unchecked")
     @Override
     public void stop() {
-        tell((T) POISON_PILL);
+        tell((T) PoisonPill.INSTANCE);
     }
 
     @Override
@@ -141,8 +140,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                     if (disposed) {
                         queue.clear();
                         return;
-                    }
-                    if (message.content() == POISON_PILL) {
+                    } else if (message.content() == PoisonPill.INSTANCE) {
                         stopped = true;
                         try {
                             actor.onStop(message);
@@ -299,13 +297,6 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
             dispose();
         }
 
-    }
-
-    // VisibleForTesting
-    static final class PoisonPill {
-        public String toString() {
-            return "PoisonPill";
-        }
     }
 
     @Override
