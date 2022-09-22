@@ -3,7 +3,7 @@ package com.github.davidmoten.reels;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -13,14 +13,14 @@ import com.github.davidmoten.reels.internal.util.Util;
 
 public final class ActorBuilder<T> {
     
-    private final Random random = new Random();
-
+    private static final AtomicLong counter = new AtomicLong();
+    
     private final Context context;
     private final List<Matcher<T, ? extends T>> matches = new ArrayList<>();
     private Supervisor supervisor;
     private Consumer<? super Throwable> onError;
     private Scheduler scheduler = Scheduler.forkJoin();
-    private String name = random.nextInt() + "-" + System.currentTimeMillis();
+    private String name = "Anonymous-" + counter.incrementAndGet();
     private Optional<ActorRef<?>> parent;
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
     private Consumer<? super MessageContext<T>> onStop = null;
