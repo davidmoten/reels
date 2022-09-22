@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 @State(Scope.Benchmark)
 public class Benchmarks {
 
+    private static final int MESSAGES_PER_RUNNER = 10000;
+
     private static final Logger log = LoggerFactory.getLogger(Benchmarks.class);
 
     private final Random random = new Random();
@@ -65,25 +67,25 @@ public class Benchmarks {
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyForkJoin() throws InterruptedException {
-        contendedConcurrency(Scheduler.forkJoin(), 10000);
+        contendedConcurrency(Scheduler.forkJoin(), MESSAGES_PER_RUNNER);
     }
     
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    public void contendedConcurrencyForkJoinLong() throws InterruptedException {
-        contendedConcurrency(Scheduler.forkJoin(), 100000);
-    }
+//    @Benchmark
+//    @BenchmarkMode(Mode.AverageTime)
+//    public void contendedConcurrencyForkJoinLong() throws InterruptedException {
+//        contendedConcurrency(Scheduler.forkJoin(), 100000);
+//    }
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyComputationSticky() throws InterruptedException {
-        contendedConcurrency(Scheduler.computation(), 10000);
+        contendedConcurrency(Scheduler.computation(), MESSAGES_PER_RUNNER);
     }
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyImmediate() throws InterruptedException {
-        contendedConcurrency(Scheduler.immediate(), 10000);
+        contendedConcurrency(Scheduler.immediate(), MESSAGES_PER_RUNNER);
     }
 
     @Benchmark
