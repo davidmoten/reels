@@ -28,7 +28,7 @@ public class Message<T> implements MessageContext<T> {
     public ActorRef<T> self() {
         return self;
     }
-
+    
     @SuppressWarnings("unchecked")
     public <S> Optional<ActorRef<S>> sender() {
         return Optional.ofNullable((ActorRef<S>) sender);

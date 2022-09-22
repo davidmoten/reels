@@ -147,7 +147,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                         try {
                             actor.onStop(message);
                         } catch (Throwable e) {
-                            supervisor.processFailure(context, this, new OnStopException(e));
+                            supervisor.processFailure(message, this, new OnStopException(e));
                         }
                         Set<ActorRef<?>> copy;
                         synchronized (children) {
@@ -171,7 +171,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                         } catch (Throwable e) {
                             // if the line below throws then the actor will no longer process messages
                             // (because wip will be != 0)
-                            supervisor.processFailure(context, this, e);
+                            supervisor.processFailure(message, this, e);
                         }
                     }
                 }

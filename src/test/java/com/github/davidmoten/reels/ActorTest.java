@@ -29,9 +29,9 @@ public class ActorTest {
     public void test() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         Context c = new Context();
-        Supervisor supervisor = (context, actor, error) -> {
+        Supervisor supervisor = (m, self, error) -> {
             error.printStackTrace();
-            actor.dispose();
+            self.dispose();
         };
         AtomicBoolean once = new AtomicBoolean();
         ActorRef<Object> a = c //
@@ -77,7 +77,7 @@ public class ActorTest {
     public void testSupervisorCalled() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         Context c = new Context();
-        Supervisor supervisor = (context, actor, error) -> latch.countDown();
+        Supervisor supervisor = (m, self, error) -> latch.countDown();
         ActorRef<Integer> a = c //
                 .match(Integer.class, m -> {
                     throw new RuntimeException("boo");
@@ -93,7 +93,7 @@ public class ActorTest {
     public void testSupervisorCreatesAgainOnRestart() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(2);
         Context c = new Context();
-        Supervisor supervisor = (context, actor, error) -> actor.restart();
+        Supervisor supervisor = (m, self, error) -> self.restart();
         ActorRef<Integer> a = c //
                 .<Integer>factory(() -> new Actor<Integer>() {
 
@@ -121,8 +121,8 @@ public class ActorTest {
     public void testSupervisorClearsQueue() throws InterruptedException, ExecutionException, TimeoutException {
         Context c = new Context();
         AtomicInteger count = new AtomicInteger();
-        Supervisor supervisor = (context, actor, error) -> {
-            actor.clearQueue();
+        Supervisor supervisor = (m, self, error) -> {
+            self.clearQueue();
         };
         ActorRef<Integer> a = c //
                 .match(Integer.class, m -> {

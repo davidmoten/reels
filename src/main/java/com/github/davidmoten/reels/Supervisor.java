@@ -33,7 +33,7 @@ public interface Supervisor {
      * @param error    the error throw in the Actor.onMessage method. Wrapped in
      *                 OnStopException if thrown by onStop method.
      */
-    void processFailure(Context context, SupervisedActorRef<?> actorRef, Throwable error);
+    void processFailure(Message<?> message, SupervisedActorRef<?> self, Throwable error);
 
     static Supervisor defaultSupervisor() {
         return SupervisorDefault.INSTANCE;
