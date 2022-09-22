@@ -65,19 +65,25 @@ public class Benchmarks {
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyForkJoin() throws InterruptedException {
-        contendedConcurrency(Scheduler.forkJoin());
+        contendedConcurrency(Scheduler.forkJoin(), 10000);
+    }
+    
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    public void a_contendedConcurrencyForkJoinLong() throws InterruptedException {
+        contendedConcurrency(Scheduler.forkJoin(), 100000);
     }
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyComputationSticky() throws InterruptedException {
-        contendedConcurrency(Scheduler.computation());
+        contendedConcurrency(Scheduler.computation(), 10000);
     }
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyImmediate() throws InterruptedException {
-        contendedConcurrency(Scheduler.immediate());
+        contendedConcurrency(Scheduler.immediate(), 10000);
     }
 
     @Benchmark
@@ -105,7 +111,7 @@ public class Benchmarks {
     }
 
     private void groupRandomMessages(Scheduler scheduler) throws InterruptedException {
-        int numMessages = 100000;
+        int numMessages = 10000;
         int numActors = 10;
 
         // this is how many messages are pinging around simultaneously at any one time
@@ -136,9 +142,8 @@ public class Benchmarks {
         VALUE;
     }
 
-    private void contendedConcurrency(Scheduler scheduler) throws InterruptedException {
+    private void contendedConcurrency(Scheduler scheduler, int messagesPerRunner) throws InterruptedException {
         int runners = 100;
-        int messagesPerRunner = 10000;
         CountDownLatch latch = new CountDownLatch(1);
         int[] count = new int[] { runners * messagesPerRunner };
         ActorRef<Object> root = context //
@@ -178,7 +183,7 @@ public class Benchmarks {
         Benchmarks b = new Benchmarks();
         while (true) {
             b.setup();
-            b.contendedConcurrency(Scheduler.immediate());
+            b.contendedConcurrency(Scheduler.immediate(), 10000);
             b.tearDown();
         }
     }
