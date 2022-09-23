@@ -73,14 +73,15 @@ Benchmarks.groupRandomMessagesImmediate           thrpt   10      21.397 ±    0
 Benchmarks.groupRandomMessagesIo                  thrpt   10       0.814 ±    0.019  ops/s
 ```
 
+Anonymous naming change:
 ```
-Benchmarks.actorCreateAndStop                     thrpt   10  843772.163 ± 10372.990  ops/s
-Benchmarks.ask                                    thrpt   10       5.356 ±     0.012  ops/s
-Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.487 ±     0.009  ops/s
-Benchmarks.contendedConcurrencyForkJoin           thrpt   10       3.230 ±     0.318  ops/s
-Benchmarks.contendedConcurrencyImmediate          thrpt   10       3.783 ±     0.264  ops/s
-Benchmarks.groupRandomMessagesComputationSticky   thrpt   10      17.228 ±     0.345  ops/s
-Benchmarks.groupRandomMessagesForkJoin            thrpt   10     158.044 ±     0.661  ops/s
-Benchmarks.groupRandomMessagesImmediate           thrpt   10     212.939 ±     1.618  ops/s
-Benchmarks.groupRandomMessagesIo                  thrpt    9       6.390 ±     0.781  ops/s
+Benchmark                                          Mode  Cnt        Score      Error  Units
+Benchmarks.actorCreateAndStop                     thrpt   10  1072695.807 ± 8297.390  ops/s
+Benchmarks.ask                                    thrpt   10        5.363 ±    0.051  ops/s
+Benchmarks.contendedConcurrencyComputationSticky  thrpt   10        0.500 ±    0.009  ops/s
+Benchmarks.contendedConcurrencyForkJoin           thrpt   10        3.326 ±    0.259  ops/s
+Benchmarks.contendedConcurrencyImmediate          thrpt   10        3.674 ±    0.427  ops/s
+Benchmarks.groupRandomMessagesComputationSticky   thrpt   10        1.707 ±    0.052  ops/s
+Benchmarks.groupRandomMessagesForkJoin            thrpt   10       16.859 ±    0.174  ops/s
+Benchmarks.groupRandomMessagesImmediate           thrpt   10       18.922 ±    3.095  ops/s
 ```
