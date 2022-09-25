@@ -12,23 +12,23 @@ import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.util.Util;
 
 public final class ActorBuilder<T> {
-    
+
     private static final AtomicLong counter = new AtomicLong();
-    
+
     private final Context context;
     private final List<Matcher<T, ? extends T>> matches = new ArrayList<>();
     private Supervisor supervisor;
     private Consumer<? super Throwable> onError;
     private Scheduler scheduler = Scheduler.forkJoin();
     private String name = "Anonymous-" + counter.incrementAndGet();
-    private Optional<ActorRef<?>> parent;
+    private ActorRef<?> parent; // nullable
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
     private Consumer<? super MessageContext<T>> onStop = null;
 
     ActorBuilder(Context context) {
         this.context = context;
         this.supervisor = context.supervisor();
-        this.parent = Optional.ofNullable(context.root);
+        this.parent = context.root;
     }
 
     public <S extends T> ActorBuilder<T> match(Class<S> matchClass, Consumer<? super Message<T>> consumer) {
@@ -88,7 +88,7 @@ public final class ActorBuilder<T> {
 
     public ActorBuilder<T> parent(ActorRef<?> parent) {
         Preconditions.checkParameterNotNull(parent, "parent");
-        this.parent = Optional.of(parent);
+        this.parent = parent;
         return this;
     }
 

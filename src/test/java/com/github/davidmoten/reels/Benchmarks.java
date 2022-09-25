@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.Test;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Level;
@@ -47,6 +46,16 @@ public class Benchmarks {
         context = null;
     }
 
+    @Benchmark
+    @BenchmarkMode(Mode.SingleShotTime)
+    public void aasequential() throws InterruptedException, ExecutionException, TimeoutException {
+        int max = 1000000;
+        CountDownLatch latch = new CountDownLatch(1);
+        ActorRef<Integer> a = createSequentialActor(context, latch, -1, max);
+        a.tell(0);
+        assertTrue(latch.await(60, TimeUnit.SECONDS));
+    }
+    
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void actorCreateAndStop() throws InterruptedException {
@@ -111,16 +120,6 @@ public class Benchmarks {
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesImmediate() throws InterruptedException {
         groupRandomMessages(Scheduler.immediate());
-    }
-
-    @Benchmark
-    @BenchmarkMode(Mode.Throughput)
-    public void sequential() throws InterruptedException, ExecutionException, TimeoutException {
-        int max = 1000000;
-        CountDownLatch latch = new CountDownLatch(1);
-        ActorRef<Integer> a = createSequentialActor(context, latch, -1, max);
-        a.tell(0);
-        assertTrue(latch.await(60, TimeUnit.SECONDS));
     }
 
     private static ActorRef<Integer> createSequentialActor(Context c, CountDownLatch latch, int finished, int max) {

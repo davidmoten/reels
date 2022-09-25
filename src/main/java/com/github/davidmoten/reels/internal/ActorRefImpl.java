@@ -1,7 +1,6 @@
 package com.github.davidmoten.reels.internal;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -37,22 +36,24 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     private final Supervisor supervisor;
     private final Scheduler scheduler;
     private final Worker worker;
-    private final Optional<ActorRef<?>> parent;
-    private final Set<ActorRef<?>> children; // synchronized
+    private final ActorRef<?> parent; // nullable
     private final AtomicInteger wip;
+    private Set<ActorRef<?>> children; // synchronized, nullable, lazily assigned 
     private Actor<T> actor; // mutable because recreated if restart called
     private volatile boolean disposed;
     private volatile boolean stopped;
 
     public static <T> ActorRefImpl<T> create(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
-            Context context, Supervisor supervisor, Optional<ActorRef<?>> parent) {
+            Context context, Supervisor supervisor, ActorRef<?> parent) {
         ActorRefImpl<T> a = new ActorRefImpl<T>(name, factory, scheduler, context, supervisor, parent);
-        parent.ifPresent(p -> ((ActorRefImpl<?>) p).addChild(a));
+        if (parent != null) {
+            ((ActorRefImpl<?>) parent).addChild(a);
+        }
         return a;
     }
 
     private ActorRefImpl(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler, Context context,
-            Supervisor supervisor, Optional<ActorRef<?>> parent) {
+            Supervisor supervisor, ActorRef<?> parent) {
         this.name = name;
         this.factory = factory;
         this.context = context;
@@ -62,36 +63,35 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         this.parent = parent;
         this.actor = factory.get();
         this.scheduler = scheduler;
-        this.children = new HashSet<ActorRef<?>>();
         this.wip = new AtomicInteger();
     }
 
     void addChild(ActorRef<?> actor) {
-        synchronized (children) {
+        synchronized (children()) {
             if (disposed) {
                 actor.dispose();
             } else {
-                children.add(actor);
+                children().add(actor);
             }
         }
     }
 
     void removeChild(ActorRef<?> actor) {
-        synchronized (children) {
-            children.remove(actor);
+        synchronized (children()) {
+            children().remove(actor);
         }
     }
 
     @Override
     public void dispose() {
-        synchronized (children) {
+        synchronized (children()) {
             disposeThis();
             disposeChildren();
         }
     }
 
     private void disposeChildren() {
-        for (ActorRef<?> child : children) {
+        for (ActorRef<?> child : children()) {
             child.dispose();
         }
     }
@@ -101,7 +101,9 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
             disposed = true;
             worker.dispose();
             queue.clear();
-            parent.ifPresent(p -> ((ActorRefImpl<?>) p).removeChild(this));
+            if (parent != null) {
+                ((ActorRefImpl<?>) parent).removeChild(this);
+            }
             context.disposed(this);
         }
     }
@@ -124,6 +126,13 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     @Override
     public void stop() {
         tell((T) PoisonPill.INSTANCE);
+    }
+    
+    private Set<ActorRef<?>> children() {
+        if (children == null) {
+            children = new HashSet<>();
+        }
+        return children;
     }
 
     @Override
@@ -149,8 +158,8 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                             // TODO catch throw
                         }
                         Set<ActorRef<?>> copy;
-                        synchronized (children) {
-                            copy = new HashSet<>(children);
+                        synchronized (children()) {
+                            copy = new HashSet<>(children());
                         }
                         context.actorStopped(this);
                         // we send stop message outside of synchronized block
@@ -300,7 +309,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     }
 
     @Override
-    public Optional<ActorRef<?>> parent() {
+    public ActorRef<?> parent() {
         return parent;
     }
 

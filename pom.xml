@@ -364,7 +364,7 @@
                                         <argument>-wi</argument>
                                         <argument>4</argument>
                                         <argument>-jvmArgs</argument>
-                                        <argument>-Xmx512m</argument>
+                                        <argument>-Xmx2g</argument>
                                     </arguments>
                                 </configuration>
                             </execution>

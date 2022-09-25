@@ -32,7 +32,10 @@ public final class Heirarchy {
             if (actors.put(actor.name(), actor) != null) {
                 throw new CreateException("actor with that name already exists");
             }
-            actor.parent().ifPresent(p -> addChildTo(actor, p));
+            ActorRef<?> p = actor.parent();
+            if (p != null) {
+                addChildTo(actor, p);
+            }
             active.add(actor);
         }
     }
