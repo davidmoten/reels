@@ -416,8 +416,8 @@ public class ActorTest {
         assertEquals("root", root.name());
         root.tell(Start.VALUE);
         assertTrue(latch.await(60, TimeUnit.SECONDS));
-        log.info("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
         context.shutdownGracefully().get(10, TimeUnit.SECONDS);
+        log.info("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
     }
 
     @Test
@@ -521,13 +521,20 @@ public class ActorTest {
 
     @Test
     public void testSequential() throws InterruptedException, ExecutionException, TimeoutException {
-        Context c = new Context();
-        int max = 5;
-        CountDownLatch latch = new CountDownLatch(1);
-        ActorRef<Integer> a = createSequentialActor(c, latch, -1, max);
-        a.tell(0);
-        assertTrue(latch.await(60, TimeUnit.SECONDS));
-        c.shutdownGracefully().get(60, TimeUnit.SECONDS);
+        int max = 1000000;
+        for (int i = 0; i < 10; i++) {
+            log.info("========================================================================");
+            log.info("Sequential test with default scheduler, num actors = " + max);
+            log.info("========================================================================");
+            long t = System.currentTimeMillis();
+            Context c = new Context();
+            CountDownLatch latch = new CountDownLatch(1);
+            ActorRef<Integer> a = createSequentialActor(c, latch, -1, max);
+            a.tell(0);
+            assertTrue(latch.await(60, TimeUnit.SECONDS));
+            c.shutdownGracefully().get(60, TimeUnit.SECONDS);
+            log.info("time=" + (System.currentTimeMillis() - t) / 1000.0 + "s");
+        }
     }
 
     private static ActorRef<Integer> createSequentialActor(Context c, CountDownLatch latch, int finished, int max) {
@@ -539,7 +546,6 @@ public class ActorTest {
             } else if (x == max) {
                 sender.tell(finished);
             } else {
-                System.out.println("creating for " + x);
                 ActorRef<Integer> next = createSequentialActor(c, latch, finished, max);
                 next.tell(x + 1, m.self());
             }
