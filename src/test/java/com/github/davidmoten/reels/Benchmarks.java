@@ -48,7 +48,7 @@ public class Benchmarks {
 
     @Benchmark
     @BenchmarkMode(Mode.SingleShotTime)
-    public void aasequential() throws InterruptedException, ExecutionException, TimeoutException {
+    public void sequential() throws InterruptedException, ExecutionException, TimeoutException {
         int max = 1000000;
         CountDownLatch latch = new CountDownLatch(1);
         ActorRef<Integer> a = createSequentialActor(context, latch, -1, max);
