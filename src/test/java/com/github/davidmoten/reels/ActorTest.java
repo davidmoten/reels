@@ -427,7 +427,7 @@ public class ActorTest {
         Context c = new Context();
         try {
             ActorRef<Integer> b = c.<Integer>matchAll(m -> {
-                m.sender().ifPresent(sender -> sender.tell(m.content()+ 1));
+                m.sender().ifPresent(sender -> sender.tell(m.content() + 1));
             }).name("b").build();
             ActorRef<Integer> a = c.<Integer>matchAll(m -> {
                 if (m.content() < maxMessages) {
@@ -476,8 +476,7 @@ public class ActorTest {
         AtomicBoolean called = new AtomicBoolean();
         ActorRef<Object> a = context.matchAll(m -> {
         }).build();
-        ActorRef<Object> b = context.matchAll(m -> called.set(true)).scheduler(Scheduler.immediate()).parent(a)
-                .build();
+        ActorRef<Object> b = context.matchAll(m -> called.set(true)).scheduler(Scheduler.immediate()).parent(a).build();
         a.dispose();
         b.tell(1);
         assertFalse(called.get());
@@ -504,8 +503,7 @@ public class ActorTest {
     @Test
     public void testAsk() throws InterruptedException, ExecutionException, TimeoutException {
         Context context = new Context();
-        ActorRef<String> actor = context
-                .<String>matchAll(m -> m.sender().ifPresent(sender -> sender.tell("boo"))) //
+        ActorRef<String> actor = context.<String>matchAll(m -> m.sender().ifPresent(sender -> sender.tell("boo"))) //
                 .build();
         assertEquals("boo", actor.ask("hi").get(1000, TimeUnit.MILLISECONDS));
         context.dispose();
@@ -519,6 +517,35 @@ public class ActorTest {
                 .build();
         @SuppressWarnings("unused")
         ActorRef<Integer> b = a.as(Integer.class);
+    }
+
+    @Test
+    public void testSequential() throws InterruptedException, ExecutionException, TimeoutException {
+        Context c = new Context();
+        int max = 5;
+        CountDownLatch latch = new CountDownLatch(1);
+        ActorRef<Integer> a = createSequentialActor(c, latch, -1, max);
+        a.tell(0);
+        assertTrue(latch.await(60, TimeUnit.SECONDS));
+        c.shutdownGracefully().get(60, TimeUnit.SECONDS);
+    }
+
+    private static ActorRef<Integer> createSequentialActor(Context c, CountDownLatch latch, int finished, int max) {
+        return c.match(Integer.class, m -> {
+            int x = m.content();
+            ActorRef<Object> sender = m.senderRaw();
+            if (sender == null && x == finished) {
+                latch.countDown();
+            } else if (x == max) {
+                sender.tell(finished);
+            } else {
+                System.out.println("creating for " + x);
+                ActorRef<Integer> next = createSequentialActor(c, latch, finished, max);
+                next.tell(x + 1, m.self());
+            }
+        }) //
+                .scheduler(Scheduler.defaultScheduler()) //
+                .build();
     }
 
     public static final class MyActor implements Actor<Integer> {
