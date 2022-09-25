@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Test;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Level;
@@ -69,7 +70,7 @@ public class Benchmarks {
     public void contendedConcurrencyForkJoin() throws InterruptedException {
         contendedConcurrency(Scheduler.forkJoin(), MESSAGES_PER_RUNNER);
     }
-    
+
 //    @Benchmark
 //    @BenchmarkMode(Mode.AverageTime)
 //    public void contendedConcurrencyForkJoinLong() throws InterruptedException {
@@ -110,6 +111,33 @@ public class Benchmarks {
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesImmediate() throws InterruptedException {
         groupRandomMessages(Scheduler.immediate());
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    public void sequential() throws InterruptedException, ExecutionException, TimeoutException {
+        int max = 1000000;
+        CountDownLatch latch = new CountDownLatch(1);
+        ActorRef<Integer> a = createSequentialActor(context, latch, -1, max);
+        a.tell(0);
+        assertTrue(latch.await(60, TimeUnit.SECONDS));
+    }
+
+    private static ActorRef<Integer> createSequentialActor(Context c, CountDownLatch latch, int finished, int max) {
+        return c.match(Integer.class, m -> {
+            int x = m.content();
+            ActorRef<Object> sender = m.senderRaw();
+            if (sender == null && x == finished) {
+                latch.countDown();
+            } else if (x == max) {
+                sender.tell(finished);
+            } else {
+                ActorRef<Integer> next = createSequentialActor(c, latch, finished, max);
+                next.tell(x + 1, m.self());
+            }
+        }) //
+                .scheduler(Scheduler.defaultScheduler()) //
+                .build();
     }
 
     private void groupRandomMessages(Scheduler scheduler) throws InterruptedException {
