@@ -171,7 +171,6 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                                 }
                             }
                         }
-                        context.actorStopped(this);
                         if (copy != null) {
                             // we send stop message outside of synchronized block
                             // because immediate scheduler might be in use
@@ -181,6 +180,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                                 }
                             }
                         }
+                        context.actorStopped(this);
                         return;
                     } else if (stopped) {
                         Message<T> m = message;
