@@ -36,6 +36,7 @@ public class MassiveTellToSingleActorReels {
             }).build();
             main.tell(-1);
             assertTrue(latch.await(60, TimeUnit.SECONDS));
+            c.shutdownGracefully();
             System.out.println((System.currentTimeMillis() - t) + "ms");
         }
     }

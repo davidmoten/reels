@@ -516,7 +516,9 @@ public class ActorTest {
         }) //
                 .build();
         @SuppressWarnings("unused")
-        ActorRef<Integer> b = a.as(Integer.class);
+        ActorRef<Integer> b = a.narrow();
+        @SuppressWarnings("unused")
+        ActorRef<Integer> c = a.recast();
     }
 
     public static final class MyActor implements Actor<Integer> {

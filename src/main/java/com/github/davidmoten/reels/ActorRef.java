@@ -72,8 +72,23 @@ public interface ActorRef<T> extends Disposable {
      */
     ActorRef<?> parent();
 
+    /**
+     * Returns type-safe recasting of ActorRef message type.
+     * @param <S> new message type
+     * @return this but with different generic typing
+     */
     @SuppressWarnings("unchecked")
-    default <S> ActorRef<S> as(Class<S> cls) {
+    default <S> ActorRef<S> recast() {
+        return (ActorRef<S>) this;
+    }
+    
+    /**
+     * Returns type-safe recasting of ActorRef message type.
+     * @param <S> new message type
+     * @return this but with different generic typing
+     */
+    @SuppressWarnings("unchecked")
+    default <S extends T> ActorRef<S> narrow() {
         return (ActorRef<S>) this;
     }
 
