@@ -4,8 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -19,8 +18,6 @@ import com.github.davidmoten.reels.internal.DeadLetterActor;
 import com.github.davidmoten.reels.internal.Heirarchy;
 import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.RootActor;
-import com.github.davidmoten.reels.internal.supervisor.CountDownFuture;
-import com.github.davidmoten.reels.internal.supervisor.DoneFuture;
 
 /**
  * Creates actors, disposes actors and looks actors up by name.
@@ -52,7 +49,7 @@ public final class Context implements Disposable {
 
     // final state is TERMINATED indicated by latch having counted down to 0
 
-    private final CountDownLatch latch = new CountDownLatch(1);
+    private final CompletableFuture<Void> terminated = new CompletableFuture<>();
 
     private final ActorRef<Object> deadLetterActor;
 
@@ -134,7 +131,7 @@ public final class Context implements Disposable {
     public boolean disposed(ActorRef<?> actor) {
         if (actors.remove(actor)) {
             if (state.get() != STATE_ACTIVE && actors.isEmpty()) {
-                latch.countDown();
+                terminated.complete(null);
             }
             return true;
         } else {
@@ -160,22 +157,22 @@ public final class Context implements Disposable {
         return supervisor;
     }
 
-    public Future<Void> shutdownNow() throws InterruptedException, TimeoutException {
+    public CompletableFuture<Void> shutdownNow() throws InterruptedException, TimeoutException {
         dispose();
-        return new CountDownFuture(latch);
+        return terminated;
     }
 
-    public Future<Void> shutdownGracefully() {
+    public CompletableFuture<Void> shutdownGracefully() {
         if (state.compareAndSet(STATE_ACTIVE, STATE_STOPPING)) {
             synchronized (lock) {
                 if (actors.allTerminated()) {
-                    return new DoneFuture();
+                    return terminated;
                 } else {
                     actors.stop();
                 }
             }
         }
-        return new CountDownFuture(latch);
+        return terminated;
     }
 
     public ActorRef<Object> deadLetterActor() {
@@ -186,7 +183,7 @@ public final class Context implements Disposable {
     public void actorStopped(ActorRefImpl<?> actor) {
         actors.actorStopped(actor);
         if (actors.allTerminated()) {
-            latch.countDown();
+            terminated.complete(null);
         }
     }
 
