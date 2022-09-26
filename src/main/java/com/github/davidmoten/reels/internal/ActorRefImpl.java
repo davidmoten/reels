@@ -183,8 +183,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                         context.actorStopped(this);
                         return;
                     } else if (stopped) {
-                        Message<T> m = message;
-                        context.lookupActor(Constants.DEAD_LETTER_ACTOR_NAME).ifPresent(x -> x.tell(m, this));
+                        context.deadLetterActor().tell(message, this);
                     } else {
                         try {
 //                        info("calling onMessage");
