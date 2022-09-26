@@ -7,6 +7,7 @@
             <Bug pattern="EI_EXPOSE_REP"/>
             <Bug pattern="EI_EXPOSE_REP2"/>
             <Bug pattern="BC_UNCONFIRMED_CAST"/>
+            <Bug pattern="MS_EXPOSE_REP"/>
         </Or>
     </Match>
 </FindBugsFilter>
