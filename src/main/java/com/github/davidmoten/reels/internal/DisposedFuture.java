@@ -1,18 +1,19 @@
 package com.github.davidmoten.reels.internal;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.github.davidmoten.reels.DisposedException;
 
-public final class DisposedFuture<T> implements Future<T> {
+public final class DisposedFuture<T> extends CompletableFuture<T> {
 
     private static final DisposedFuture<Object> INSTANCE = new DisposedFuture<Object>();
 
     private DisposedFuture() {
         // prevent instantiation
+        super();
     }
 
     @SuppressWarnings("unchecked")

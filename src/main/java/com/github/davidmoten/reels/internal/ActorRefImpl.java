@@ -1,10 +1,6 @@
 package com.github.davidmoten.reels.internal;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -245,7 +241,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     }
 
     @Override
-    public <S> Future<S> ask(T message) {
+    public <S> CompletableFuture<S> ask(T message) {
         AskFuture<S> future = new AskFuture<S>();
         ActorRef<S> actor = context.<S>matchAll(m -> future.setValue(m.content())).build();
         future.setDisposable(actor);
@@ -259,20 +255,19 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     }
 
     // VisibleForTesting
-    static final class AskFuture<T> extends CountDownLatch implements Future<T> {
+    static final class AskFuture<T> extends CompletableFuture<T> {
 
         private final AtomicBoolean disposed;
         private Disposable disposable = Disposable.disposed(); // mutable
-        private volatile T value;
 
         public AskFuture() {
-            super(1);
+            super();
             this.disposed = new AtomicBoolean();
         }
 
         @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
-            countDown();
+            super.cancel(mayInterruptIfRunning);
             dispose();
             return true;
         }
@@ -280,27 +275,6 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         @Override
         public boolean isCancelled() {
             return disposable.isDisposed();
-        }
-
-        @Override
-        public boolean isDone() {
-            return value != null;
-        }
-
-        @Override
-        public T get() throws InterruptedException, ExecutionException {
-            await();
-            return value;
-        }
-
-        @Override
-        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            if (await(timeout, unit)) {
-                return value;
-            } else {
-                dispose();
-                throw new TimeoutException();
-            }
         }
 
         private void dispose() {
@@ -314,11 +288,9 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         }
 
         public void setValue(T value) {
-            this.value = value;
-            countDown();
+            complete(value);
             dispose();
         }
-
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.github.davidmoten.reels.internal;
 
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
@@ -37,7 +37,7 @@ public final class ActorRefDisposed<T> implements ActorRef<T> {
     }
 
     @Override
-    public <S> Future<S> ask(T message) {
+    public <S> CompletableFuture<S> ask(T message) {
         return DisposedFuture.instance();
     }
 
