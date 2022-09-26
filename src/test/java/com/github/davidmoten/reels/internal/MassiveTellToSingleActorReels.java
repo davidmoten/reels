@@ -3,14 +3,16 @@ package com.github.davidmoten.reels.internal;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
 
 public class MassiveTellToSingleActorReels {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException, TimeoutException {
         for (int j = 0; j < 20; j++) {
             Context c = new Context();
             int n = 100000;
@@ -36,7 +38,7 @@ public class MassiveTellToSingleActorReels {
             }).build();
             main.tell(-1);
             assertTrue(latch.await(60, TimeUnit.SECONDS));
-            c.shutdownGracefully();
+            c.shutdownGracefully().get(60, TimeUnit.SECONDS);
             System.out.println((System.currentTimeMillis() - t) + "ms");
         }
     }

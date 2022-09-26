@@ -1,7 +1,5 @@
 package com.github.davidmoten.reels.internal;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -24,11 +22,13 @@ import com.github.davidmoten.reels.Supervisor;
 import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
 import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
+import com.github.davidmoten.reels.internal.util.OpenHashSet;
 
-public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, Disposable {
+public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef<T>, Runnable, Disposable {
 
 //    private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
+    private static final long serialVersionUID = 8766398270492289693L;
     private final String name;
     private final Supplier<? extends Actor<T>> factory;
     private transient final SimplePlainQueue<Message<T>> queue; // mailbox
@@ -37,8 +37,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     private final Scheduler scheduler;
     private final Worker worker;
     private final ActorRef<?> parent; // nullable
-    private final AtomicInteger wip;
-    private Set<ActorRef<?>> children; // synchronized, nullable, lazily assigned 
+    private OpenHashSet<ActorRef<?>> children; // synchronized, nullable, lazily assigned
     private Actor<T> actor; // mutable because recreated if restart called
     private volatile boolean disposed;
     private volatile boolean stopped;
@@ -54,6 +53,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
 
     private ActorRefImpl(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler, Context context,
             Supervisor supervisor, ActorRef<?> parent) {
+        super();
         this.name = name;
         this.factory = factory;
         this.context = context;
@@ -63,11 +63,10 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
         this.parent = parent;
         this.actor = factory.get();
         this.scheduler = scheduler;
-        this.wip = new AtomicInteger();
     }
 
     void addChild(ActorRef<?> actor) {
-        synchronized (children()) {
+        synchronized (name) {
             if (disposed) {
                 actor.dispose();
             } else {
@@ -77,22 +76,26 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     }
 
     void removeChild(ActorRef<?> actor) {
-        synchronized (children()) {
+        synchronized (name) {
             children().remove(actor);
         }
     }
 
     @Override
     public void dispose() {
-        synchronized (children()) {
+        synchronized (name) {
             disposeThis();
             disposeChildren();
         }
     }
 
     private void disposeChildren() {
-        for (ActorRef<?> child : children()) {
-            child.dispose();
+        if (children != null) {
+            for (Object child : children.keys()) {
+                if (child != null) {
+                    ((ActorRef<?>) child).dispose();
+                }
+            }
         }
     }
 
@@ -127,10 +130,10 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     public void stop() {
         tell((T) PoisonPill.INSTANCE);
     }
-    
-    private Set<ActorRef<?>> children() {
+
+    private OpenHashSet<ActorRef<?>> children() {
         if (children == null) {
-            children = new HashSet<>();
+            children = new OpenHashSet<>();
         }
         return children;
     }
@@ -139,7 +142,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
     public void run() {
         // drain queue
 //        info("run called");
-        if (wip.getAndIncrement() == 0) {
+        if (getAndIncrement() == 0) {
 //            info("starting drain");
             while (true) {
                 int missed = 1;
@@ -157,15 +160,26 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                             supervisor.processFailure(message, this, new OnStopException(e));
                             // TODO catch throw
                         }
-                        Set<ActorRef<?>> copy;
-                        synchronized (children()) {
-                            copy = new HashSet<>(children());
+                        OpenHashSet<ActorRef<?>> copy = null;
+                        synchronized (name) {
+                            if (children != null) {
+                                copy = new OpenHashSet<>();
+                                for (Object child : children().keys()) {
+                                    if (child != null) {
+                                        copy.add((ActorRef<?>) child);
+                                    }
+                                }
+                            }
                         }
                         context.actorStopped(this);
-                        // we send stop message outside of synchronized block
-                        // because immediate scheduler might be in use
-                        for (ActorRef<?> child : copy) {
-                            child.stop();
+                        if (copy != null) {
+                            // we send stop message outside of synchronized block
+                            // because immediate scheduler might be in use
+                            for (Object child : copy.keys()) {
+                                if (child != null) {
+                                    ((ActorRef<?>) child).stop();
+                                }
+                            }
                         }
                         return;
                     } else if (stopped) {
@@ -184,7 +198,7 @@ public final class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, D
                         }
                     }
                 }
-                missed = wip.addAndGet(-missed);
+                missed = addAndGet(-missed);
                 if (missed == 0) {
                     break;
                 }

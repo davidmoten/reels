@@ -171,4 +171,8 @@ public final class OpenHashSet<T> {
     public int size() {
         return size;
     }
+    
+    public boolean isEmpty() {
+        return size == 0;
+    }
 }
