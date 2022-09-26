@@ -22,7 +22,7 @@ public class ActorRefDisposedTest {
         assertEquals("a", a.name());
         a.tell(false);
         a.tell(false, a);
-        assertTrue(a.ask(false) instanceof DisposedFuture);
+        assertTrue(a.ask(false) instanceof CancelledCompletableFuture);
         assertTrue(Scheduler.doNothing() == a.scheduler());
     }
 

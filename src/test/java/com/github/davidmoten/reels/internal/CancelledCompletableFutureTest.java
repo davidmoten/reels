@@ -1,7 +1,8 @@
 package com.github.davidmoten.reels.internal;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -9,27 +10,25 @@ import java.util.concurrent.TimeoutException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.github.davidmoten.reels.DisposedException;
-
-public class DisposedFutureTest {
+public class CancelledCompletableFutureTest {
     
     @Test
     public void test() throws InterruptedException, ExecutionException, TimeoutException {
-        DisposedFuture<Object> d = DisposedFuture.instance();
-        assertFalse(d.isCancelled());
-        assertFalse(d.cancel(true));
-        assertFalse(d.isCancelled());
-        assertFalse(d.isDone());
+        CancelledCompletableFuture<Object> d = CancelledCompletableFuture.instance();
+        assertTrue(d.isCancelled());
+        assertTrue(d.cancel(true));
+        assertTrue(d.isCancelled());
+        assertTrue(d.isDone());
         try {
             d.get();
             Assert.fail();
-        } catch (DisposedException e) {
+        } catch (CancellationException e) {
             // all good
         }
         try {
             d.get(100, TimeUnit.MILLISECONDS);
             Assert.fail();
-        } catch (DisposedException e) {
+        } catch (CancellationException e) {
             // all good
         }
     }

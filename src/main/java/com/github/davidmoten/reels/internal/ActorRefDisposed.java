@@ -38,7 +38,7 @@ public final class ActorRefDisposed<T> implements ActorRef<T> {
 
     @Override
     public <S> CompletableFuture<S> ask(T message) {
-        return DisposedFuture.instance();
+        return CancelledCompletableFuture.instance();
     }
 
     @Override
