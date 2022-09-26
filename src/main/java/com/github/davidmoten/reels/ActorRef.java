@@ -27,9 +27,9 @@ public interface ActorRef<T> extends Disposable {
 
     /**
      * Creates a temporary actor that sends the message to {@code this} and the
-     * returned Future waits on a response. The arrival of the response to the
-     * Future or a timeout on Future.get also disposes the temporary actor as does
-     * cancelling the Future.
+     * returned {@link CompletableFuture} waits on a response. The arrival of the
+     * response to the Future or a timeout on CompletableFuture.get also disposes
+     * the temporary actor as does cancelling the Future.
      * 
      * @param <S>     type of response
      * @param message message to send to {@code this}
@@ -74,6 +74,7 @@ public interface ActorRef<T> extends Disposable {
 
     /**
      * Returns type-safe recasting of ActorRef message type.
+     * 
      * @param <S> new message type
      * @return this but with different generic typing
      */
@@ -81,9 +82,10 @@ public interface ActorRef<T> extends Disposable {
     default <S> ActorRef<S> recast() {
         return (ActorRef<S>) this;
     }
-    
+
     /**
      * Returns type-safe recasting of ActorRef message type.
+     * 
      * @param <S> new message type
      * @return this but with different generic typing
      */
