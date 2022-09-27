@@ -33,7 +33,13 @@ public final class ActorBuilder<T> {
 
     public <S extends T> ActorBuilder<T> match(Class<S> matchClass, Consumer<? super Message<T>> consumer) {
         Preconditions.checkArgument(!factory.isPresent(), "cannot set both matches and factory in builder");
-        matches.add(new Matcher<T, S>(matchClass, consumer));
+        matches.add(new Matcher<T, S>(matchClass, null, consumer));
+        return this;
+    }
+
+    public <S extends T> ActorBuilder<T> matchEquals(T value, Consumer<? super Message<T>> consumer) {
+        Preconditions.checkArgument(!factory.isPresent(), "cannot set both matches and factory in builder");
+        matches.add(new Matcher<T, S>(null, value, consumer));
         return this;
     }
 
@@ -99,10 +105,12 @@ public final class ActorBuilder<T> {
 
     private static final class Matcher<T, S extends T> {
         final Class<S> matchClass;
+        final Object matchEquals;
         final Consumer<? super Message<T>> consumer;
 
-        Matcher(Class<S> matchClass, Consumer<? super Message<T>> consumer) {
+        Matcher(Class<S> matchClass, Object matchEquals, Consumer<? super Message<T>> consumer) {
             this.matchClass = matchClass;
+            this.matchEquals = matchEquals;
             this.consumer = consumer;
         }
     }
@@ -124,7 +132,8 @@ public final class ActorBuilder<T> {
         @Override
         public void onMessage(Message<T> message) {
             for (Matcher<T, ? extends T> matcher : matchers) {
-                if (matcher.matchClass.isInstance(message.content())) {
+                if (matcher.matchEquals != null && matcher.matchEquals.equals(message.content())
+                        || matcher.matchClass.isInstance(message.content())) {
                     try {
                         ((Matcher<T, T>) matcher).consumer.accept(message);
                     } catch (Throwable e) {
