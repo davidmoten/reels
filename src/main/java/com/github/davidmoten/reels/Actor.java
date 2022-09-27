@@ -16,5 +16,5 @@ public interface Actor<T> {
     void onMessage(Message<T> message);
     
     void onStop(MessageContext<T> context);
-
+    
 }

@@ -35,14 +35,15 @@ public class Benchmarks {
     public void setup() {
         context = new Context((c, actor, error) -> {
             log.error(actor.name() + ":" + error.getMessage(), error);
-        });
+        }, //
+                () -> new ActorDoNothing<Object>());
         askActor = context.<String>matchAll(m -> m.senderRaw().tell("boo")) //
                 .build();
     }
 
     @TearDown(Level.Invocation)
-    public void tearDown() {
-        context.shutdownGracefully();
+    public void tearDown() throws InterruptedException, ExecutionException, TimeoutException {
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
         context = null;
     }
 
@@ -84,7 +85,7 @@ public class Benchmarks {
 //    @BenchmarkMode(Mode.AverageTime)
 //    public void contendedConcurrencyForkJoinLong() throws InterruptedException {
 //        contendedConcurrency(Scheduler.forkJoin(), 100000);
-//    }
+//   ) }
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
