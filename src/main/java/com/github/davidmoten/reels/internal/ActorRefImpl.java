@@ -93,7 +93,9 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         if (children != null) {
             for (Object child : children.keys()) {
                 if (child != null) {
-                    ((ActorRef<?>) child).dispose();
+                    // use context to dispose so don't encounter
+                    // stack overflow from deeply nested actor heirarchy
+                    context.dispose((ActorRef<?>) child);
                 }
             }
         }

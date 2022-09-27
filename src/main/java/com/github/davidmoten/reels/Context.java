@@ -138,6 +138,10 @@ public final class Context implements Disposable {
             return false;
         }
     }
+    
+    public void dispose(ActorRef<?> actor) {
+        actors.dispose(actor);
+    }
 
     @Override
     public void dispose() {
