@@ -18,9 +18,12 @@
 
 package com.github.davidmoten.reels.internal.util;
 
+import java.util.Arrays;
+
 /**
  * A simple open hash set with add, remove and clear capabilities only.
- * <p>Doesn't support nor check for {@code null}s.
+ * <p>
+ * Doesn't support nor check for {@code null}s.
  *
  * @param <T> the element type
  */
@@ -39,6 +42,7 @@ public final class OpenHashSet<T> {
 
     /**
      * Creates an OpenHashSet with the initial capacity and load factor of 0.75f.
+     * 
      * @param capacity the initial capacity
      */
     public OpenHashSet(int capacity) {
@@ -50,8 +54,8 @@ public final class OpenHashSet<T> {
         this.loadFactor = loadFactor;
         int c = Util.roundToPowerOfTwo(capacity);
         this.mask = c - 1;
-        this.maxSize = (int)(loadFactor * c);
-        this.keys = (T[])new Object[c];
+        this.maxSize = (int) (loadFactor * c);
+        this.keys = (T[]) new Object[c];
     }
 
     public boolean add(T value) {
@@ -81,6 +85,7 @@ public final class OpenHashSet<T> {
         }
         return true;
     }
+
     public boolean remove(T value) {
         T[] a = keys;
         int m = mask;
@@ -138,10 +143,11 @@ public final class OpenHashSet<T> {
         int newCap = i << 1;
         int m = newCap - 1;
 
-        T[] b = (T[])new Object[newCap];
+        T[] b = (T[]) new Object[newCap];
 
-        for (int j = size; j-- != 0; ) {
-            while (a[--i] == null) { } // NOPMD
+        for (int j = size; j-- != 0;) {
+            while (a[--i] == null) {
+            } // NOPMD
             int pos = mix(a[i].hashCode()) & m;
             if (b[pos] != null) {
                 for (;;) {
@@ -155,7 +161,7 @@ public final class OpenHashSet<T> {
         }
 
         this.mask = m;
-        this.maxSize = (int)(newCap * loadFactor);
+        this.maxSize = (int) (newCap * loadFactor);
         this.keys = b;
     }
 
@@ -171,8 +177,23 @@ public final class OpenHashSet<T> {
     public int size() {
         return size;
     }
-    
+
     public boolean isEmpty() {
         return size == 0;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < keys.length; i++) {
+            T v = keys[i];
+            if (v != null) {
+                if (b.length() > 0) {
+                    b.append(", ");
+                }
+                b.append(v);
+            }
+        }
+        return "Set[" + b.toString() + "]";
     }
 }

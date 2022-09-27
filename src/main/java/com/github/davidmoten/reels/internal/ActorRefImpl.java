@@ -121,10 +121,10 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
 
     @Override
     public void tell(T message, ActorRef<?> sender) {
-        info("sending " + message + " to " + sender);
         if (state == DISPOSED) {
             return;
         }
+        info(message + " arrived from " + sender + " to " + this);
         queue.offer(new Message<T>(message, this, sender));
         worker.schedule(this);
     }
@@ -132,7 +132,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     @SuppressWarnings("unchecked")
     @Override
     public void stop() {
-        tell((T) PoisonPill.INSTANCE);
+        tell((T) PoisonPill.INSTANCE, parent);
     }
 
     private OpenHashSet<ActorRef<?>> children() {
@@ -162,17 +162,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                         if (message.content() == Constants.TERMINATED) {
                             children.remove(message.senderRaw());
                             if (children.isEmpty()) {
-                                s = STOPPED;
-                                try {
-                                    actor.onStop(message);
-                                } catch (Throwable e) {
-                                    supervisor.processFailure(message, this, new OnStopException(e));
-                                    // TODO catch throw
-                                }
-                                if (message.senderRaw() != null) {
-                                    message.senderRaw().tell(Constants.TERMINATED, message.self().parent());
-                                }
-                                context.actorStopped(this);
+                                runOnStop(message);
                             }
                         } else {
                             context.deadLetterActor().tell(message, this);
@@ -197,13 +187,14 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                             // because immediate scheduler might be in use
                             for (Object child : copy.keys()) {
                                 if (child != null) {
-                                    ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
+                                    if (parent != null) {
+                                        ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
+                                    }
                                 }
                             }
                         } else {
-                            if (message.senderRaw() != null) {
-                                message.senderRaw().tell(Constants.TERMINATED, message.senderRaw());
-                            }
+                            // no children, send Terminated to parent
+                            runOnStop(message);
                         }
                         return;
                     } else {
@@ -226,6 +217,23 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
             }
         }
 //        info("exited run, wip=" + wip.get());
+    }
+
+    private void runOnStop(Message<T> message) {
+        state = STOPPED;
+        try {
+            actor.onStop(message);
+        } catch (Throwable e) {
+            supervisor.processFailure(message, this, new OnStopException(e));
+            // TODO catch throw
+        }
+        ActorRef<?> p = message.self().parent();
+        if (p == null) {
+            // must be root actor
+            p = message.self();
+        }
+        p.<Object>recast().tell(Constants.TERMINATED, message.self());
+        context.actorStopped(this);
     }
 
     private void info(String s) {

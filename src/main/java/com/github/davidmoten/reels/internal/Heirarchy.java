@@ -146,6 +146,8 @@ public final class Heirarchy {
 
     public boolean allTerminated() {
         synchronized (parents) {
+            System.out.println("size="+ active.size());
+            System.out.println("active=" + active);
             return active.size() == 0;
         }
     }
