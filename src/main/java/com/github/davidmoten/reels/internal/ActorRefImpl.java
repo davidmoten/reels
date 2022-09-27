@@ -159,15 +159,14 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                         return;
                     } else if (s == STOPPING) {
                         if (message.content() == Constants.TERMINATED) {
-                            children.remove(message.senderRaw());
-                            if (children.isEmpty()) {
-                                runOnStop(message);
-                            }
+                            handleTerminationMessage(message);
                         } else {
                             sendToDeadLetter(message);
                         }
                     } else if (s == STOPPED) {
-                        sendToDeadLetter(message);
+                        if (message.content() != PoisonPill.INSTANCE) {
+                            sendToDeadLetter(message);
+                        }
                     } else if (message.content() == PoisonPill.INSTANCE) {
                         state = STOPPING;
                         OpenHashSet<ActorRef<?>> copy = null;
@@ -193,6 +192,8 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                             // no children, send Terminated to parent
                             runOnStop(message);
                         }
+                    } else if (message.content() == Constants.TERMINATED) {
+                        handleTerminationMessage(message);
                     } else {
                         try {
 //                        info("calling onMessage");
@@ -213,6 +214,13 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
             }
         }
 //        info("exited run, wip=" + wip.get());
+    }
+
+    private void handleTerminationMessage(Message<T> message) {
+        children.remove(message.senderRaw());
+        if (children.isEmpty()) {
+            runOnStop(message);
+        }
     }
 
     private void sendToDeadLetter(Message<T> message) {

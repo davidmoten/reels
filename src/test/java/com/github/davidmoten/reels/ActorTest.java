@@ -510,6 +510,20 @@ public class ActorTest {
     }
 
     @Test
+    public void testCreateAndStop() throws InterruptedException, ExecutionException, TimeoutException {
+        Context context = new Context((c, actor, error) -> {
+            log.error(actor.name() + ":" + error.getMessage(), error);
+        }, //
+                () -> new ActorDoNothing<Object>());
+        context //
+                .matchAll(m -> m.self().stop()) //
+                .scheduler(Scheduler.immediate()) //
+                .build() //
+                .tell(Boolean.TRUE);
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
+    }
+
+    @Test
     public void testAs() {
         Context context = new Context();
         ActorRef<Number> a = context.<Number>matchAll(m -> {
