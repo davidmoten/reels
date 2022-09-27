@@ -521,6 +521,21 @@ public class ActorTest {
         ActorRef<Integer> c = a.recast();
     }
 
+    @Test
+    public void testMatchEquals() throws InterruptedException, ExecutionException, TimeoutException {
+        Context context = new Context();
+        CountDownLatch latch = new CountDownLatch(1);
+        ActorRef<Integer> a = context //
+                .matchEquals(1, m -> m.self().tell(2)) //
+                .matchEquals(2, m -> m.self().tell(3)) //
+                .matchEquals(3, m -> latch.countDown()) //
+                .build();
+        a.tell(0);
+        a.tell(1);
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        context.shutdownNow().get(5, TimeUnit.SECONDS);
+    }
+
     public static final class MyActor implements Actor<Integer> {
 
         static volatile Integer last;

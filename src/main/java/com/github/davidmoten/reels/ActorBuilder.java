@@ -133,7 +133,7 @@ public final class ActorBuilder<T> {
         public void onMessage(Message<T> message) {
             for (Matcher<T, ? extends T> matcher : matchers) {
                 if (matcher.matchEquals != null && matcher.matchEquals.equals(message.content())
-                        || matcher.matchClass.isInstance(message.content())) {
+                        || matcher.matchEquals == null && matcher.matchClass.isInstance(message.content())) {
                     try {
                         ((Matcher<T, T>) matcher).consumer.accept(message);
                     } catch (Throwable e) {
