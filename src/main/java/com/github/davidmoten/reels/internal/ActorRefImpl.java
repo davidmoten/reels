@@ -121,7 +121,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         if (state == DISPOSED) {
             return;
         }
-        info(message + " arrived from " + sender + " to " + this);
+//        info(message + " arrived from " + sender + " to " + this);
         queue.offer(new Message<T>(message, this, sender));
         worker.schedule(this);
     }
@@ -151,7 +151,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                 Message<T> message;
                 while ((message = queue.poll()) != null) {
                     int s = state;
-                    info("message polled=" + message.content() + ", state=" + s);
+//                    info("message polled=" + message.content() + ", state=" + s);
                     if (s == DISPOSED) {
                         queue.clear();
                         return;
@@ -236,9 +236,9 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         context.actorStopped(this);
     }
 
-    private void info(String s) {
+//    private void info(String s) {
 //        log.debug("{}: {}", name, s);
-    }
+//    }
 
     @Override
     public boolean isDisposed() {
