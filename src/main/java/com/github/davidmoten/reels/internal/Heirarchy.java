@@ -67,29 +67,6 @@ public final class Heirarchy {
         }
     }
 
-    public void stop(ActorRef<?> actor) {
-        // use a stack not recursion to protect against
-        // stack overflow
-        Deque<ActorRef<?>> stack = new LinkedList<>();
-        stack.push(actor);
-        ActorRef<?> a;
-        while ((a = stack.poll()) != null) {
-            a.<Object>recast().tell(PoisonPill.INSTANCE, a);
-            List<ActorRef<?>> list;
-            synchronized (parents) {
-                list = children.get(a);
-                if (list != null) {
-                    list = new ArrayList<>(list);
-                }
-            }
-            if (list != null) {
-                for (ActorRef<?> child : list) {
-                    stack.offer(child);
-                }
-            }
-        }
-    }
-
     public void dispose(ActorRef<?> actor) {
         // use a stack not recursion to protect against
         // stack overflow
@@ -133,7 +110,9 @@ public final class Heirarchy {
     }
 
     public void stop() {
-        stop(root);
+        // use a stack not recursion to protect against
+        // stack overflow
+        root.<Object>recast().tell(PoisonPill.INSTANCE, root);
     }
 
     public void actorStopped(ActorRefImpl<?> actor) {
@@ -146,8 +125,6 @@ public final class Heirarchy {
 
     public boolean allTerminated() {
         synchronized (parents) {
-            System.out.println("size="+ active.size());
-            System.out.println("active=" + active);
             return active.size() == 0;
         }
     }

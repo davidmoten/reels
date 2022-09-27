@@ -35,8 +35,8 @@ public class Message<T> implements MessageContext<T> {
     }
 
     /**
-     * Returns the sender {@link ActorRef}. May be null. This method exists to reduce
-     * allocation pressue from Optional creation.
+     * Returns the sender {@link ActorRef}. May be null. This method exists to
+     * reduce allocation pressue from Optional creation.
      * 
      * @param <S> message type
      * @return actor reference
@@ -49,5 +49,10 @@ public class Message<T> implements MessageContext<T> {
     @Override
     public Context context() {
         return self.context();
+    }
+
+    @Override
+    public String toString() {
+        return "Message[" + content + "]";
     }
 }

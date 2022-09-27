@@ -153,8 +153,8 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                 int missed = 1;
                 Message<T> message;
                 while ((message = queue.poll()) != null) {
-                    info("message polled=" + message.content());
                     int s = state;
+                    info("message polled=" + message.content() + ", state=" + s);
                     if (s == DISPOSED) {
                         queue.clear();
                         return;
@@ -165,10 +165,10 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                                 runOnStop(message);
                             }
                         } else {
-                            context.deadLetterActor().tell(message, this);
+                            sendToDeadLetter(message);
                         }
                     } else if (s == STOPPED) {
-                        context.deadLetterActor().tell(message, this);
+                        sendToDeadLetter(message);
                     } else if (message.content() == PoisonPill.INSTANCE) {
                         state = STOPPING;
                         OpenHashSet<ActorRef<?>> copy = null;
@@ -187,16 +187,13 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                             // because immediate scheduler might be in use
                             for (Object child : copy.keys()) {
                                 if (child != null) {
-                                    if (parent != null) {
-                                        ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
-                                    }
+                                    ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
                                 }
                             }
                         } else {
                             // no children, send Terminated to parent
                             runOnStop(message);
                         }
-                        return;
                     } else {
                         try {
 //                        info("calling onMessage");
@@ -219,6 +216,12 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
 //        info("exited run, wip=" + wip.get());
     }
 
+    private void sendToDeadLetter(Message<T> message) {
+        if (context.deadLetterActor() != this) {
+            context.deadLetterActor().tell(message, this);
+        }
+    }
+
     private void runOnStop(Message<T> message) {
         state = STOPPED;
         try {
@@ -227,17 +230,17 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
             supervisor.processFailure(message, this, new OnStopException(e));
             // TODO catch throw
         }
-        ActorRef<?> p = message.self().parent();
+        ActorRef<?> p = parent;
         if (p == null) {
             // must be root actor
             p = message.self();
         }
-        p.<Object>recast().tell(Constants.TERMINATED, message.self());
+        p.<Object>recast().tell(Constants.TERMINATED, this);
         context.actorStopped(this);
     }
 
     private void info(String s) {
-        log.debug("{}: {}", name, s);
+//        log.debug("{}: {}", name, s);
     }
 
     @Override

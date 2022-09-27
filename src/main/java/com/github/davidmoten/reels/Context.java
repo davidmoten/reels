@@ -66,7 +66,7 @@ public final class Context implements Disposable {
     public Context(Supervisor supervisor, Supplier<? extends Actor<Object>> deadLetterActorFactory) {
         this.supervisor = supervisor;
         this.actors = new Heirarchy();
-        this.root = createActor(RootActor.class, "Reels-RootActor");
+        this.root = createActor(RootActor.class, Constants.ROOT_ACTOR_NAME);
         actors.setRoot(root);
         // must have set root before calling createActor
         this.deadLetterActor = createActor(deadLetterActorFactory, Constants.DEAD_LETTER_ACTOR_NAME);

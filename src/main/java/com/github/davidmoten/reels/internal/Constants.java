@@ -20,4 +20,6 @@ public final class Constants {
             return "TERMINATED";
         }
     };
+
+    public static final String ROOT_ACTOR_NAME = "reels-root";
 }

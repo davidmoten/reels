@@ -50,7 +50,7 @@ public class ActorTest {
                 .build();
         a.tell(123);
         assertTrue(latch.await(5, TimeUnit.SECONDS));
-        assertEquals("ActorRef[test]", a.toString());
+        assertEquals("test", a.toString());
     }
 
     @Test
@@ -298,12 +298,12 @@ public class ActorTest {
         actor.tell(1);
         actor.tell(2);
         actor.tell(3);
-        context.shutdownGracefully().get(1000, TimeUnit.MILLISECONDS);
+        context.shutdownGracefully().get(1000000, TimeUnit.MILLISECONDS);
         actor.tell(4);
         Thread.sleep(100);
         assertEquals(3, count.get());
         Future<Void> future = context.shutdownGracefully();
-        future.get(10, TimeUnit.SECONDS);
+        future.get(5, TimeUnit.SECONDS);
         assertTrue(future.isDone());
         assertFalse(future.isCancelled());
     }
