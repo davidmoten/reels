@@ -5,9 +5,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
@@ -25,7 +22,7 @@ import com.github.davidmoten.reels.internal.util.OpenHashSet;
 
 public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef<T>, Runnable, Disposable {
 
-    private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
+//    private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
     private static final long serialVersionUID = 8766398270492289693L;
     private final String name;

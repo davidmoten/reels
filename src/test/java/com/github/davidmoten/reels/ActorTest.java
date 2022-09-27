@@ -136,7 +136,7 @@ public class ActorTest {
         a.tell(456);
         // sleep a bit so that supervisor handles exception (and clears queue)
         // otherwise stop signal will get cleared as well
-        Thread.sleep(300);
+        Thread.sleep(500);
         c.shutdownGracefully().get(1, TimeUnit.SECONDS);
         assertEquals(1, count.get());
     }
