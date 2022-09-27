@@ -145,7 +145,8 @@ public final class OpenHashSet<T> {
 
         for (int j = size; j-- != 0;) {
             while (a[--i] == null) {
-            } // NOPMD
+            }//
+            // NOPMD
             int pos = mix(a[i].hashCode()) & m;
             if (b[pos] != null) {
                 for (;;) {
@@ -169,7 +170,8 @@ public final class OpenHashSet<T> {
     }
 
     public Object[] keys() {
-        return keys; // NOPMD
+        return keys; // 
+        // NOPMD
     }
 
     public int size() {

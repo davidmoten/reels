@@ -22,6 +22,7 @@ public final class Heirarchy {
     private final OpenHashSet<ActorRef<?>> active = new OpenHashSet<>();
 
     public Heirarchy() {
+        root = null;
     }
 
     public void setRoot(ActorRef<?> root) {
