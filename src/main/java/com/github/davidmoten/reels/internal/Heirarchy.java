@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.CreateException;
+import com.github.davidmoten.reels.PoisonPill;
 import com.github.davidmoten.reels.internal.util.OpenHashSet;
 
 public final class Heirarchy {
@@ -73,7 +74,7 @@ public final class Heirarchy {
         stack.push(actor);
         ActorRef<?> a;
         while ((a = stack.poll()) != null) {
-            a.stop();
+            a.<Object>recast().tell(PoisonPill.INSTANCE, a);
             List<ActorRef<?>> list;
             synchronized (parents) {
                 list = children.get(a);

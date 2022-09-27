@@ -212,7 +212,7 @@ public class Benchmarks {
         Benchmarks b = new Benchmarks();
         while (true) {
             b.setup();
-            b.contendedConcurrency(Scheduler.immediate(), 10000);
+            b.sequential();
             b.tearDown();
         }
     }

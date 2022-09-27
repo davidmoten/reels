@@ -13,4 +13,11 @@ public final class Constants {
     public static final Scheduler SINGLE = Scheduler.fromExecutor(Executors.newSingleThreadScheduledExecutor());
 
     public static final String DEAD_LETTER_ACTOR_NAME = "reels-dead-letter";
+
+    public static final Object TERMINATED = new Object() {
+        @Override
+        public String toString() {
+            return "TERMINATED";
+        }
+    };
 }
