@@ -18,8 +18,6 @@
 
 package com.github.davidmoten.reels.internal.util;
 
-import java.util.Arrays;
-
 /**
  * A simple open hash set with add, remove and clear capabilities only.
  * <p>
