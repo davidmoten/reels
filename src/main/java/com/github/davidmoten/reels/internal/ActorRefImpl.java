@@ -1,6 +1,8 @@
 package com.github.davidmoten.reels.internal;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -18,7 +20,6 @@ import com.github.davidmoten.reels.Supervisor;
 import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
 import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
-import com.github.davidmoten.reels.internal.util.OpenHashSet;
 
 public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef<T>, Runnable, Disposable {
 
@@ -33,7 +34,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     private final Scheduler scheduler;
     private final Worker worker;
     private final ActorRef<?> parent; // nullable
-    private OpenHashSet<ActorRef<?>> children; // synchronized, nullable, lazily assigned
+    private final Map<String, ActorRef<?>> children; // synchronized, nullable, lazily assigned
     private Actor<T> actor; // mutable because recreated if restart called
     private volatile int state = ACTIVE; // 0 = ACTIVE, 1 = STOPPING, 2 = STOPPED, 3 = DISPOSED
 
@@ -63,41 +64,32 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         this.parent = parent;
         this.actor = factory.get();
         this.scheduler = scheduler;
+        this.children = new ConcurrentHashMap<>();
     }
 
     void addChild(ActorRef<?> actor) {
-        synchronized (name) {
-            if (state == DISPOSED) {
-                actor.dispose();
-            } else {
-                children().add(actor);
-            }
+        if (state == DISPOSED) {
+            actor.dispose();
+        } else {
+            children.put(actor.name(), actor);
         }
     }
 
     void removeChild(ActorRef<?> actor) {
-        synchronized (name) {
-            children().remove(actor);
-        }
+        children.remove(actor.name());
     }
 
     @Override
     public void dispose() {
-        synchronized (name) {
-            disposeThis();
-            disposeChildren();
-        }
+        disposeThis();
+        disposeChildren();
     }
 
     private void disposeChildren() {
-        if (children != null) {
-            for (Object child : children.keys()) {
-                if (child != null) {
-                    // use context to dispose so don't encounter
-                    // stack overflow from deeply nested actor heirarchy
-                    context.dispose((ActorRef<?>) child);
-                }
-            }
+        for (ActorRef<?> child : children.values()) {
+            // use context to dispose so don't encounter
+            // stack overflow from deeply nested actor heirarchy
+            context.dispose((ActorRef<?>) child);
         }
     }
 
@@ -134,13 +126,6 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         tell((T) PoisonPill.INSTANCE, parent);
     }
 
-    private OpenHashSet<ActorRef<?>> children() {
-        if (children == null) {
-            children = new OpenHashSet<>();
-        }
-        return children;
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public void run() {
@@ -169,27 +154,15 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                         }
                     } else if (message.content() == PoisonPill.INSTANCE) {
                         state = STOPPING;
-                        OpenHashSet<ActorRef<?>> copy = null;
-                        synchronized (name) {
-                            if (children != null) {
-                                copy = new OpenHashSet<>();
-                                for (Object child : children().keys()) {
-                                    if (child != null) {
-                                        copy.add((ActorRef<?>) child);
-                                    }
-                                }
-                            }
+                        // we send stop message outside of synchronized block
+                        // because immediate scheduler might be in use
+                        boolean isEmpty = true;
+                        for (ActorRef<?> child : children.values()) {
+                            ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
+                            isEmpty = false;
                         }
-                        if (copy != null) {
-                            // we send stop message outside of synchronized block
-                            // because immediate scheduler might be in use
-                            for (Object child : copy.keys()) {
-                                if (child != null) {
-                                    ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
-                                }
-                            }
-                        } else {
-                            // no children, send Terminated to parent
+                        if (isEmpty) {
+                            // no children, run onStop and send Terminated to parent
                             runOnStop(message);
                         }
                     } else if (message.content() == Constants.TERMINATED) {
@@ -213,13 +186,16 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                 }
             }
         }
+
 //        info("exited run, wip=" + wip.get());
     }
 
     private void handleTerminationMessage(Message<T> message) {
-        children.remove(message.senderRaw());
-        if (children.isEmpty()) {
-            runOnStop(message);
+        synchronized (name) {
+            children.remove(message.senderRaw().name());
+            if (children.isEmpty()) {
+                runOnStop(message);
+            }
         }
     }
 
