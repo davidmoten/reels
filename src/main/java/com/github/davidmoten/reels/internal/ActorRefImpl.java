@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
+import com.github.davidmoten.reels.CreateException;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Message;
 import com.github.davidmoten.reels.OnStopException;
@@ -29,7 +30,7 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef<T>, Runnable, Disposable {
 
     public static final boolean debug = false;
-    
+
     private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
     private static final long serialVersionUID = 8766398270492289693L;
@@ -69,6 +70,9 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         this.worker = scheduler.createWorker();
         this.parent = parent;
         this.actor = factory.get();
+        if (actor == null) {
+            throw new CreateException("actor factory cannot return null");
+        }
         this.scheduler = scheduler;
         this.children = new ConcurrentHashMap<>();
     }
@@ -248,6 +252,9 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     @Override
     public void restart() {
         actor = factory.get();
+        if (actor == null) {
+            throw new CreateException("actor factory cannot return null");
+        }
     }
 
     @Override
@@ -322,7 +329,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     public ActorRef<?> child(String name) {
         return children.get(name);
     }
-    
+
     protected void complete() {
         // do nothing
     }

@@ -354,6 +354,7 @@ public class ActorTest {
     @Test
     public void testDisposeTwice() {
         Context context = new Context();
+        assertFalse(context.isDisposed());
         context.dispose();
         assertTrue(context.isDisposed());
         context.dispose();
