@@ -43,8 +43,6 @@ public final class Context implements Disposable {
 
     // final state is TERMINATED indicated by latch having counted down to 0
 
-    private final CompletableFuture<Void> terminated = new CompletableFuture<>();
-
     private final ActorRefImpl<Object> deadLetterActor;
 
     final RootActorRefImpl root;
@@ -117,10 +115,17 @@ public final class Context implements Disposable {
 
     @Override
     public void dispose() {
-        if (state.compareAndSet(STATE_ACTIVE, STATE_DISPOSED) || state.compareAndSet(STATE_STOPPING, STATE_DISPOSED)) {
-            root.dispose();
-            terminated.completeExceptionally(new RuntimeException("dispose has been called"));
+        // cas loop to ensure dispose only gets called once
+        while (true) {
+            int s = state.get();
+            if (s == STATE_DISPOSED) {
+                return;
+            } else if (state.compareAndSet(s, STATE_DISPOSED)) {
+                break;
+            }
         }
+        root.dispose();
+        root.stopFuture().completeExceptionally(new DisposedException("dispose has been called"));
     }
 
     @Override

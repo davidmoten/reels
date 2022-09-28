@@ -351,6 +351,22 @@ public class ActorTest {
                 .build();
     }
 
+    @Test
+    public void testDisposeTwice() {
+        Context context = new Context();
+        context.dispose();
+        assertTrue(context.isDisposed());
+        context.dispose();
+        assertTrue(context.isDisposed());
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void testShutdownGracefullyAfterDispose() throws InterruptedException, ExecutionException, TimeoutException {
+        Context context = new Context();
+        context.dispose();
+        context.shutdownGracefully().get(1, TimeUnit.SECONDS);
+    }
+
     private enum Start {
         VALUE;
     }
