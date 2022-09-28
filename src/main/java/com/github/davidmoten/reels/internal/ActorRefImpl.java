@@ -28,7 +28,8 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef<T>, Runnable, Disposable {
 
-    public static boolean debug = false;
+    public static final boolean debug = false;
+    
     private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
     private static final long serialVersionUID = 8766398270492289693L;
@@ -219,8 +220,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         complete();
         ActorRef<?> p = parent;
         if (p == null) {
-            // must be root actor
-            p = message.self();
+            // is root actor (which is the only actor without a parent)
             queue.offer(new Message<T>((T) Constants.TERMINATED, this, this));
         } else {
             p.<Object>recast().tell(Constants.TERMINATED, this);
