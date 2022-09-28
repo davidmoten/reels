@@ -15,7 +15,7 @@ import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.Constants;
 import com.github.davidmoten.reels.internal.DeadLetterActor;
 import com.github.davidmoten.reels.internal.Preconditions;
-import com.github.davidmoten.reels.internal.RootActor;
+import com.github.davidmoten.reels.internal.RootActorRefImpl;
 
 /**
  * Creates actors, disposes actors and looks actors up by name.
@@ -47,7 +47,7 @@ public final class Context implements Disposable {
 
     private final ActorRefImpl<Object> deadLetterActor;
 
-    final ActorRefImpl<Object> root;
+    final RootActorRefImpl root;
 
     public Context() {
         this(Supervisor.defaultSupervisor());
@@ -59,10 +59,8 @@ public final class Context implements Disposable {
 
     public Context(Supervisor supervisor, Supplier<? extends Actor<Object>> deadLetterActorFactory) {
         this.supervisor = supervisor;
-//        this.actors = new Heirarchy();
-        this.root = (ActorRefImpl<Object>) createActor(RootActor.class, Constants.ROOT_ACTOR_NAME);
-//        actors.setRoot(root);
-        // must have set root before calling createActor
+        // TODO this escaping the constructor
+        this.root = new RootActorRefImpl(Constants.ROOT_ACTOR_NAME, deadLetterActorFactory, Scheduler.defaultScheduler(), this, supervisor);
         this.deadLetterActor = (ActorRefImpl<Object>) createActor(deadLetterActorFactory, Constants.DEAD_LETTER_ACTOR_NAME);
     }
 

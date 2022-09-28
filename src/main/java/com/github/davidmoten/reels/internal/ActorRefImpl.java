@@ -26,7 +26,7 @@ import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
 import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
-public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef<T>, Runnable, Disposable {
+public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef<T>, Runnable, Disposable {
 
     private static boolean debug = false;
     private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
@@ -40,12 +40,10 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     private final Scheduler scheduler;
     private final Worker worker;
     private final ActorRef<?> parent; // nullable
-    private final Map<String, ActorRef<?>> children; // synchronized, nullable, lazily assigned
+    private final Map<String, ActorRef<?>> children; // concurrent
     private Actor<T> actor; // mutable because recreated if restart called
-    private final CompletableFuture<Void> stopFuture = new CompletableFuture<>();
-    private volatile int state = ACTIVE; // 0 = ACTIVE, 1 = STOPPING, 2 = STOPPED, 3 = DISPOSED
-
-    private static final int ACTIVE = 0;
+    protected volatile int state = ACTIVE;
+    protected static final int ACTIVE = 0;
     private static final int STOPPING = 1;
     private static final int STOPPED = 2;
     private static final int DISPOSED = 3;
@@ -59,7 +57,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         return a;
     }
 
-    private ActorRefImpl(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler, Context context,
+    protected ActorRefImpl(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler, Context context,
             Supervisor supervisor, ActorRef<?> parent) {
         super();
         this.name = name;
@@ -135,13 +133,6 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         tell((T) PoisonPill.INSTANCE, parent);
     }
 
-    public CompletableFuture<Void> stopFuture() {
-        if (state == ACTIVE) {
-            stop();
-        }
-        return stopFuture;
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public void run() {
@@ -171,8 +162,6 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                         }
                     } else if (message.content() == PoisonPill.INSTANCE) {
                         state = STOPPING;
-                        // we send stop message outside of synchronized block
-                        // because immediate scheduler might be in use
                         boolean isEmpty = true;
                         for (ActorRef<?> child : children.values()) {
                             ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
@@ -206,11 +195,9 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     }
 
     private void handleTerminationMessage(Message<T> message) {
-        synchronized (name) {
-            children.remove(message.senderRaw().name());
-            if (children.isEmpty()) {
-                runOnStop(message);
-            }
+        children.remove(message.senderRaw().name());
+        if (children.isEmpty()) {
+            runOnStop(message);
         }
     }
 
@@ -229,7 +216,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
             supervisor.processFailure(message, this, new OnStopException(e));
             // TODO catch throw
         }
-        stopFuture.complete(null);
+        complete();
         ActorRef<?> p = parent;
         if (p == null) {
             // must be root actor
@@ -339,6 +326,10 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     @Override
     public ActorRef<?> child(String name) {
         return children.get(name);
+    }
+    
+    protected void complete() {
+        // do nothing
     }
 
 }
