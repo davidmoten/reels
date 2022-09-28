@@ -16,6 +16,7 @@ Actor framework for Java, non-blocking, performant
 * Children are stopped before a parent
 * Calling dispose on an actor does not wait (or provide a future to be waited upon) for the actor to finish processing nor does it send messages that arrive to the actor after disposal to the Dead Letter actor. * Dispose does not run postStop
 * When an actor is disposed no more children can be created for it  
+* Dispose happens synchronously (the actor and all its children and descendants are disposed before the method returns) 
 
 ```
 Benchmarks.actorCreateAndStop                     thrpt   10  1036159.638 ± 11147.430  ops/s
