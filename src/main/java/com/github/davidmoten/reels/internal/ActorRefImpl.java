@@ -251,11 +251,6 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     }
 
     @Override
-    public void clearQueue() {
-        queue.clear();
-    }
-
-    @Override
     public String name() {
         return name;
     }

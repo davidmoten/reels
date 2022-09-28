@@ -118,30 +118,6 @@ public class ActorTest {
     }
 
     @Test
-    public void testSupervisorClearsQueue() throws InterruptedException, ExecutionException, TimeoutException {
-        Context c = new Context();
-        AtomicInteger count = new AtomicInteger();
-        Supervisor supervisor = (m, self, error) -> {
-            self.clearQueue();
-        };
-        ActorRef<Integer> a = c //
-                .match(Integer.class, m -> {
-                    count.incrementAndGet();
-                    throw new RuntimeException("boo");
-                }) //
-                .name("testactor") //
-                .supervisor(supervisor) //
-                .build();
-        a.tell(123);
-        a.tell(456);
-        // sleep a bit so that supervisor handles exception (and clears queue)
-        // otherwise stop signal will get cleared as well
-        Thread.sleep(500);
-        c.shutdownGracefully().get(1, TimeUnit.SECONDS);
-        assertEquals(1, count.get());
-    }
-
-    @Test
     public void testScheduledMessage() throws InterruptedException {
         Context c = Context.create();
         CountDownLatch latch = new CountDownLatch(2);
