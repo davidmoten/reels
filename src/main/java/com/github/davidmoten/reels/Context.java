@@ -105,7 +105,7 @@ public final class Context implements Disposable {
         Preconditions.checkParameterNotNull(processMessagesOn, "processMessagesOn");
         Preconditions.checkParameterNotNull(supervisor, "supervisor");
         if (state.get() != STATE_ACTIVE) {
-            throw new CreateException("cannot create actor because Context shutdown has been called");
+            throw new CreateException("cannot create actor because Context shutdown/dispose has been called ");
         }
         return ActorRefImpl.create(name, actorFactory, processMessagesOn, this, supervisor, parent);
     }
