@@ -60,8 +60,10 @@ public final class Context implements Disposable {
     public Context(Supervisor supervisor, Supplier<? extends Actor<Object>> deadLetterActorFactory) {
         this.supervisor = supervisor;
         // TODO this escaping the constructor
-        this.root = new RootActorRefImpl(Constants.ROOT_ACTOR_NAME, deadLetterActorFactory, Scheduler.defaultScheduler(), this, supervisor);
-        this.deadLetterActor = (ActorRefImpl<Object>) createActor(deadLetterActorFactory, Constants.DEAD_LETTER_ACTOR_NAME);
+        this.root = new RootActorRefImpl(Constants.ROOT_ACTOR_NAME, deadLetterActorFactory,
+                Scheduler.defaultScheduler(), this, supervisor);
+        this.deadLetterActor = (ActorRefImpl<Object>) createActor(deadLetterActorFactory,
+                Constants.DEAD_LETTER_ACTOR_NAME);
     }
 
     public static Context create() {
@@ -183,15 +185,19 @@ public final class Context implements Disposable {
     @SuppressWarnings("unchecked")
     private static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass) {
         Preconditions.checkArgument(actorClass != null, "actorFactory cannot be null");
+        Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors()).filter(x -> x.getParameterCount() == 0)
+                .findFirst();
+        if (!c.isPresent()) {
+            throw new CreateException(
+                    "Actor class must have a public no-arg constructor to be created with this method."
+                            + " Another method is available to create ActorRef for an Actor instance that you provide.");
+        }
+        return (Actor<T>) construct(c.get());
+    }
+
+    private static Object construct(Constructor<?> c) {
         try {
-            Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors())
-                    .filter(x -> x.getParameterCount() == 0).findFirst();
-            if (!c.isPresent()) {
-                throw new CreateException(
-                        "Actor class must have a public no-arg constructor to be created with this method."
-                                + " Another method is available to create ActorRef for an Actor instance that you provide.");
-            }
-            return (Actor<T>) c.get().newInstance();
+            return c.newInstance();
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
             throw new CreateException(e);
