@@ -86,22 +86,22 @@ public final class Context implements Disposable {
 
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn,
             Supervisor supervisor, Optional<ActorRef<?>> parent) {
-        Preconditions.checkParameterNotNull(actorClass, "actorFactory");
+        Preconditions.checkArgumentNonNull(actorClass, "actorFactory");
         return createActor(() -> createActorObject(actorClass), name, processMessagesOn, supervisor, parent);
     }
 
     public <T> ActorRef<T> createActor(Supplier<? extends Actor<T>> actorFactory, String name,
             Scheduler processMessagesOn, Supervisor supervisor, Optional<ActorRef<?>> parent) {
-        Preconditions.checkParameterNotNull(parent, "parent");
+        Preconditions.checkArgumentNonNull(parent, "parent");
         return createActor(actorFactory, name, processMessagesOn, supervisor, parent.orElse(null));
     }
 
     <T> ActorRef<T> createActor(Supplier<? extends Actor<T>> actorFactory, String name, Scheduler processMessagesOn,
             Supervisor supervisor, ActorRef<?> parent) {
-        Preconditions.checkParameterNotNull(actorFactory, "actorFactory");
-        Preconditions.checkParameterNotNull(name, "name");
-        Preconditions.checkParameterNotNull(processMessagesOn, "processMessagesOn");
-        Preconditions.checkParameterNotNull(supervisor, "supervisor");
+        Preconditions.checkArgumentNonNull(actorFactory, "actorFactory");
+        Preconditions.checkArgumentNonNull(name, "name");
+        Preconditions.checkArgumentNonNull(processMessagesOn, "processMessagesOn");
+        Preconditions.checkArgumentNonNull(supervisor, "supervisor");
         if (state.get() != STATE_ACTIVE) {
             throw new CreateException("cannot create actor because Context shutdown/dispose has been called ");
         }

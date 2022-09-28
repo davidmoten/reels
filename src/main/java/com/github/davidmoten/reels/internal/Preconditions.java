@@ -6,23 +6,7 @@ public final class Preconditions {
         // prevent instantiation
     }
 
-    public static <T> T checkNotNull(T value) {
-        if (value == null) {
-            throw new IllegalArgumentException("cannot be null");
-        } else {
-            return value;
-        }
-    }
-
-    public static <T> T checkNotNull(T value, String message) {
-        if (value == null) {
-            throw new IllegalArgumentException(message);
-        } else {
-            return value;
-        }
-    }
-    
-    public static <T> T checkParameterNotNull(T value, String name) {
+    public static <T> T checkArgumentNonNull(T value, String name) {
         if (value == null) {
             throw new IllegalArgumentException(name + " cannot be null");
         } else {
