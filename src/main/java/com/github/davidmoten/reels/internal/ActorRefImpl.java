@@ -28,7 +28,7 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef<T>, Runnable, Disposable {
 
-    private static final boolean debug = false;
+    public static boolean debug = false;
     private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
     private static final long serialVersionUID = 8766398270492289693L;
