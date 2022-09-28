@@ -49,13 +49,19 @@ public class TestSchedulerTest {
         assertEquals(3, a.get());
         ts.advance(1, TimeUnit.SECONDS);
         assertEquals(4, a.get());
-        ts.advance(1,  TimeUnit.SECONDS);
+        ts.advance(1, TimeUnit.SECONDS);
         assertEquals(4, a.get());
-        ts.advance(1,  TimeUnit.SECONDS);
+        ts.advance(1, TimeUnit.SECONDS);
         assertEquals(5, a.get());
         d.dispose();
-        ts.advance(10,  TimeUnit.SECONDS);
+        ts.advance(10, TimeUnit.SECONDS);
         assertEquals(5, a.get());
+
+        // schedule periodically
+        d = w.schedulePeriodically(() -> a.incrementAndGet(), 1, 2, TimeUnit.SECONDS);
+        assertEquals(5, a.get());
+        ts.advance(10, TimeUnit.SECONDS);
+        assertEquals(10, a.get());
     }
 
 }

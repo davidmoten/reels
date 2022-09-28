@@ -93,11 +93,13 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
                 int missed = 1;
                 while (true) {
                     ScheduledTask task = queue.peek();
+//                    System.out.println("time=" + time + ", " + task);
                     if (task == null) {
                         break;
                     }
                     if (task.time <= time) {
                         if (!task.disposable.isDisposed()) {
+//                            System.out.println("running");
                             task.run.run();
                         }
                         queue.poll();
@@ -145,6 +147,10 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
             this.disposable = disposable;
         }
 
+        @Override
+        public String toString() {
+            return "ScheduledTask [time=" + time + ", run=" + run + ", intervalMs=" + intervalMs + "]";
+        }
     }
 
 }
