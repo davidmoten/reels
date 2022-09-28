@@ -9,6 +9,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
@@ -25,7 +28,8 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef<T>, Runnable, Disposable {
 
-//    private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
+    private static boolean debug = false;
+    private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
     private static final long serialVersionUID = 8766398270492289693L;
     private final String name;
@@ -84,6 +88,8 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
 
     @Override
     public void dispose() {
+        if (debug)
+            log("disposing");
         // use a stack rather than recursion to avoid
         // stack overflow on deeply nested heirarchies
         Deque<ActorRef<?>> stack = new LinkedList<>();
@@ -93,6 +99,8 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
             ((ActorRefImpl<?>) a).disposeThis();
             stack.addAll(children.values());
         }
+        if (debug)
+            log("disposed");
     }
 
     public void disposeThis() {
@@ -128,6 +136,9 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     }
 
     public CompletableFuture<Void> stopFuture() {
+        if (state == ACTIVE) {
+            stop();
+        }
         return stopFuture;
     }
 
@@ -143,7 +154,8 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                 Message<T> message;
                 while ((message = queue.poll()) != null) {
                     int s = state;
-//                    info("message polled=" + message.content() + ", state=" + s);
+                    if (debug)
+                        log("message polled=" + message.content() + ", state=" + s);
                     if (s == DISPOSED) {
                         queue.clear();
                         return;
@@ -191,8 +203,6 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
                 }
             }
         }
-
-//        info("exited run, wip=" + wip.get());
     }
 
     private void handleTerminationMessage(Message<T> message) {
@@ -230,9 +240,9 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         }
     }
 
-//    private void info(String s) {
-//        log.debug("{}: {}", name, s);
-//    }
+    private void log(String s) {
+        log.debug("{}: {}", name, s);
+    }
 
     @Override
     public boolean isDisposed() {
