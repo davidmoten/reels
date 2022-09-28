@@ -15,6 +15,7 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
             (a, b) -> Long.compare(a.time, b.time));
 
     private long time = 0;
+    private boolean running;
 
     @Override
     public Worker createWorker() {
@@ -77,7 +78,7 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
         drain();
         return task.disposable;
     }
-    
+
     @Override
     public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
         Disposable d = Disposable.simple();
@@ -88,35 +89,29 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
     }
 
     private void drain() {
-        if (getAndIncrement() == 0) {
-            while (true) {
-                int missed = 1;
-                while (true) {
-                    ScheduledTask task = queue.peek();
-//                    System.out.println("time=" + time + ", " + task);
-                    if (task == null) {
-                        break;
-                    }
-                    if (task.time <= time) {
-                        if (!task.disposable.isDisposed()) {
-//                            System.out.println("running");
-                            task.run.run();
-                        }
-                        queue.poll();
-                        if (task.intervalMs > 0 && !task.disposable.isDisposed()) {
-                            queue.add(new ScheduledTask(task.time + task.intervalMs, task.run, task.intervalMs,
-                                    task.disposable));
-                        }
-                    } else {
-                        break;
-                    }
+        if (running) {
+            return;
+        }
+        running = true;
+        while (true) {
+            ScheduledTask task = queue.peek();
+            if (task == null) {
+                break;
+            }
+            if (task.time <= time) {
+                queue.poll();
+                if (!task.disposable.isDisposed()) {
+                    task.run.run();
                 }
-                missed = addAndGet(-missed);
-                if (missed == 0) {
-                    break;
+                if (task.intervalMs > 0 && !task.disposable.isDisposed()) {
+                    queue.add(
+                            new ScheduledTask(task.time + task.intervalMs, task.run, task.intervalMs, task.disposable));
                 }
+            } else {
+                break;
             }
         }
+        running = false;
     }
 
     @Override

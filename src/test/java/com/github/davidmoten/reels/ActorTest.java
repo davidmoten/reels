@@ -558,7 +558,7 @@ public class ActorTest {
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
     }
-
+    
     public static final class MyActor implements Actor<Integer> {
 
         static volatile Integer last;
