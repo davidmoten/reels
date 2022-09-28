@@ -94,7 +94,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         if (debug)
             log("disposing");
         // use a stack rather than recursion to avoid
-        // stack overflow on deeply nested heirarchies
+        // stack overflow on deeply nested hierarchies
         Deque<ActorRef<?>> stack = new LinkedList<>();
         stack.offer(this);
         ActorRef<?> a;
