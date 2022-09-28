@@ -1,6 +1,9 @@
 package com.github.davidmoten.reels.internal.scheduler;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,6 +65,13 @@ public class TestSchedulerTest {
         assertEquals(5, a.get());
         ts.advance(10, TimeUnit.SECONDS);
         assertEquals(10, a.get());
+        
+        //disposed worker does not run
+        assertFalse(w.isDisposed());
+        w.dispose();
+        assertTrue(w.isDisposed());
+        w.schedule(()-> a.set(0));
+        assertNotEquals(0, a.get());
     }
 
 }
