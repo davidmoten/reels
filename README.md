@@ -10,8 +10,12 @@ Actor framework for Java, non-blocking, performant
 * An Actor is created by a Context object. The Context object has a singleton root actor that is not accessible but is the parent for an Actor you create unless you provide it with an explicit parent. 
 * An Actor is either **Active**, **Stopping** or **Disposed**. 
 * Once created an Actor is **Active** and will process messages sent to it (via `ActorRef.tell`). 
-* If the Actor is disposed (via `ActorRef.dispose()` then the Actor will stop processing messages.  
+* If the Actor is disposed (via `ActorRef.dispose()` then the Actor will stop processing messages (after the currently running message if one is being processed).  
 * If an Actor is stopped then all messages still queued and future messages sent to that Actor will go to the Dead Letter actor (owned by `Context`)
+* A custom Dead Letter actor can be set
+* Children are stopped before a parent
+* Calling dispose on an actor does not wait (or provide a future to be waited upon) for the actor to finish processing nor does it send messages that arrive to the actor after disposal to the Dead Letter actor. * Dispose does not run postStop
+* When an actor is disposed no more children can be created for it  
 
 ```
 Benchmarks.actorCreateAndStop                     thrpt   10  1036159.638 ± 11147.430  ops/s
