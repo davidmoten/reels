@@ -72,6 +72,8 @@ public interface ActorRef<T> extends Disposable {
      */
     ActorRef<?> parent();
 
+    ActorRef<?> child(String name);
+    
     /**
      * Returns type-safe recasting of ActorRef message type.
      * 

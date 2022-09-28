@@ -1,5 +1,7 @@
 package com.github.davidmoten.reels.internal;
 
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +38,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     private final ActorRef<?> parent; // nullable
     private final Map<String, ActorRef<?>> children; // synchronized, nullable, lazily assigned
     private Actor<T> actor; // mutable because recreated if restart called
+    private final CompletableFuture<Void> stopFuture = new CompletableFuture<>();
     private volatile int state = ACTIVE; // 0 = ACTIVE, 1 = STOPPING, 2 = STOPPED, 3 = DISPOSED
 
     private static final int ACTIVE = 0;
@@ -67,7 +70,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         this.children = new ConcurrentHashMap<>();
     }
 
-    void addChild(ActorRef<?> actor) {
+    private void addChild(ActorRef<?> actor) {
         if (state == DISPOSED) {
             actor.dispose();
         } else {
@@ -81,15 +84,14 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
 
     @Override
     public void dispose() {
-        disposeThis();
-        disposeChildren();
-    }
-
-    private void disposeChildren() {
-        for (ActorRef<?> child : children.values()) {
-            // use context to dispose so don't encounter
-            // stack overflow from deeply nested actor heirarchy
-            context.dispose((ActorRef<?>) child);
+        // use a stack rather than recursion to avoid
+        // stack overflow on deeply nested heirarchies
+        Deque<ActorRef<?>> stack = new LinkedList<>();
+        stack.offer(this);
+        ActorRef<?> a;
+        while ((a = stack.poll()) != null) {
+            ((ActorRefImpl<?>) a).disposeThis();
+            stack.addAll(children.values());
         }
     }
 
@@ -101,7 +103,6 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
             if (parent != null) {
                 ((ActorRefImpl<?>) parent).removeChild(this);
             }
-            context.disposed(this);
         }
     }
 
@@ -124,6 +125,10 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     @Override
     public void stop() {
         tell((T) PoisonPill.INSTANCE, parent);
+    }
+
+    public CompletableFuture<Void> stopFuture() {
+        return stopFuture;
     }
 
     @SuppressWarnings("unchecked")
@@ -205,6 +210,7 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void runOnStop(Message<T> message) {
         state = STOPPED;
         try {
@@ -213,13 +219,15 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
             supervisor.processFailure(message, this, new OnStopException(e));
             // TODO catch throw
         }
+        stopFuture.complete(null);
         ActorRef<?> p = parent;
         if (p == null) {
             // must be root actor
             p = message.self();
+            queue.offer(new Message<T>((T) Constants.TERMINATED, this, this));
+        } else {
+            p.<Object>recast().tell(Constants.TERMINATED, this);
         }
-        p.<Object>recast().tell(Constants.TERMINATED, this);
-        context.actorStopped(this);
     }
 
 //    private void info(String s) {
@@ -316,6 +324,11 @@ public final class ActorRefImpl<T> extends AtomicInteger implements SupervisedAc
     @Override
     public ActorRef<?> parent() {
         return parent;
+    }
+
+    @Override
+    public ActorRef<?> child(String name) {
+        return children.get(name);
     }
 
 }

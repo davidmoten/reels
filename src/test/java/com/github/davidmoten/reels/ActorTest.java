@@ -298,7 +298,7 @@ public class ActorTest {
         actor.tell(1);
         actor.tell(2);
         actor.tell(3);
-        context.shutdownGracefully().get(1000000, TimeUnit.MILLISECONDS);
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
         actor.tell(4);
         Thread.sleep(100);
         assertEquals(3, count.get());
@@ -326,7 +326,7 @@ public class ActorTest {
         actor.tell(2);
         actor.tell(3);
         Thread.sleep(200);
-        context.shutdownNow().get(1000, TimeUnit.MILLISECONDS);
+        context.shutdownNow();
         actor.tell(4);
         Thread.sleep(500);
         assertEquals(1, count.get());
@@ -547,7 +547,7 @@ public class ActorTest {
         a.tell(0);
         a.tell(1);
         assertTrue(latch.await(5, TimeUnit.SECONDS));
-        context.shutdownNow().get(5, TimeUnit.SECONDS);
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
     }
 
     public static final class MyActor implements Actor<Integer> {

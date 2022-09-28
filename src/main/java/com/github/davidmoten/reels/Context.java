@@ -11,11 +11,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.github.davidmoten.reels.internal.ActorRefDisposed;
 import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.Constants;
 import com.github.davidmoten.reels.internal.DeadLetterActor;
-import com.github.davidmoten.reels.internal.Heirarchy;
 import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.RootActor;
 
@@ -32,11 +30,7 @@ public final class Context implements Disposable {
 
     private final AtomicLong counter = new AtomicLong();
 
-    private final Object lock = new Object();
-
     private final AtomicInteger state = new AtomicInteger();
-
-    private final Heirarchy actors;
 
     // actors active, can create
     private static final int STATE_ACTIVE = 0;
@@ -51,9 +45,9 @@ public final class Context implements Disposable {
 
     private final CompletableFuture<Void> terminated = new CompletableFuture<>();
 
-    private final ActorRef<Object> deadLetterActor;
+    private final ActorRefImpl<Object> deadLetterActor;
 
-    final ActorRef<?> root;
+    final ActorRefImpl<Object> root;
 
     public Context() {
         this(Supervisor.defaultSupervisor());
@@ -65,11 +59,11 @@ public final class Context implements Disposable {
 
     public Context(Supervisor supervisor, Supplier<? extends Actor<Object>> deadLetterActorFactory) {
         this.supervisor = supervisor;
-        this.actors = new Heirarchy();
-        this.root = createActor(RootActor.class, Constants.ROOT_ACTOR_NAME);
-        actors.setRoot(root);
+//        this.actors = new Heirarchy();
+        this.root = (ActorRefImpl<Object>) createActor(RootActor.class, Constants.ROOT_ACTOR_NAME);
+//        actors.setRoot(root);
         // must have set root before calling createActor
-        this.deadLetterActor = createActor(deadLetterActorFactory, Constants.DEAD_LETTER_ACTOR_NAME);
+        this.deadLetterActor = (ActorRefImpl<Object>) createActor(deadLetterActorFactory, Constants.DEAD_LETTER_ACTOR_NAME);
     }
 
     public static Context create() {
@@ -113,42 +107,19 @@ public final class Context implements Disposable {
         if (state.get() != STATE_ACTIVE) {
             throw new CreateException("cannot create actor because Context shutdown has been called");
         }
-        return insert(name, ActorRefImpl.create(name, actorFactory, processMessagesOn, this, supervisor, parent));
+        return ActorRefImpl.create(name, actorFactory, processMessagesOn, this, supervisor, parent);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> Optional<ActorRef<T>> lookupActor(String name) {
-        return actors.get(name);
-    }
-
-    /**
-     * Remove actor from context (so that when context is disposed actor.dispose()
-     * is not called). Note that this method does not dispose the removed actor.
-     * 
-     * @param actorRefImpl name of the actor
-     * @return the removed ActorRef
-     */
-    // TODO make internal method (called from ActorRefImpl)
-    public boolean disposed(ActorRef<?> actor) {
-        if (actors.remove(actor)) {
-            if (state.get() != STATE_ACTIVE && actors.isEmpty()) {
-                terminated.complete(null);
-            }
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    public void dispose(ActorRef<?> actor) {
-        actors.dispose(actor);
+        return Optional.ofNullable((ActorRef<T>) root.child(name));
     }
 
     @Override
     public void dispose() {
         if (state.compareAndSet(STATE_ACTIVE, STATE_DISPOSED) || state.compareAndSet(STATE_STOPPING, STATE_DISPOSED)) {
-            synchronized (lock) {
-                actors.dispose();
-            }
+            root.dispose();
+            terminated.completeExceptionally(new RuntimeException("dispose has been called"));
         }
     }
 
@@ -161,34 +132,17 @@ public final class Context implements Disposable {
         return supervisor;
     }
 
-    public CompletableFuture<Void> shutdownNow() throws InterruptedException, TimeoutException {
+    public void shutdownNow() throws InterruptedException, TimeoutException {
         dispose();
-        return terminated;
     }
 
     public CompletableFuture<Void> shutdownGracefully() {
-        if (state.compareAndSet(STATE_ACTIVE, STATE_STOPPING)) {
-            synchronized (lock) {
-                if (actors.allTerminated()) {
-                    return terminated;
-                } else {
-                    actors.stop();
-                }
-            }
-        }
-        return terminated;
+        state.compareAndSet(STATE_ACTIVE, STATE_STOPPING);
+        return root.stopFuture();
     }
 
     public ActorRef<Object> deadLetterActor() {
         return deadLetterActor;
-    }
-
-    // TODO internal
-    public void actorStopped(ActorRefImpl<?> actor) {
-        actors.actorStopped(actor);
-        if (actors.allTerminated()) {
-            terminated.complete(null);
-        }
     }
 
     /////////////////////////////
@@ -215,7 +169,7 @@ public final class Context implements Disposable {
     public <T> ActorBuilder<T> matchAll(Consumer<? super Message<T>> consumer) {
         return this.<T>builder().matchAll(consumer);
     }
-    
+
     public <T> ActorBuilder<T> matchEquals(T value, Consumer<? super Message<T>> consumer) {
         return this.<T>builder().matchEquals(value, consumer);
     }
@@ -223,7 +177,7 @@ public final class Context implements Disposable {
     public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
         return this.<T>builder().factory(factory);
     }
-    
+
     /////////////////////////////
     // private methods
     ////////////////////////////
@@ -245,16 +199,4 @@ public final class Context implements Disposable {
             throw new CreateException(e);
         }
     }
-
-    private <T> ActorRef<T> insert(String name, ActorRef<T> actor) {
-        synchronized (lock) {
-            if (state.get() != STATE_ACTIVE) {
-                return new ActorRefDisposed<T>(this, name);
-            } else {
-                actors.add(actor);
-                return actor;
-            }
-        }
-    }
-    
 }
