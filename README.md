@@ -121,4 +121,16 @@ Benchmarks.groupRandomMessagesForkJoin            thrpt   10       16.845 ±    
 Benchmarks.groupRandomMessagesImmediate           thrpt   10       21.934 ±    0.357  ops/s
 Benchmarks.groupRandomMessagesIo                  thrpt   10        0.783 ±    0.029  ops/s
 Benchmarks.sequential                                ss   10        4.827 ±    0.500   s/op
+
+Benchmark                                          Mode  Cnt       Score      Error  Units
+Benchmarks.actorCreateAndStop                     thrpt   10  249825.851 ± 1208.358  ops/s
+Benchmarks.ask                                    thrpt    8       5.400 ±    0.061  ops/s
+Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.847 ±    0.059  ops/s
+Benchmarks.contendedConcurrencyForkJoin           thrpt   10       5.999 ±    0.088  ops/s
+Benchmarks.contendedConcurrencyImmediate          thrpt   10       8.123 ±    0.039  ops/s
+Benchmarks.groupRandomMessagesComputationSticky   thrpt   10       1.656 ±    0.012  ops/s
+Benchmarks.groupRandomMessagesForkJoin            thrpt   10      18.441 ±    0.147  ops/s
+Benchmarks.groupRandomMessagesImmediate           thrpt   10      25.841 ±    1.135  ops/s
+Benchmarks.groupRandomMessagesIo                  thrpt   10       0.824 ±    0.023  ops/s
+Benchmarks.sequential                                ss   10       2.559 ±    0.700   s/op
 ```
