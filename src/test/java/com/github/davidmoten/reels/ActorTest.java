@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationNonSticky;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
+import com.github.davidmoten.reels.internal.scheduler.TestScheduler;
 
 public class ActorTest {
 
@@ -558,7 +559,24 @@ public class ActorTest {
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
     }
-    
+
+    @Test
+    public void testDelayed() {
+        Context c = new Context();
+        AtomicInteger count = new AtomicInteger();
+        TestScheduler ts = Scheduler.test();
+        ActorRef<Object> a = c.matchAll(m -> count.incrementAndGet()).scheduler(ts).build();
+        assertEquals(0, count.get());
+        a.tell("hi");
+        assertEquals(1, count.get());
+        a.scheduler().schedule(() -> a.tell("boo"), 2, TimeUnit.SECONDS);
+        assertEquals(1, count.get());
+        ts.advance(1, TimeUnit.SECONDS);
+        assertEquals(1, count.get());
+        ts.advance(1, TimeUnit.SECONDS);
+        assertEquals(2, count.get());
+    }
+
     public static final class MyActor implements Actor<Integer> {
 
         static volatile Integer last;
