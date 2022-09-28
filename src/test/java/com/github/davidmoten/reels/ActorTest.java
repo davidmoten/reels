@@ -124,6 +124,16 @@ public class ActorTest {
     }
 
     @Test
+    public void testAddChildToDisposedParentWillDisposeChild() {
+        Context c = new Context();
+        ActorRef<Object> a = c.createActor(() -> new ActorDoNothing<Object>());
+        a.dispose();
+        ActorRef<Object> b = c.matchAll(m -> {
+        }).parent(a).build();
+        assertTrue(b.isDisposed());
+    }
+
+    @Test
     public void testScheduledMessage() throws InterruptedException {
         Context c = Context.create();
         CountDownLatch latch = new CountDownLatch(2);

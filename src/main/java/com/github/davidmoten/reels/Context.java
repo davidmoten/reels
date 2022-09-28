@@ -72,11 +72,15 @@ public final class Context implements Disposable {
         return createActor(actorClass, actorClass.getName() + "-" + Long.toString(counter.incrementAndGet()));
     }
 
+    public <T> ActorRef<T> createActor(Supplier<? extends Actor<T>> factory) {
+        return createActor(factory, "Anonymous-" + Long.toString(counter.incrementAndGet()));
+    }
+
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name) {
         return createActor(actorClass, name, Scheduler.defaultScheduler());
     }
 
-    public ActorRef<Object> createActor(Supplier<? extends Actor<Object>> actorFactory, String name) {
+    public <T> ActorRef<T> createActor(Supplier<? extends Actor<T>> actorFactory, String name) {
         return createActor(actorFactory, name, Scheduler.defaultScheduler(), supervisor, Optional.ofNullable(root));
     }
 
