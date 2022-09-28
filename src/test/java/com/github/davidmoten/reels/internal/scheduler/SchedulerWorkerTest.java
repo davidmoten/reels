@@ -4,7 +4,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -33,13 +32,50 @@ public class SchedulerWorkerTest {
     @Test
     public void testSchedule() {
         Worker w = Mockito.mock(Worker.class);
-        Runnable r = () -> {};
+        Runnable r = () -> {
+        };
         Mockito.when(w.schedule(r)).thenReturn(Disposable.disposed());
         SchedulerWorker s = new SchedulerWorker(w);
         s.schedule(r);
         Mockito.verify(w, Mockito.times(1)).schedule(r);
         Mockito.verifyNoMoreInteractions(w);
-        
+
+    }
+
+    @Test
+    public void testScheduleNegativeDelay() {
+        Worker w = Mockito.mock(Worker.class);
+        Runnable r = () -> {
+        };
+        Mockito.when(w.schedule(r)).thenReturn(Disposable.disposed());
+        SchedulerWorker s = new SchedulerWorker(w);
+        s.schedule(r, -1, TimeUnit.SECONDS);
+        Mockito.verify(w, Mockito.times(1)).schedule(r);
+        Mockito.verifyNoMoreInteractions(w);
+    }
+
+    @Test
+    public void testScheduleWithDelay() {
+        Worker w = Mockito.mock(Worker.class);
+        Runnable r = () -> {
+        };
+        Mockito.when(w.schedule(r, 1, TimeUnit.SECONDS)).thenReturn(Disposable.disposed());
+        SchedulerWorker s = new SchedulerWorker(w);
+        s.schedule(r, 1, TimeUnit.SECONDS);
+        Mockito.verify(w, Mockito.times(1)).schedule(r, 1, TimeUnit.SECONDS);
+        Mockito.verifyNoMoreInteractions(w);
+    }
+
+    @Test
+    public void testSchedulePeriodically() {
+        Worker w = Mockito.mock(Worker.class);
+        Runnable r = () -> {
+        };
+        Mockito.when(w.schedulePeriodically(r, 1, 1, TimeUnit.SECONDS)).thenReturn(Disposable.disposed());
+        SchedulerWorker s = new SchedulerWorker(w);
+        s.schedulePeriodically(r, 1, 1, TimeUnit.SECONDS);
+        Mockito.verify(w, Mockito.times(1)).schedulePeriodically(r, 1, 1, TimeUnit.SECONDS);
+        Mockito.verifyNoMoreInteractions(w);
     }
 
 }
