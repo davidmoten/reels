@@ -117,6 +117,12 @@ public class ActorTest {
         assertTrue(latch.await(30, TimeUnit.SECONDS));
     }
 
+    @Test(expected = CreateException.class)
+    public void testFactoryReturnsNull() {
+        Context c = new Context();
+        c.factory(() -> null).build();
+    }
+
     @Test
     public void testScheduledMessage() throws InterruptedException {
         Context c = Context.create();
