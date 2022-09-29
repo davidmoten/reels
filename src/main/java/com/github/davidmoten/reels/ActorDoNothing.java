@@ -1,19 +1,9 @@
 package com.github.davidmoten.reels;
 
-public class ActorDoNothing<T> implements Actor<T> {
+public class ActorDoNothing<T> extends AbstractActor<T> {
 
     @Override
     public void onMessage(Message<T> message) {
-        // do nothing
-    }
-
-    @Override
-    public void onStop(Context context) {
-        // do nothing
-    }
-
-    @Override
-    public void preStart(Context context) {
         // do nothing
     }
 

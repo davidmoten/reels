@@ -85,12 +85,13 @@ public class ActorTest {
         a.tell(123);
         assertTrue(latch.await(5, TimeUnit.SECONDS));
     }
-    
+
     @Test
     public void onStopCalled() {
         Context c = new Context();
         AtomicBoolean called = new AtomicBoolean();
-        ActorRef<Object> a = c.matchAll(m -> {}).onStop(m -> called.set(true)).scheduler(Scheduler.immediate()).build();
+        ActorRef<Object> a = c.matchAll(m -> {
+        }).onStop(m -> called.set(true)).scheduler(Scheduler.immediate()).build();
         assertFalse(called.get());
         a.stop();
         assertTrue(called.get());
@@ -103,22 +104,12 @@ public class ActorTest {
         Context c = new Context();
         Supervisor supervisor = (m, self, error) -> self.restart();
         ActorRef<Integer> a = c //
-                .<Integer>factory(() -> new Actor<Integer>() {
+                .<Integer>factory(() -> new AbstractActor<Integer>() {
 
                     @Override
                     public void onMessage(Message<Integer> message) {
                         latch.countDown();
                         throw new RuntimeException("boo");
-                    }
-
-                    @Override
-                    public void preStart(Context context) {
-                     // do nothing                        
-                    }
-                    
-                    @Override
-                    public void onStop(Context context) {
-                        
                     }
 
                 }) //
@@ -604,7 +595,7 @@ public class ActorTest {
         }
     }
 
-    public static final class MyActor implements Actor<Integer> {
+    public static final class MyActor extends AbstractActor<Integer> {
 
         static volatile Integer last;
 
@@ -613,19 +604,9 @@ public class ActorTest {
             last = message.content();
         }
 
-        @Override
-        public void onStop(Context context) {
-
-        }
-
-        @Override
-        public void preStart(Context context) {
-            
-        }
-
     }
 
-    public static final class MyActorBad implements Actor<Integer> {
+    public static final class MyActorBad extends AbstractActor<Integer> {
 
         public MyActorBad(String s) {
 
@@ -635,15 +616,6 @@ public class ActorTest {
         public void onMessage(Message<Integer> message) {
         }
 
-        @Override
-        public void onStop(Context context) {
-
-        }
-
-        @Override
-        public void preStart(Context context) {
-            
-        }
     }
 
 }
