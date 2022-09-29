@@ -333,5 +333,9 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     protected void complete() {
         // do nothing
     }
+    
+    public Supervisor supervisor() {
+        return supervisor;
+    }
 
 }

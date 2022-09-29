@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.util.Util;
@@ -27,7 +28,6 @@ public final class ActorBuilder<T> {
 
     ActorBuilder(Context context) {
         this.context = context;
-        this.supervisor = context.supervisor();
         this.parent = context.root;
     }
 
@@ -99,6 +99,9 @@ public final class ActorBuilder<T> {
     }
 
     public ActorRef<T> build() {
+        if (supervisor == null) {
+            supervisor = ((ActorRefImpl<?>) parent).supervisor();
+        }
         Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError, onStop));
         return context.createActor(f, name, scheduler, supervisor, parent);
     }
