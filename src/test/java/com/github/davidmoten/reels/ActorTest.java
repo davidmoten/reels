@@ -89,6 +89,17 @@ public class ActorTest {
         a.tell(123);
         assertTrue(latch.await(5, TimeUnit.SECONDS));
     }
+    
+    @Test
+    public void onStopCalled() {
+        Context c = new Context();
+        AtomicBoolean called = new AtomicBoolean();
+        ActorRef<Object> a = c.matchAll(m -> {}).onStop(m -> called.set(true)).scheduler(Scheduler.immediate()).build();
+        assertFalse(called.get());
+        a.stop();
+        assertTrue(called.get());
+        c.dispose();
+    }
 
     @Test
     public void testSupervisorCreatesAgainOnRestart() throws InterruptedException {
