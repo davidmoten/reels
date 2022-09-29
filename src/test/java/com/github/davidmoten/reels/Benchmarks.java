@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 @State(Scope.Benchmark)
 public class Benchmarks {
 
-    private static final int MESSAGES_PER_RUNNER = 10000;
+    private static final int MESSAGES_PER_RUNNER = Integer.getInteger("messages", 10000);
 
     private static final Logger log = LoggerFactory.getLogger(Benchmarks.class);
 
@@ -213,7 +213,7 @@ public class Benchmarks {
         Benchmarks b = new Benchmarks();
         while (true) {
             b.setup();
-            b.groupRandomMessagesForkJoin();
+            b.contendedConcurrencyImmediate();
             b.tearDown();
         }
     }
