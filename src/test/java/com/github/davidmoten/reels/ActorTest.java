@@ -577,6 +577,21 @@ public class ActorTest {
         assertEquals(2, count.get());
     }
 
+    @Test
+    public void testScheduledWithDelay() throws InterruptedException {
+        for (Scheduler scheduler : new Scheduler[] { Scheduler.forkJoin(), Scheduler.computation(),
+                Scheduler.immediate(), Scheduler.io() }) {
+            Context c = new Context();
+            AtomicInteger n = new AtomicInteger();
+            ActorRef<Object> a = c.matchAll(m -> n.incrementAndGet()).scheduler(scheduler).build();
+            a.tell(1);
+            a.scheduler().schedule(() -> a.tell(2), 10, TimeUnit.MILLISECONDS);
+            Thread.sleep(100);
+            assertEquals(2, n.get());
+            c.shutdownGracefully();
+        }
+    }
+
     public static final class MyActor implements Actor<Integer> {
 
         static volatile Integer last;

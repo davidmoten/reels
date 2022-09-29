@@ -117,6 +117,7 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
     @Override
     public void shutdown() {
         queue.clear();
+        running = true;
     }
 
     public TestScheduler advance(long duration, TimeUnit unit) {
