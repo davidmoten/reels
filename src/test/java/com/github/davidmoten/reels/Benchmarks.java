@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 @State(Scope.Benchmark)
 public class Benchmarks {
 
-    private static final int MESSAGES_PER_RUNNER = 10000;
+    private static final int MESSAGES_PER_RUNNER = Integer.getInteger("messages", 10000);
 
     private static final Logger log = LoggerFactory.getLogger(Benchmarks.class);
 
@@ -35,14 +35,15 @@ public class Benchmarks {
     public void setup() {
         context = new Context((c, actor, error) -> {
             log.error(actor.name() + ":" + error.getMessage(), error);
-        });
+        }, //
+                () -> new ActorDoNothing<Object>());
         askActor = context.<String>matchAll(m -> m.senderRaw().tell("boo")) //
                 .build();
     }
 
     @TearDown(Level.Invocation)
-    public void tearDown() {
-        context.shutdownGracefully();
+    public void tearDown() throws InterruptedException, ExecutionException, TimeoutException {
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
         context = null;
     }
 
@@ -84,7 +85,7 @@ public class Benchmarks {
 //    @BenchmarkMode(Mode.AverageTime)
 //    public void contendedConcurrencyForkJoinLong() throws InterruptedException {
 //        contendedConcurrency(Scheduler.forkJoin(), 100000);
-//    }
+//   ) }
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
@@ -212,7 +213,7 @@ public class Benchmarks {
         Benchmarks b = new Benchmarks();
         while (true) {
             b.setup();
-            b.contendedConcurrency(Scheduler.immediate(), 10000);
+            b.contendedConcurrencyImmediate();
             b.tearDown();
         }
     }

@@ -18,7 +18,7 @@ public final class ActorRefDisposed<T> implements ActorRef<T> {
 
     @Override
     public void dispose() {
-        // do nothing        
+        // do nothing
     }
 
     @Override
@@ -63,6 +63,11 @@ public final class ActorRefDisposed<T> implements ActorRef<T> {
 
     @Override
     public ActorRef<?> parent() {
+        return null;
+    }
+
+    @Override
+    public ActorRef<?> child(String name) {
         return null;
     }
 

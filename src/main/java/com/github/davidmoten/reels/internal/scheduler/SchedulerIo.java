@@ -69,7 +69,7 @@ public final class SchedulerIo implements Scheduler {
      *                      for configuring new thread creation. Cannot be null.
      */
     private SchedulerIo(ThreadFactory threadFactory) {
-        Preconditions.checkParameterNotNull(threadFactory, "threadFactory");
+        Preconditions.checkArgumentNonNull(threadFactory, "threadFactory");
         this.threadFactory = threadFactory;
         this.pool = new AtomicReference<>(NONE);
         start();

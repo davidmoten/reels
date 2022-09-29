@@ -10,6 +10,7 @@ import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerFromExecutor;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerImmediate;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerIo;
+import com.github.davidmoten.reels.internal.scheduler.TestScheduler;
 
 public interface Scheduler {
 
@@ -54,6 +55,10 @@ public interface Scheduler {
 
     static Scheduler doNothing() {
         return SchedulerDoNothing.INSTANCE;
+    }
+    
+    static TestScheduler test() {
+        return new TestScheduler();
     }
 
 }

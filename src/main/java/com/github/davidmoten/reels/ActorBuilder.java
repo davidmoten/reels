@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.util.Util;
@@ -27,7 +28,6 @@ public final class ActorBuilder<T> {
 
     ActorBuilder(Context context) {
         this.context = context;
-        this.supervisor = context.supervisor();
         this.parent = context.root;
     }
 
@@ -63,42 +63,45 @@ public final class ActorBuilder<T> {
      * @return builder
      */
     public ActorBuilder<T> scheduler(Scheduler scheduler) {
-        Preconditions.checkParameterNotNull(scheduler, "scheduler");
+        Preconditions.checkArgumentNonNull(scheduler, "scheduler");
         this.scheduler = scheduler;
         return this;
     }
 
     public ActorBuilder<T> supervisor(Supervisor supervisor) {
-        Preconditions.checkParameterNotNull(supervisor, "supervisor");
+        Preconditions.checkArgumentNonNull(supervisor, "supervisor");
         this.supervisor = supervisor;
         return this;
     }
 
     public ActorBuilder<T> name(String name) {
-        Preconditions.checkParameterNotNull(name, "name");
+        Preconditions.checkArgumentNonNull(name, "name");
         this.name = name;
         return this;
     }
 
     public ActorBuilder<T> onError(Consumer<? super Throwable> onError) {
-        Preconditions.checkParameterNotNull(onError, "onError");
+        Preconditions.checkArgumentNonNull(onError, "onError");
         this.onError = onError;
         return this;
     }
 
     public ActorBuilder<T> onStop(Consumer<? super MessageContext<T>> onStop) {
-        Preconditions.checkParameterNotNull(onStop, "onStop");
+        Preconditions.checkArgumentNonNull(onStop, "onStop");
         this.onStop = onStop;
         return this;
     }
 
     public ActorBuilder<T> parent(ActorRef<?> parent) {
-        Preconditions.checkParameterNotNull(parent, "parent");
+        Preconditions.checkArgumentNonNull(parent, "parent");
         this.parent = parent;
         return this;
     }
 
     public ActorRef<T> build() {
+        if (supervisor == null) {
+            supervisor = ((ActorRefImpl<?>) parent).supervisor();
+        }
         Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError, onStop));
         return context.createActor(f, name, scheduler, supervisor, parent);
     }

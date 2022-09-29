@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationNonSticky;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
+import com.github.davidmoten.reels.internal.scheduler.TestScheduler;
 
 public class ActorTest {
 
@@ -50,7 +51,7 @@ public class ActorTest {
                 .build();
         a.tell(123);
         assertTrue(latch.await(5, TimeUnit.SECONDS));
-        assertEquals("ActorRef[test]", a.toString());
+        assertEquals("test", a.toString());
     }
 
     @Test
@@ -117,28 +118,20 @@ public class ActorTest {
         assertTrue(latch.await(30, TimeUnit.SECONDS));
     }
 
-    @Test
-    public void testSupervisorClearsQueue() throws InterruptedException, ExecutionException, TimeoutException {
+    @Test(expected = CreateException.class)
+    public void testFactoryReturnsNull() {
         Context c = new Context();
-        AtomicInteger count = new AtomicInteger();
-        Supervisor supervisor = (m, self, error) -> {
-            self.clearQueue();
-        };
-        ActorRef<Integer> a = c //
-                .match(Integer.class, m -> {
-                    count.incrementAndGet();
-                    throw new RuntimeException("boo");
-                }) //
-                .name("testactor") //
-                .supervisor(supervisor) //
-                .build();
-        a.tell(123);
-        a.tell(456);
-        // sleep a bit so that supervisor handles exception (and clears queue)
-        // otherwise stop signal will get cleared as well
-        Thread.sleep(300);
-        c.shutdownGracefully().get(1, TimeUnit.SECONDS);
-        assertEquals(1, count.get());
+        c.factory(() -> null).build();
+    }
+
+    @Test
+    public void testAddChildToDisposedParentWillDisposeChild() {
+        Context c = new Context();
+        ActorRef<Object> a = c.createActor(() -> new ActorDoNothing<Object>());
+        a.dispose();
+        ActorRef<Object> b = c.matchAll(m -> {
+        }).parent(a).build();
+        assertTrue(b.isDisposed());
     }
 
     @Test
@@ -298,12 +291,12 @@ public class ActorTest {
         actor.tell(1);
         actor.tell(2);
         actor.tell(3);
-        context.shutdownGracefully().get(1000, TimeUnit.MILLISECONDS);
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
         actor.tell(4);
         Thread.sleep(100);
         assertEquals(3, count.get());
         Future<Void> future = context.shutdownGracefully();
-        future.get(10, TimeUnit.SECONDS);
+        future.get(5, TimeUnit.SECONDS);
         assertTrue(future.isDone());
         assertFalse(future.isCancelled());
     }
@@ -326,7 +319,7 @@ public class ActorTest {
         actor.tell(2);
         actor.tell(3);
         Thread.sleep(200);
-        context.shutdownNow().get(1000, TimeUnit.MILLISECONDS);
+        context.shutdownNow();
         actor.tell(4);
         Thread.sleep(500);
         assertEquals(1, count.get());
@@ -373,6 +366,23 @@ public class ActorTest {
                 .matchAll(m -> {
                 }) //
                 .build();
+    }
+
+    @Test
+    public void testDisposeTwice() {
+        Context context = new Context();
+        assertFalse(context.isDisposed());
+        context.dispose();
+        assertTrue(context.isDisposed());
+        context.dispose();
+        assertTrue(context.isDisposed());
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void testShutdownGracefullyAfterDispose() throws InterruptedException, ExecutionException, TimeoutException {
+        Context context = new Context();
+        context.dispose();
+        context.shutdownGracefully().get(1, TimeUnit.SECONDS);
     }
 
     private enum Start {
@@ -510,6 +520,20 @@ public class ActorTest {
     }
 
     @Test
+    public void testCreateAndStop() throws InterruptedException, ExecutionException, TimeoutException {
+        Context context = new Context((c, actor, error) -> {
+            log.error(actor.name() + ":" + error.getMessage(), error);
+        }, //
+                () -> new ActorDoNothing<Object>());
+        context //
+                .matchAll(m -> m.self().stop()) //
+                .scheduler(Scheduler.immediate()) //
+                .build() //
+                .tell(Boolean.TRUE);
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
+    }
+
+    @Test
     public void testAs() {
         Context context = new Context();
         ActorRef<Number> a = context.<Number>matchAll(m -> {
@@ -533,7 +557,39 @@ public class ActorTest {
         a.tell(0);
         a.tell(1);
         assertTrue(latch.await(5, TimeUnit.SECONDS));
-        context.shutdownNow().get(5, TimeUnit.SECONDS);
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void testDelayed() {
+        Context c = new Context();
+        AtomicInteger count = new AtomicInteger();
+        TestScheduler ts = Scheduler.test();
+        ActorRef<Object> a = c.matchAll(m -> count.incrementAndGet()).scheduler(ts).build();
+        assertEquals(0, count.get());
+        a.tell("hi");
+        assertEquals(1, count.get());
+        a.scheduler().schedule(() -> a.tell("boo"), 2, TimeUnit.SECONDS);
+        assertEquals(1, count.get());
+        ts.advance(1, TimeUnit.SECONDS);
+        assertEquals(1, count.get());
+        ts.advance(1, TimeUnit.SECONDS);
+        assertEquals(2, count.get());
+    }
+
+    @Test
+    public void testScheduledWithDelay() throws InterruptedException {
+        for (Scheduler scheduler : new Scheduler[] { Scheduler.forkJoin(), Scheduler.computation(),
+                Scheduler.immediate(), Scheduler.io() }) {
+            Context c = new Context();
+            AtomicInteger n = new AtomicInteger();
+            ActorRef<Object> a = c.matchAll(m -> n.incrementAndGet()).scheduler(scheduler).build();
+            a.tell(1);
+            a.scheduler().schedule(() -> a.tell(2), 10, TimeUnit.MILLISECONDS);
+            Thread.sleep(100);
+            assertEquals(2, n.get());
+            c.shutdownGracefully();
+        }
     }
 
     public static final class MyActor implements Actor<Integer> {

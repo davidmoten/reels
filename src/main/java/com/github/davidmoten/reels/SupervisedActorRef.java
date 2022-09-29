@@ -9,12 +9,4 @@ public interface SupervisedActorRef<T> extends ActorRef<T> {
      */
     void restart();
 
-    /**
-     * Clears the queue of messages waiting to be processed by the Actor. Must be
-     * called synchronously to avoid undesired race conditions. WARNING - this
-     * method will delete a Poison Pill (from {@link ActorRef#stop()}) from the
-     * queue as well (if one exists there)!
-     */
-    void clearQueue();
-
 }

@@ -175,4 +175,19 @@ public final class OpenHashSet<T> {
     public boolean isEmpty() {
         return size == 0;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < keys.length; i++) {
+            T v = keys[i];
+            if (v != null) {
+                if (b.length() > 0) {
+                    b.append(", ");
+                }
+                b.append(v);
+            }
+        }
+        return "Set[" + b.toString() + "]";
+    }
 }
