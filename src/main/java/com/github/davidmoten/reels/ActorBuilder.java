@@ -25,6 +25,7 @@ public final class ActorBuilder<T> {
     private ActorRef<?> parent; // nullable
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
     private Consumer<? super Context> onStop = null;
+    private Consumer<? super Context> preStart = null;
 
     ActorBuilder(Context context) {
         this.context = context;
@@ -85,6 +86,12 @@ public final class ActorBuilder<T> {
         this.onError = onError;
         return this;
     }
+    
+    public ActorBuilder<T> preStart(Consumer<? super Context> preStart) {
+        Preconditions.checkArgumentNonNull(preStart, "preStart");
+        this.preStart = preStart;
+        return this;
+    }
 
     public ActorBuilder<T> onStop(Consumer<? super Context> onStop) {
         Preconditions.checkArgumentNonNull(onStop, "onStop");
@@ -102,7 +109,7 @@ public final class ActorBuilder<T> {
         if (supervisor == null) {
             supervisor = ((ActorRefImpl<?>) parent).supervisor();
         }
-        Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError, onStop));
+        Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError, preStart,onStop));
         return context.createActor(f, name, scheduler, supervisor, parent);
     }
 
@@ -122,12 +129,14 @@ public final class ActorBuilder<T> {
 
         private final List<Matcher<T, ? extends T>> matchers;
         private final Consumer<? super Throwable> onError;
+        private final Consumer<? super Context> preStart;
         private final Consumer<? super Context> onStop;
 
         public MatchingActor(List<Matcher<T, ? extends T>> matchers, Consumer<? super Throwable> onError,
-                Consumer<? super Context> onStop) {
+                Consumer<? super Context> preStart, Consumer<? super Context> onStop) {
             this.matchers = matchers;
             this.onError = onError;
+            this.preStart = preStart;
             this.onStop = onStop;
         }
 
@@ -150,6 +159,13 @@ public final class ActorBuilder<T> {
                 }
             }
         }
+        
+        @Override
+        public void preStart(Context context) {
+            if (preStart != null) {
+                preStart.accept(context);
+            }
+        }
 
         @Override
         public void onStop(Context context) {
@@ -157,6 +173,8 @@ public final class ActorBuilder<T> {
                 onStop.accept(context);
             }
         }
+
+        
     }
 
 }

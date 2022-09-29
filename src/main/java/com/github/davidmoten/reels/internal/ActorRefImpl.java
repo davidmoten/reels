@@ -73,6 +73,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         if (actor == null) {
             throw new CreateException("actor factory cannot return null");
         }
+        actor.preStart(context);
         this.scheduler = scheduler;
         this.children = new ConcurrentHashMap<>();
     }
@@ -250,6 +251,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         if (actor == null) {
             throw new CreateException("actor factory cannot return null");
         }
+        actor.preStart(context);
     }
 
     @Override

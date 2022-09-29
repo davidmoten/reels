@@ -17,6 +17,11 @@ public final class DeadLetterActor implements Actor<Object> {
     }
 
     @Override
+    public void preStart(Context context) {
+        // do nothing
+    }
+
+    @Override
     public void onStop(Context context) {
         // do nothing
     }

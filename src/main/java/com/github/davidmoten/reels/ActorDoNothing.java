@@ -12,4 +12,9 @@ public class ActorDoNothing<T> implements Actor<T> {
         // do nothing
     }
 
+    @Override
+    public void preStart(Context context) {
+        // do nothing
+    }
+
 }

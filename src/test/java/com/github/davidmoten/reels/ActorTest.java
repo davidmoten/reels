@@ -30,10 +30,6 @@ public class ActorTest {
     public void test() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         Context c = new Context();
-        Supervisor supervisor = (m, self, error) -> {
-            error.printStackTrace();
-            self.dispose();
-        };
         AtomicBoolean once = new AtomicBoolean();
         ActorRef<Object> a = c //
                 .<Object, Integer>match(Integer.class, m -> {
@@ -46,7 +42,7 @@ public class ActorTest {
                     }
                 }) //
                 .scheduler(Scheduler.computation()) //
-                .supervisor(supervisor) //
+                .supervisor(Supervisor.defaultSupervisor()) //
                 .name("test") //
                 .build();
         a.tell(123);
@@ -116,8 +112,13 @@ public class ActorTest {
                     }
 
                     @Override
+                    public void preStart(Context context) {
+                     // do nothing                        
+                    }
+                    
+                    @Override
                     public void onStop(Context context) {
-                        // do nothing
+                        
                     }
 
                 }) //
@@ -617,6 +618,11 @@ public class ActorTest {
 
         }
 
+        @Override
+        public void preStart(Context context) {
+            
+        }
+
     }
 
     public static final class MyActorBad implements Actor<Integer> {
@@ -632,6 +638,11 @@ public class ActorTest {
         @Override
         public void onStop(Context context) {
 
+        }
+
+        @Override
+        public void preStart(Context context) {
+            
         }
     }
 

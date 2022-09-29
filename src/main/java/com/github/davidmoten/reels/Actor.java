@@ -14,6 +14,8 @@ public interface Actor<T> {
      * @param message message to be processed
      */
     void onMessage(Message<T> message);
+    
+    void preStart(Context context);
 
     /**
      * This method called after an actor is stopped (via {@link ActorRef#stop()} or
