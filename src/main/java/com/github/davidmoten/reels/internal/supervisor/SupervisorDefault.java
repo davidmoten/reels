@@ -20,10 +20,10 @@ public final class SupervisorDefault implements Supervisor {
     @Override
     public void processFailure(Message<?> message, SupervisedActorRef<?> self, Throwable error) {
         log.error(error.getMessage(), error);
-        self.restart();
+        self.restart(false);
         log.warn("actor.onMessage threw (error logged above) and was caught by SupervisorDefault. The actor '"
                 + message.self().name()
-                + "'was restarted and will continue to process messages (remaining messages were untouched).");
+                + "'was restarted and will continue to process messages (remaining messages were untouched). The actor's children are still present and untouched.");
     }
 
 }
