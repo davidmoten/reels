@@ -94,7 +94,7 @@ public class ActorTest {
     public void testSupervisorCreatesAgainOnRestart() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(2);
         Context c = new Context();
-        Supervisor supervisor = (m, self, error) -> self.restart(false);
+        Supervisor supervisor = (m, self, error) -> self.restart();
         ActorRef<Integer> a = c //
                 .<Integer>factory(() -> new Actor<Integer>() {
 

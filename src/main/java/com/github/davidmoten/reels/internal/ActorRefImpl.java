@@ -20,7 +20,6 @@ import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Message;
 import com.github.davidmoten.reels.OnStopException;
 import com.github.davidmoten.reels.PoisonPill;
-import com.github.davidmoten.reels.Restart;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.SupervisedActorRef;
 import com.github.davidmoten.reels.Supervisor;
@@ -179,8 +178,6 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
                         }
                     } else if (message.content() == Constants.TERMINATED) {
                         handleTerminationMessage(message);
-                    } else if (message.content() instanceof Restart) {
-                        restart(((Restart) message.content()).disposeChildren());
                     } else {
                         try {
 //                        info("calling onMessage");
@@ -253,13 +250,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     }
 
     @Override
-    public void restart(boolean disposeChildren) {
-        if (disposeChildren) {
-            // kill children (assume that restarting the actor recreates the children!)
-            for (ActorRef<?> child : children.values()) {
-                child.dispose();
-            }
-        }
+    public void restart() {
         actor = factory.get();
         if (actor == null) {
             throw new CreateException("actor factory cannot return null");
