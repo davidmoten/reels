@@ -90,7 +90,7 @@ public final class Context implements Disposable {
 
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass, String name, Scheduler processMessagesOn,
             Supervisor supervisor, Optional<ActorRef<?>> parent) {
-        Preconditions.checkArgumentNonNull(actorClass, "actorFactory");
+        Preconditions.checkArgumentNonNull(actorClass, "actorClass");
         return createActor(() -> createActorObject(actorClass), name, processMessagesOn, supervisor, parent);
     }
 
@@ -193,7 +193,6 @@ public final class Context implements Disposable {
 
     @SuppressWarnings("unchecked")
     private static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass) {
-        Preconditions.checkArgument(actorClass != null, "actorFactory cannot be null");
         Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors()).filter(x -> x.getParameterCount() == 0)
                 .findFirst();
         if (!c.isPresent()) {
