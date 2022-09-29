@@ -20,10 +20,10 @@ public final class SupervisorDefault implements Supervisor {
     @Override
     public void processFailure(Message<?> message, SupervisedActorRef<?> self, Throwable error) {
         log.error(error.getMessage(), error);
-        self.restart(false);
-        log.warn("actor.onMessage threw (error logged above) and was caught by SupervisorDefault. The actor '"
-                + message.self().name()
-                + "'was restarted and will continue to process messages (remaining messages were untouched). The actor's children are still present and untouched.");
+        self.dispose();
+        log.warn("actor.onMessage threw (error logged above) and was caught by " + this.getClass().getSimpleName()
+                + ". The actor '" + self.name()
+                + "' was disposed thus pending messages have been cleared and the actor will no longer accept messages.");
     }
 
 }
