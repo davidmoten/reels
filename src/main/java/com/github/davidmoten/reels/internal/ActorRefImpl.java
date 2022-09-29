@@ -187,7 +187,6 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
                             // if the line below throws then the actor will no longer process messages
                             // (because wip will be != 0)
                             supervisor.processFailure(message, this, e);
-                            // TODO catch throw
                         }
                     }
                 }
@@ -219,7 +218,6 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
             actor.onStop(message);
         } catch (Throwable e) {
             supervisor.processFailure(message, this, new OnStopException(e));
-            // TODO catch throw
         }
         complete();
         ActorRef<?> p = parent;
@@ -238,10 +236,6 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     @Override
     public boolean isDisposed() {
         return state == DISPOSED;
-    }
-
-    public boolean isStopped() {
-        return state == STOPPED;
     }
 
     @Override
