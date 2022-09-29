@@ -8,7 +8,7 @@ public class ActorDoNothing<T> implements Actor<T> {
     }
 
     @Override
-    public void onStop(MessageContext<T> context) {
+    public void onStop(Context context) {
         // do nothing
     }
 

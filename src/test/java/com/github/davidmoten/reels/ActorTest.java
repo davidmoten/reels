@@ -116,7 +116,7 @@ public class ActorTest {
                     }
 
                     @Override
-                    public void onStop(MessageContext<Integer> context) {
+                    public void onStop(Context context) {
                         // do nothing
                     }
 
@@ -613,7 +613,7 @@ public class ActorTest {
         }
 
         @Override
-        public void onStop(MessageContext<Integer> context) {
+        public void onStop(Context context) {
 
         }
 
@@ -630,7 +630,7 @@ public class ActorTest {
         }
 
         @Override
-        public void onStop(MessageContext<Integer> context) {
+        public void onStop(Context context) {
 
         }
     }

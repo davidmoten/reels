@@ -14,7 +14,13 @@ public interface Actor<T> {
      * @param message message to be processed
      */
     void onMessage(Message<T> message);
-    
-    void onStop(MessageContext<T> context);
-    
+
+    /**
+     * This method called after an actor is stopped (via {@link ActorRef#stop()} or
+     * when an actor is restarted.
+     * 
+     * @param context owning Context
+     */
+    void onStop(Context context);
+
 }

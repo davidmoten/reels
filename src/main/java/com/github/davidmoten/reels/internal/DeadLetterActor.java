@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.davidmoten.reels.Actor;
+import com.github.davidmoten.reels.Context;
 import com.github.davidmoten.reels.Message;
-import com.github.davidmoten.reels.MessageContext;
 
 public final class DeadLetterActor implements Actor<Object> {
 
@@ -17,9 +17,8 @@ public final class DeadLetterActor implements Actor<Object> {
     }
 
     @Override
-    public void onStop(MessageContext<Object> context) {
-        // TODO
-
+    public void onStop(Context context) {
+        // do nothing
     }
 
 }

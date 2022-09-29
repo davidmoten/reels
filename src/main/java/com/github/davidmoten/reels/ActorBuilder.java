@@ -24,7 +24,7 @@ public final class ActorBuilder<T> {
     private String name = "Anonymous-" + counter.incrementAndGet();
     private ActorRef<?> parent; // nullable
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
-    private Consumer<? super MessageContext<T>> onStop = null;
+    private Consumer<? super Context> onStop = null;
 
     ActorBuilder(Context context) {
         this.context = context;
@@ -86,7 +86,7 @@ public final class ActorBuilder<T> {
         return this;
     }
 
-    public ActorBuilder<T> onStop(Consumer<? super MessageContext<T>> onStop) {
+    public ActorBuilder<T> onStop(Consumer<? super Context> onStop) {
         Preconditions.checkArgumentNonNull(onStop, "onStop");
         this.onStop = onStop;
         return this;
@@ -122,10 +122,10 @@ public final class ActorBuilder<T> {
 
         private final List<Matcher<T, ? extends T>> matchers;
         private final Consumer<? super Throwable> onError;
-        private final Consumer<? super MessageContext<T>> onStop;
+        private final Consumer<? super Context> onStop;
 
         public MatchingActor(List<Matcher<T, ? extends T>> matchers, Consumer<? super Throwable> onError,
-                Consumer<? super MessageContext<T>> onStop) {
+                Consumer<? super Context> onStop) {
             this.matchers = matchers;
             this.onError = onError;
             this.onStop = onStop;
@@ -152,7 +152,7 @@ public final class ActorBuilder<T> {
         }
 
         @Override
-        public void onStop(MessageContext<T> context) {
+        public void onStop(Context context) {
             if (onStop != null) {
                 onStop.accept(context);
             }

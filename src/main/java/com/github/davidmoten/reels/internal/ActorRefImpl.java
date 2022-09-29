@@ -215,7 +215,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     private void runOnStop(Message<T> message) {
         state = STOPPED;
         try {
-            actor.onStop(message);
+            actor.onStop(context);
         } catch (Throwable e) {
             supervisor.processFailure(message, this, new OnStopException(e));
         }
@@ -245,6 +245,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
 
     @Override
     public void restart() {
+        actor.onStop(context);
         actor = factory.get();
         if (actor == null) {
             throw new CreateException("actor factory cannot return null");
