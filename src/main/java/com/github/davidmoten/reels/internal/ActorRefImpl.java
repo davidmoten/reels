@@ -1,7 +1,7 @@
 package com.github.davidmoten.reels.internal;
 
+import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,7 +95,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
             log("disposing");
         // use a stack rather than recursion to avoid
         // stack overflow on deeply nested hierarchies
-        Deque<ActorRef<?>> stack = new LinkedList<>();
+        Deque<ActorRef<?>> stack = new ArrayDeque<>();
         stack.offer(this);
         ActorRef<?> a;
         while ((a = stack.poll()) != null) {

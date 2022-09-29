@@ -213,7 +213,7 @@ public class Benchmarks {
         Benchmarks b = new Benchmarks();
         while (true) {
             b.setup();
-            b.sequential();
+            b.groupRandomMessagesForkJoin();
             b.tearDown();
         }
     }
