@@ -213,8 +213,8 @@ public class Benchmarks {
         Benchmarks b = new Benchmarks();
         while (true) {
             b.setup();
-            b.contendedConcurrencyImmediate();
-            b.tearDown();
+            for (;;) b.askActor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS);
+//            b.tearDown();
         }
     }
 

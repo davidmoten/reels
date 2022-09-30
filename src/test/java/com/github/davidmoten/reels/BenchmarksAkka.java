@@ -33,7 +33,7 @@ public class BenchmarksAkka {
         system = ActorSystem.create();
         askActor = system.actorOf(Props.create(Test.class));
     }
-    
+
     @TearDown(Level.Invocation)
     public void tearDown() throws InterruptedException, ExecutionException, TimeoutException {
         system.terminate();
@@ -62,12 +62,13 @@ public class BenchmarksAkka {
             bh.consume(Await.result(Patterns.ask(askActor, "hi", 1000), Duration.create(1000, TimeUnit.MILLISECONDS)));
         }
     }
-    
+
     public static void main(String[] args) throws Exception {
         BenchmarksAkka b = new BenchmarksAkka();
         b.setup();
-        System.out.println(Await.result(Patterns.ask(b.askActor, "hi", 1000), Duration.create(10000, TimeUnit.MILLISECONDS)));
-        b.tearDown();
+        while (true)
+            Await.result(Patterns.ask(b.askActor, "hi", 1000), Duration.create(10000, TimeUnit.MILLISECONDS));
+//        b.tearDown();
     }
 
 }
