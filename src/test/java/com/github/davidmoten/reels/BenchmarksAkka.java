@@ -57,7 +57,7 @@ public class BenchmarksAkka {
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
-    public void askAkka(Blackhole bh) throws Exception {
+    public void ask(Blackhole bh) throws Exception {
         for (int i = 0; i < 10000; i++) {
             bh.consume(Await.result(Patterns.ask(askActor, "hi", 1000), Duration.create(1000, TimeUnit.MILLISECONDS)));
         }
