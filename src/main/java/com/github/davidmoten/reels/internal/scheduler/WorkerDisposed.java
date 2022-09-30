@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Worker;
 
-public enum WorkerDoNothing implements Worker {
+public enum WorkerDisposed implements Worker {
     
     INSTANCE;
     

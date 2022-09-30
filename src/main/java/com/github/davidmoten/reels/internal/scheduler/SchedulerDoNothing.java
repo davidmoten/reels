@@ -12,7 +12,7 @@ public enum SchedulerDoNothing implements Scheduler {
 
     @Override
     public Worker createWorker() {
-        return WorkerDoNothing.INSTANCE;
+        return WorkerDisposed.INSTANCE;
     }
 
     @Override
