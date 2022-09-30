@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -49,6 +52,23 @@ public class ActorTest {
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertEquals("test", a.toString());
         assertEquals(Supervisor.defaultSupervisor(), c.supervisor());
+    }
+    
+    @Test
+    public void testPreStartCalled() throws InterruptedException, ExecutionException, TimeoutException {
+        Context c = new Context();
+        List<String> list = new ArrayList<>();
+        ActorRef<Object> a =
+                c.matchAny(m -> list.add("message")) //
+                .preStart(context -> list.add("preStart")) //
+                .onStop(context -> list.add("onStop")) //
+                .scheduler(Scheduler.immediate()) //
+                .supervisor(Supervisor.defaultSupervisor()) //
+                .name("test") //
+                .build();
+        a.tell(123);
+        c.shutdownGracefully().get(5, TimeUnit.SECONDS);
+        assertEquals(Arrays.asList("preStart", "message", "onStop"), list);
     }
 
     @Test

@@ -69,13 +69,9 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         this.queue = new MpscLinkedQueue<Message<T>>();
         this.worker = scheduler.createWorker();
         this.parent = parent;
-        this.actor = factory.get();
-        if (actor == null) {
-            throw new CreateException("actor factory cannot return null");
-        }
-        actor.preStart(context);
         this.scheduler = scheduler;
         this.children = new ConcurrentHashMap<>();
+        createActor();
     }
 
     private void addChild(ActorRef<?> actor) {
@@ -247,11 +243,16 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     @Override
     public void restart() {
         actor.onStop(context);
+        createActor();
+    }
+
+    private Actor<T> createActor() {
         actor = factory.get();
         if (actor == null) {
             throw new CreateException("actor factory cannot return null");
         }
         actor.preStart(context);
+        return actor;
     }
 
     @Override
