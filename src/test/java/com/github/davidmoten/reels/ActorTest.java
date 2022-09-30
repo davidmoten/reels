@@ -48,6 +48,7 @@ public class ActorTest {
         a.tell(123);
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertEquals("test", a.toString());
+        assertEquals(Supervisor.defaultSupervisor(), c.supervisor());
     }
 
     @Test
