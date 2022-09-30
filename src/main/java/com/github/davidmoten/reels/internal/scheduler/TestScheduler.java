@@ -16,6 +16,7 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
 
     private long time = 0;
     private boolean running;
+    private boolean disposed;
 
     @Override
     public Worker createWorker() {
@@ -65,6 +66,9 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
 
     @Override
     public Disposable schedule(Runnable run) {
+        if (disposed) {
+            return Disposable.disposed();
+        }
         ScheduledTask task = new ScheduledTask(time, run);
         queue.add(task);
         drain();
@@ -73,6 +77,9 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
 
     @Override
     public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
+        if (disposed) {
+            return Disposable.disposed();
+        }
         ScheduledTask task = new ScheduledTask(time + unit.toMillis(delay), run);
         queue.add(task);
         drain();
@@ -81,6 +88,9 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
 
     @Override
     public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
+        if (disposed) {
+            return Disposable.disposed();
+        }
         Disposable d = Disposable.simple();
         ScheduledTask task = new ScheduledTask(time + unit.toMillis(initialDelay), run, unit.toMillis(period), d);
         queue.add(task);
@@ -117,7 +127,7 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
     @Override
     public void shutdown() {
         queue.clear();
-        running = true;
+        disposed = true;
     }
 
     public TestScheduler advance(long duration, TimeUnit unit) {
