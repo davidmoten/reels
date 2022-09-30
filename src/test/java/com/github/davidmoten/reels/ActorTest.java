@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -54,13 +55,12 @@ public class ActorTest {
         assertEquals("test", a.toString());
         assertEquals(Supervisor.defaultSupervisor(), c.supervisor());
     }
-    
+
     @Test
     public void testPreStartCalled() throws InterruptedException, ExecutionException, TimeoutException {
         Context c = new Context();
         List<String> list = new ArrayList<>();
-        ActorRef<Object> a =
-                c.matchAny(m -> list.add("message")) //
+        ActorRef<Object> a = c.matchAny(m -> list.add("message")) //
                 .preStart(context -> list.add("preStart")) //
                 .onStop(context -> list.add("onStop")) //
                 .scheduler(Scheduler.immediate()) //
@@ -161,6 +161,28 @@ public class ActorTest {
         }).parent(a).build();
         assertTrue(a == b.parent());
         assertTrue(b.isDisposed());
+    }
+
+    @Test
+    public void testAskFuture() throws InterruptedException, ExecutionException, TimeoutException {
+        Context c = Context.create();
+        CountDownLatch latch = new CountDownLatch(1);
+        ActorRef<Object> a = c.matchAny(m -> {
+            try {
+                latch.await(5, TimeUnit.SECONDS);
+                System.out.println("answered");
+                m.senderRaw().tell(2);
+            } catch (InterruptedException e) {
+                // do nothing
+            }
+        }).build();
+        CompletableFuture<Integer> f = a.ask(1);
+        assertFalse(f.isCancelled());
+        assertFalse(f.isDone());
+        System.out.println(f.cancel(true));
+        latch.countDown();
+        c.shutdownGracefully().get(5, TimeUnit.SECONDS);
+        assertTrue(f.isCompletedExceptionally());
     }
 
     @Test
@@ -561,7 +583,7 @@ public class ActorTest {
                 .tell(Boolean.TRUE);
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
     }
-    
+
     @Test
     public void testOnStopThrows() throws InterruptedException, ExecutionException, TimeoutException {
         AtomicReference<Throwable> e = new AtomicReference<>();
@@ -569,10 +591,13 @@ public class ActorTest {
             @Override
             public void processFailure(Message<?> message, SupervisedActorRef<?> self, Throwable error) {
                 e.set(error);
-            }});
+            }
+        });
         context //
                 .matchAny(m -> m.self().stop()) //
-                .onStop(c -> {throw new IllegalArgumentException("boo");}) //
+                .onStop(c -> {
+                    throw new IllegalArgumentException("boo");
+                }) //
                 .scheduler(Scheduler.immediate()) //
                 .build() //
                 .tell(Boolean.TRUE);
