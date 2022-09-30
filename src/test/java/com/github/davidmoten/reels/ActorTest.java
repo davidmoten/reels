@@ -170,7 +170,6 @@ public class ActorTest {
         ActorRef<Object> a = c.matchAny(m -> {
             try {
                 latch.await(5, TimeUnit.SECONDS);
-                System.out.println("answered");
                 m.senderRaw().tell(2);
             } catch (InterruptedException e) {
                 // do nothing
@@ -179,7 +178,7 @@ public class ActorTest {
         CompletableFuture<Integer> f = a.ask(1);
         assertFalse(f.isCancelled());
         assertFalse(f.isDone());
-        System.out.println(f.cancel(true));
+        f.cancel(true);
         latch.countDown();
         c.shutdownGracefully().get(5, TimeUnit.SECONDS);
         assertTrue(f.isCompletedExceptionally());
