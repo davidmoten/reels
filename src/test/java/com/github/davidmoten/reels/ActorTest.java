@@ -159,6 +159,7 @@ public class ActorTest {
         a.dispose();
         ActorRef<Object> b = c.matchAny(m -> {
         }).parent(a).build();
+        assertTrue(a == b.parent());
         assertTrue(b.isDisposed());
     }
 
