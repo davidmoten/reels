@@ -1,5 +1,6 @@
 package com.github.davidmoten.reels.internal.scheduler;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -49,27 +50,29 @@ public class SplitResponsibilityScheduledExecutorService implements ScheduledExe
 
     @Override
     public List<Runnable> shutdownNow() {
-        return executor.shutdownNow();
+        List<Runnable> list = new ArrayList<>(executor.shutdownNow());
+        list.addAll(scheduled.shutdownNow());
+        return list;
     }
 
     @Override
     public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
-        throw new UnsupportedOperationException();
+        return scheduled.scheduleWithFixedDelay(command, initialDelay, delay, unit);
     }
 
     @Override
     public boolean isShutdown() {
-        return executor.isShutdown();
+        return executor.isShutdown() && scheduled.isShutdown();
     }
 
     @Override
     public boolean isTerminated() {
-        return executor.isTerminated();
+        return executor.isTerminated() && scheduled.isTerminated();
     }
 
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-        return executor.awaitTermination(timeout, unit);
+        return executor.awaitTermination(timeout, unit) && scheduled.awaitTermination(timeout, unit);
     }
 
     @Override
@@ -95,7 +98,7 @@ public class SplitResponsibilityScheduledExecutorService implements ScheduledExe
     @Override
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
             throws InterruptedException {
-        return executor.invokeAll(tasks, timeout, unit);
+        return scheduled.invokeAll(tasks, timeout, unit);
     }
 
     @Override
@@ -106,7 +109,7 @@ public class SplitResponsibilityScheduledExecutorService implements ScheduledExe
     @Override
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
             throws InterruptedException, ExecutionException, TimeoutException {
-        return executor.invokeAny(tasks, timeout, unit);
+        return scheduled.invokeAny(tasks, timeout, unit);
     }
 
 }
