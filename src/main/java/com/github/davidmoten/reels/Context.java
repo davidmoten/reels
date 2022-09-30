@@ -203,7 +203,8 @@ public final class Context implements Disposable {
         return (Actor<T>) construct(c.get());
     }
 
-    private static Object construct(Constructor<?> c) {
+    // VisibleForTesting
+    static Object construct(Constructor<?> c) {
         try {
             return c.newInstance();
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
