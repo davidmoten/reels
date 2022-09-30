@@ -1,12 +1,15 @@
 package com.github.davidmoten.reels.internal.scheduler;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -78,7 +81,44 @@ public class SplitResponsibilityScheduledExecutorServiceTest {
         verifyNoMoreInteractions(b);
         verifyNoInteractions(a);
     }
-
+    
+    @Test
+    public void testScheduleCallable() {
+        ExecutorService a = mock(ExecutorService.class);
+        ScheduledExecutorService b = mock(ScheduledExecutorService.class);
+        SplitResponsibilityScheduledExecutorService s = new SplitResponsibilityScheduledExecutorService(a, b);
+        @SuppressWarnings("unchecked")
+        Callable<Object> r = mock(Callable.class);
+        s.schedule(r, 1L, TimeUnit.SECONDS);
+        verify(b, times(1)).schedule(Mockito.<Callable<Object>>any(), eq(1L), eq(TimeUnit.SECONDS));
+        verifyNoMoreInteractions(b);
+        verifyNoInteractions(a);
+    }
+    
+    @Test
+    public void testScheduleAtFixedRate() {
+        ExecutorService a = mock(ExecutorService.class);
+        ScheduledExecutorService b = mock(ScheduledExecutorService.class);
+        SplitResponsibilityScheduledExecutorService s = new SplitResponsibilityScheduledExecutorService(a, b);
+        Runnable r = mock(Runnable.class);
+        s.scheduleAtFixedRate(r, 1L, 1L,TimeUnit.SECONDS);
+        verify(b, times(1)).scheduleAtFixedRate(Mockito.<Runnable>any(), eq(1L), eq(1L), eq(TimeUnit.SECONDS));
+        verifyNoMoreInteractions(b);
+        verifyNoInteractions(a);
+    }
+    
+    @Test
+    public void testScheduleWithFixedDelay() {
+        ExecutorService a = mock(ExecutorService.class);
+        ScheduledExecutorService b = mock(ScheduledExecutorService.class);
+        SplitResponsibilityScheduledExecutorService s = new SplitResponsibilityScheduledExecutorService(a, b);
+        Runnable r = mock(Runnable.class);
+        s.scheduleWithFixedDelay(r, 1L, 1L,TimeUnit.SECONDS);
+        verify(b, times(1)).scheduleWithFixedDelay(Mockito.<Runnable>any(), eq(1L), eq(1L), eq(TimeUnit.SECONDS));
+        verifyNoMoreInteractions(b);
+        verifyNoInteractions(a);
+    }
+    
     @Test
     public void testIsShutdown() {
         ExecutorService a = mock(ExecutorService.class);
@@ -135,6 +175,35 @@ public class SplitResponsibilityScheduledExecutorServiceTest {
         when(a.isTerminated()).thenReturn(false);
         when(b.isTerminated()).thenReturn(false);
         assertFalse(s.isTerminated());
+    }
+    
+    @Test
+    public void testAwaitTermination() throws InterruptedException {
+        ExecutorService a = mock(ExecutorService.class);
+        ScheduledExecutorService b = mock(ScheduledExecutorService.class);
+        SplitResponsibilityScheduledExecutorService s = new SplitResponsibilityScheduledExecutorService(a, b);
+
+        when(a.awaitTermination(1, TimeUnit.SECONDS)).thenReturn(true);
+        when(b.awaitTermination(1, TimeUnit.SECONDS)).thenReturn(true);
+        assertTrue(s.awaitTermination(1, TimeUnit.SECONDS));
+
+        reset(a);
+        reset(b);
+        when(a.awaitTermination(1, TimeUnit.SECONDS)).thenReturn(true);
+        when(b.awaitTermination(1, TimeUnit.SECONDS)).thenReturn(false);
+        assertFalse(s.awaitTermination(1, TimeUnit.SECONDS));
+
+        reset(a);
+        reset(b);
+        when(a.awaitTermination(1, TimeUnit.SECONDS)).thenReturn(false);
+        when(b.awaitTermination(1, TimeUnit.SECONDS)).thenReturn(true);
+        assertFalse(s.awaitTermination(1, TimeUnit.SECONDS));
+
+        reset(a);
+        reset(b);
+        when(a.awaitTermination(1, TimeUnit.SECONDS)).thenReturn(false);
+        when(b.awaitTermination(1, TimeUnit.SECONDS)).thenReturn(false);
+        assertFalse(s.awaitTermination(1, TimeUnit.SECONDS));
     }
     
 }
