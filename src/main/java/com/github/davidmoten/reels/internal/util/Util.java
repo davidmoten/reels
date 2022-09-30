@@ -27,14 +27,4 @@ public final class Util {
         return 1 << (32 - Integer.numberOfLeadingZeros(value - 1));
     }
 
-    /**
-     * Is this value a power of two.
-     *
-     * @param value to be tested to see if it is a power of two.
-     * @return true if the value is a power of 2 otherwise false.
-     */
-    public static boolean isPowerOfTwo(final int value) {
-        return (value & (value - 1)) == 0;
-    }
-
 }
