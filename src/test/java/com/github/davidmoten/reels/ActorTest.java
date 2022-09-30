@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -558,6 +559,26 @@ public class ActorTest {
                 .build() //
                 .tell(Boolean.TRUE);
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
+    }
+    
+    @Test
+    public void testOnStopThrows() throws InterruptedException, ExecutionException, TimeoutException {
+        AtomicReference<Throwable> e = new AtomicReference<>();
+        Context context = new Context(new Supervisor() {
+            @Override
+            public void processFailure(Message<?> message, SupervisedActorRef<?> self, Throwable error) {
+                e.set(error);
+            }});
+        context //
+                .matchAny(m -> m.self().stop()) //
+                .onStop(c -> {throw new IllegalArgumentException("boo");}) //
+                .scheduler(Scheduler.immediate()) //
+                .build() //
+                .tell(Boolean.TRUE);
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
+        assertTrue(e.get() != null);
+        assertTrue(e.get() instanceof OnStopException);
+        assertEquals("boo", e.get().getCause().getMessage());
     }
 
     @Test
