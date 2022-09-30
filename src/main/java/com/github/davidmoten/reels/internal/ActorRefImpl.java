@@ -267,7 +267,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     @Override
     public <S> CompletableFuture<S> ask(T message) {
         AskFuture<S> future = new AskFuture<S>();
-        ActorRef<S> actor = context.<S>matchAll(m -> future.setValue(m.content())).build();
+        ActorRef<S> actor = context.<S>matchAny(m -> future.setValue(m.content())).build();
         future.setDisposable(actor);
         tell(message, actor);
         return future;

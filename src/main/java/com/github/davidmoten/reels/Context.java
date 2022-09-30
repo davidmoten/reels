@@ -175,8 +175,8 @@ public final class Context implements Disposable {
         return this.<T>builder().match(matchClass, consumer);
     }
 
-    public <T> ActorBuilder<T> matchAll(Consumer<? super Message<T>> consumer) {
-        return this.<T>builder().matchAll(consumer);
+    public <T> ActorBuilder<T> matchAny(Consumer<? super Message<T>> consumer) {
+        return this.<T>builder().matchAny(consumer);
     }
 
     public <T> ActorBuilder<T> matchEquals(T value, Consumer<? super Message<T>> consumer) {

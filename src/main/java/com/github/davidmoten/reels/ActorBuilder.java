@@ -51,7 +51,7 @@ public final class ActorBuilder<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public ActorBuilder<T> matchAll(Consumer<? super Message<T>> consumer) {
+    public ActorBuilder<T> matchAny(Consumer<? super Message<T>> consumer) {
         Preconditions.checkArgument(!factory.isPresent(), "cannot set both matches and factory in builder");
         return match((Class<T>) Object.class, consumer);
     }

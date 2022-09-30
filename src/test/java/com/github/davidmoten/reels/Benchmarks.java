@@ -37,7 +37,7 @@ public class Benchmarks {
             log.error(actor.name() + ":" + error.getMessage(), error);
         }, //
                 () -> new ActorDoNothing<Object>());
-        askActor = context.<String>matchAll(m -> m.senderRaw().tell("boo")) //
+        askActor = context.<String>matchAny(m -> m.senderRaw().tell("boo")) //
                 .build();
     }
 
@@ -61,7 +61,7 @@ public class Benchmarks {
     @BenchmarkMode(Mode.Throughput)
     public void actorCreateAndStop() throws InterruptedException {
         context //
-                .matchAll(m -> m.self().stop()) //
+                .matchAny(m -> m.self().stop()) //
                 .scheduler(Scheduler.immediate()) //
                 .build() //
                 .tell(Boolean.TRUE);
@@ -148,7 +148,7 @@ public class Benchmarks {
         int starters = Runtime.getRuntime().availableProcessors();
         CountDownLatch latch = new CountDownLatch(starters);
         for (int i = 0; i < numActors; i++) {
-            context.<Integer>matchAll(m -> {
+            context.<Integer>matchAny(m -> {
                 if (m.content() == numMessages) {
                     latch.countDown();
                 } else {
@@ -180,7 +180,7 @@ public class Benchmarks {
                 .<Object, Start>match(Start.class, m -> {
                     for (int i = 0; i < runners; i++) {
                         ActorRef<int[]> actor = m.context() //
-                                .<int[]>matchAll(m2 -> {
+                                .<int[]>matchAny(m2 -> {
                                     m2.senderRaw().tell(m2.content(), m2.self());
                                 }) //
                                 .scheduler(scheduler) //

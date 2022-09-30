@@ -91,7 +91,7 @@ public class ActorTest {
     public void onStopCalled() {
         Context c = new Context();
         AtomicBoolean called = new AtomicBoolean();
-        ActorRef<Object> a = c.matchAll(m -> {
+        ActorRef<Object> a = c.matchAny(m -> {
         }).onStop(m -> called.set(true)).scheduler(Scheduler.immediate()).build();
         assertFalse(called.get());
         a.stop();
@@ -133,7 +133,7 @@ public class ActorTest {
         Context c = new Context();
         ActorRef<Object> a = c.createActor(() -> new ActorDoNothing<Object>());
         a.dispose();
-        ActorRef<Object> b = c.matchAll(m -> {
+        ActorRef<Object> b = c.matchAny(m -> {
         }).parent(a).build();
         assertTrue(b.isDisposed());
     }
@@ -144,7 +144,7 @@ public class ActorTest {
         CountDownLatch latch = new CountDownLatch(2);
         long[] t = new long[2];
         long intervalMs = 300;
-        ActorRef<Integer> a = c.<Integer>matchAll(m -> {
+        ActorRef<Integer> a = c.<Integer>matchAny(m -> {
             latch.countDown();
             if (m.content() == 1) {
                 t[0] = System.currentTimeMillis();
@@ -282,7 +282,7 @@ public class ActorTest {
     public void testContextShutdownGracefully() throws InterruptedException, ExecutionException, TimeoutException {
         AtomicInteger count = new AtomicInteger();
         Context context = new Context();
-        ActorRef<Integer> actor = context.<Integer>matchAll(m -> {
+        ActorRef<Integer> actor = context.<Integer>matchAny(m -> {
             if (m.content() == 1) {
                 try {
                     Thread.sleep(300);
@@ -309,7 +309,7 @@ public class ActorTest {
     public void testContextShutdownNow() throws InterruptedException, ExecutionException, TimeoutException {
         AtomicInteger count = new AtomicInteger();
         Context context = new Context();
-        ActorRef<Integer> actor = context.<Integer>matchAll(m -> {
+        ActorRef<Integer> actor = context.<Integer>matchAny(m -> {
             if (m.content() == 1) {
                 try {
                     Thread.sleep(500);
@@ -334,7 +334,7 @@ public class ActorTest {
             throws InterruptedException, ExecutionException, TimeoutException {
         AtomicInteger count = new AtomicInteger();
         Context context = new Context();
-        ActorRef<Integer> actor = context.<Integer>matchAll(m -> {
+        ActorRef<Integer> actor = context.<Integer>matchAny(m -> {
             if (m.content() == 1) {
                 try {
                     Thread.sleep(500);
@@ -367,7 +367,7 @@ public class ActorTest {
         Context context = new Context();
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
         context //
-                .matchAll(m -> {
+                .matchAny(m -> {
                 }) //
                 .build();
     }
@@ -408,7 +408,7 @@ public class ActorTest {
                 .<Object, Start>match(Start.class, m -> {
                     for (int i = 0; i < runners; i++) {
                         ActorRef<int[]> actor = m.context() //
-                                .<int[]>matchAll(m2 -> {
+                                .<int[]>matchAny(m2 -> {
                                     m2.sender().get().tell(m2.content(), m2.self());
                                 }) //
                                 .scheduler(scheduler) //
@@ -440,10 +440,10 @@ public class ActorTest {
         int maxMessages = 10000;
         Context c = new Context();
         try {
-            ActorRef<Integer> b = c.<Integer>matchAll(m -> {
+            ActorRef<Integer> b = c.<Integer>matchAny(m -> {
                 m.sender().ifPresent(sender -> sender.tell(m.content() + 1));
             }).name("b").build();
-            ActorRef<Integer> a = c.<Integer>matchAll(m -> {
+            ActorRef<Integer> a = c.<Integer>matchAny(m -> {
                 if (m.content() < maxMessages) {
                     b.tell(m.content() + 1, m.self());
                 } else {
@@ -463,12 +463,12 @@ public class ActorTest {
         int maxMessages = 100;
         Context c = new Context();
         try {
-            c.<Integer>matchAll(m -> {
+            c.<Integer>matchAny(m -> {
                 m.context().lookupActor("a").get().tell(m.content() + 1);
             }) //
                     .name("b") //
                     .build();
-            c.<Integer>matchAll(m -> {
+            c.<Integer>matchAny(m -> {
                 if (m.content() < maxMessages) {
                     m.context().lookupActor("b").get().tell(m.content() + 1, m.self());
                 } else {
@@ -488,9 +488,9 @@ public class ActorTest {
     public void testDisposeParentDisposesChild() {
         Context context = new Context();
         AtomicBoolean called = new AtomicBoolean();
-        ActorRef<Object> a = context.matchAll(m -> {
+        ActorRef<Object> a = context.matchAny(m -> {
         }).build();
-        ActorRef<Object> b = context.matchAll(m -> called.set(true)).scheduler(Scheduler.immediate()).parent(a).build();
+        ActorRef<Object> b = context.matchAny(m -> called.set(true)).scheduler(Scheduler.immediate()).parent(a).build();
         a.dispose();
         b.tell(1);
         assertFalse(called.get());
@@ -500,12 +500,12 @@ public class ActorTest {
     public void testStopParentStopsChild() {
         Context context = new Context();
         AtomicBoolean called = new AtomicBoolean();
-        ActorRef<Object> a = context.matchAll(m -> {
+        ActorRef<Object> a = context.matchAny(m -> {
         }) //
                 .scheduler(Scheduler.immediate()) //
                 .build();
         ActorRef<Object> b = context //
-                .matchAll(m -> called.set(true)) //
+                .matchAny(m -> called.set(true)) //
                 .scheduler(Scheduler.immediate()) //
                 .parent(a) //
                 .build();
@@ -517,7 +517,7 @@ public class ActorTest {
     @Test
     public void testAsk() throws InterruptedException, ExecutionException, TimeoutException {
         Context context = new Context();
-        ActorRef<String> actor = context.<String>matchAll(m -> m.sender().ifPresent(sender -> sender.tell("boo"))) //
+        ActorRef<String> actor = context.<String>matchAny(m -> m.sender().ifPresent(sender -> sender.tell("boo"))) //
                 .build();
         assertEquals("boo", actor.ask("hi").get(1000, TimeUnit.MILLISECONDS));
         context.dispose();
@@ -530,7 +530,7 @@ public class ActorTest {
         }, //
                 () -> new ActorDoNothing<Object>());
         context //
-                .matchAll(m -> m.self().stop()) //
+                .matchAny(m -> m.self().stop()) //
                 .scheduler(Scheduler.immediate()) //
                 .build() //
                 .tell(Boolean.TRUE);
@@ -540,7 +540,7 @@ public class ActorTest {
     @Test
     public void testAs() {
         Context context = new Context();
-        ActorRef<Number> a = context.<Number>matchAll(m -> {
+        ActorRef<Number> a = context.<Number>matchAny(m -> {
         }) //
                 .build();
         @SuppressWarnings("unused")
@@ -569,7 +569,7 @@ public class ActorTest {
         Context c = new Context();
         AtomicInteger count = new AtomicInteger();
         TestScheduler ts = Scheduler.test();
-        ActorRef<Object> a = c.matchAll(m -> count.incrementAndGet()).scheduler(ts).build();
+        ActorRef<Object> a = c.matchAny(m -> count.incrementAndGet()).scheduler(ts).build();
         assertEquals(0, count.get());
         a.tell("hi");
         assertEquals(1, count.get());
@@ -587,7 +587,7 @@ public class ActorTest {
                 Scheduler.immediate(), Scheduler.io() }) {
             Context c = new Context();
             AtomicInteger n = new AtomicInteger();
-            ActorRef<Object> a = c.matchAll(m -> n.incrementAndGet()).scheduler(scheduler).build();
+            ActorRef<Object> a = c.matchAny(m -> n.incrementAndGet()).scheduler(scheduler).build();
             a.tell(1);
             a.scheduler().schedule(() -> a.tell(2), 10, TimeUnit.MILLISECONDS);
             Thread.sleep(100);
