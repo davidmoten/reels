@@ -143,10 +143,6 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
             this.disposable = disposable;
         }
 
-        @Override
-        public String toString() {
-            return "ScheduledTask [time=" + time + ", run=" + run + ", intervalMs=" + intervalMs + "]";
-        }
     }
 
 }
