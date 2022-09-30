@@ -36,6 +36,7 @@ public class BenchmarksAkka {
     
     @TearDown(Level.Invocation)
     public void tearDown() throws InterruptedException, ExecutionException, TimeoutException {
+        system.terminate();
         system.getWhenTerminated().toCompletableFuture().join();
     }
 
@@ -48,18 +49,25 @@ public class BenchmarksAkka {
 
     }
 
-    @Benchmark
-    @BenchmarkMode(Mode.Throughput)
-    public void actorCreateAndStop() throws InterruptedException {
-        system.actorOf(Props.create(Test.class)).tell(Boolean.TRUE, null);
-    }
+//    @Benchmark
+//    @BenchmarkMode(Mode.Throughput)
+//    public void actorCreateAndStop() throws InterruptedException {
+//        system.actorOf(Props.create(Test.class)).tell(Boolean.TRUE, null);
+//    }
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
-    public void ask(Blackhole bh) throws Exception {
+    public void askAkka(Blackhole bh) throws Exception {
         for (int i = 0; i < 10000; i++) {
             bh.consume(Await.result(Patterns.ask(askActor, "hi", 1000), Duration.create(1000, TimeUnit.MILLISECONDS)));
         }
+    }
+    
+    public static void main(String[] args) throws Exception {
+        BenchmarksAkka b = new BenchmarksAkka();
+        b.setup();
+        System.out.println(Await.result(Patterns.ask(b.askActor, "hi", 1000), Duration.create(10000, TimeUnit.MILLISECONDS)));
+        b.tearDown();
     }
 
 }
