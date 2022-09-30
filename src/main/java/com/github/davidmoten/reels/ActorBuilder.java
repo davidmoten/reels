@@ -86,7 +86,7 @@ public final class ActorBuilder<T> {
         this.onError = onError;
         return this;
     }
-    
+
     public ActorBuilder<T> preStart(Consumer<? super Context> preStart) {
         Preconditions.checkArgumentNonNull(preStart, "preStart");
         this.preStart = preStart;
@@ -109,7 +109,7 @@ public final class ActorBuilder<T> {
         if (supervisor == null) {
             supervisor = ((ActorRefImpl<?>) parent).supervisor();
         }
-        Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError, preStart,onStop));
+        Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError, preStart, onStop));
         return context.createActor(f, name, scheduler, supervisor, parent);
     }
 
@@ -159,7 +159,7 @@ public final class ActorBuilder<T> {
                 }
             }
         }
-        
+
         @Override
         public void preStart(Context context) {
             if (preStart != null) {
@@ -173,8 +173,6 @@ public final class ActorBuilder<T> {
                 onStop.accept(context);
             }
         }
-
-        
     }
 
 }
