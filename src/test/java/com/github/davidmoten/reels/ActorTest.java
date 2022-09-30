@@ -67,8 +67,11 @@ public class ActorTest {
                 .name("test") //
                 .build();
         a.tell(123);
+        a.tell(456);
+        a.stop();
+        // will send another stop so we are testing that onStop gets called only once
         c.shutdownGracefully().get(5, TimeUnit.SECONDS);
-        assertEquals(Arrays.asList("preStart", "message", "onStop"), list);
+        assertEquals(Arrays.asList("preStart", "message", "message", "onStop"), list);
     }
 
     @Test

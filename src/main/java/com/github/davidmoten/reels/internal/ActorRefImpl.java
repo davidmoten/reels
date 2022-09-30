@@ -44,6 +44,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     private final ActorRef<?> parent; // nullable
     private final Map<String, ActorRef<?>> children; // concurrent
     private Actor<T> actor; // mutable because recreated if restart called
+    private boolean preStartRun; 
     protected volatile int state = ACTIVE;
     protected static final int ACTIVE = 0;
     private static final int STOPPING = 1;
@@ -176,6 +177,10 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
                     } else if (message.content() == Constants.TERMINATED) {
                         handleTerminationMessage(message);
                     } else {
+                        if (!preStartRun) {
+                            actor.preStart(context);
+                            preStartRun = true;
+                        }
                         try {
 //                        info("calling onMessage");
                             actor.onMessage(message);
@@ -251,7 +256,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         if (actor == null) {
             throw new CreateException("actor factory cannot return null");
         }
-        actor.preStart(context);
+        preStartRun = false;
         return actor;
     }
 
