@@ -6,16 +6,20 @@ public interface SupervisedActorRef<T> extends ActorRef<T> {
 
     /**
      * Recreates the Actor object that processes messages on the next message polled
-     * from the queue (mailbox).
+     * from the queue (mailbox). Should be called synchronously from the Supervisor
+     * object.
      */
     void restart();
 
     /**
-     * TODO
+     * Will restart the actor after the given given delay on the next message polled
+     * from the queue (mailbox). Until that time the actor is in a paused state and
+     * no messages will be processed (messages will be buffered in-memory). Once
+     * restarted message processing resumes.
      * 
-     * @param duration time till restart called
-     * @param unit     duration unit
+     * @param delay time till restart called
+     * @param unit  duration unit
      */
-    void restart(long duration, TimeUnit unit);
+    void restart(long delay, TimeUnit unit);
 
 }

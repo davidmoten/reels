@@ -349,7 +349,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         private final AtomicBoolean disposed;
         private Disposable disposable = Disposable.disposed(); // mutable
 
-        public AskFuture() {
+        AskFuture() {
             super();
             this.disposed = new AtomicBoolean();
         }
@@ -372,11 +372,11 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
             }
         }
 
-        public void setDisposable(Disposable disposable) {
+        void setDisposable(Disposable disposable) {
             this.disposable = disposable;
         }
 
-        public void setValue(T value) {
+        void setValue(T value) {
             complete(value);
             dispose();
         }
