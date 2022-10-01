@@ -44,12 +44,14 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     private final ActorRef<?> parent; // nullable
     private final Map<String, ActorRef<?>> children; // concurrent
     private Actor<T> actor; // mutable because recreated if restart called
-    private boolean preStartRun; 
-    protected volatile int state = ACTIVE;
+    private boolean preStartRun;
+    protected final AtomicInteger state = new AtomicInteger(); // ACTIVE
     protected static final int ACTIVE = 0;
     private static final int STOPPING = 1;
     private static final int STOPPED = 2;
     private static final int DISPOSED = 3;
+    protected static final int RESTART = 4;
+    private static final int PAUSED = 5;
 
     public static <T> ActorRefImpl<T> create(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
             Context context, Supervisor supervisor, ActorRef<?> parent) {
@@ -76,7 +78,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     }
 
     private void addChild(ActorRef<?> actor) {
-        if (state == DISPOSED) {
+        if (state.get() == DISPOSED) {
             actor.dispose();
         } else {
             children.put(actor.name(), actor);
@@ -105,12 +107,28 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     }
 
     public void disposeThis() {
-        if (state != DISPOSED) {
-            state = DISPOSED;
-            worker.dispose();
-            queue.clear();
-            if (parent != null) {
-                ((ActorRefImpl<?>) parent).removeChild(this);
+        while (true) {
+            int s = state.get();
+            if (s == DISPOSED) {
+                break;
+            } else if (state.compareAndSet(s, DISPOSED)) {
+                worker.dispose();
+                queue.clear();
+                if (parent != null) {
+                    ((ActorRefImpl<?>) parent).removeChild(this);
+                }
+                break;
+            }
+        }
+    }
+
+    private boolean setState(int value) {
+        while (true) {
+            int s = state.get();
+            if (s == DISPOSED) {
+                return false;
+            } else if (state.compareAndSet(s, value)) {
+                return true;
             }
         }
     }
@@ -122,7 +140,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
 
     @Override
     public void tell(T message, ActorRef<?> sender) {
-        if (state == DISPOSED) {
+        if (state.get() == DISPOSED) {
             return;
         }
 //        info(message + " arrived from " + sender + " to " + this);
@@ -146,10 +164,16 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
             while (true) {
                 int missed = 1;
                 Message<T> message;
-                while ((message = queue.poll()) != null) {
-                    int s = state;
+                int s;
+                while ((s = state.get()) != PAUSED && (message = queue.poll()) != null) {
                     if (debug)
                         log("message polled=" + message.content() + ", state=" + s);
+                    if (s == RESTART) {
+                        actor.onStop(context);
+                        createActor();
+                        setState(ACTIVE);
+                        s = state.get();
+                    }
                     if (s == DISPOSED) {
                         queue.clear();
                         return;
@@ -164,7 +188,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
                             sendToDeadLetter(message);
                         }
                     } else if (message.content() == PoisonPill.INSTANCE) {
-                        state = STOPPING;
+                        setState(STOPPING);
                         boolean isEmpty = true;
                         for (ActorRef<?> child : children.values()) {
                             ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
@@ -215,7 +239,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
 
     @SuppressWarnings("unchecked")
     private void runOnStop(Message<T> message) {
-        state = STOPPED;
+        setState(STOPPED);
         try {
             actor.onStop(context);
         } catch (Throwable e) {
@@ -237,7 +261,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
 
     @Override
     public boolean isDisposed() {
-        return state == DISPOSED;
+        return state.get() == DISPOSED;
     }
 
     @Override
@@ -247,8 +271,17 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
 
     @Override
     public void restart() {
-        actor.onStop(context);
-        createActor();
+        while (true) {
+            int s  = state.get();
+            if ((s == ACTIVE || s == PAUSED) ) {
+                if (state.compareAndSet(s, RESTART)) {
+                run();
+                break;
+                } 
+            } else {
+                break;
+            }
+        }
     }
 
     private Actor<T> createActor() {
