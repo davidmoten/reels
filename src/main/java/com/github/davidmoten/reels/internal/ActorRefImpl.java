@@ -5,6 +5,7 @@ import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -154,6 +155,119 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         tell((T) PoisonPill.INSTANCE, parent);
     }
 
+    private void handleTerminationMessage(Message<T> message) {
+        children.remove(message.senderRaw().name());
+        if (children.isEmpty()) {
+            runOnStop(message);
+        }
+    }
+
+    private void sendToDeadLetter(Message<T> message) {
+        if (context.deadLetterActor() != this) {
+            context.deadLetterActor().tell(message, this);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void runOnStop(Message<T> message) {
+        setState(STOPPED);
+        try {
+            actor.onStop(context);
+        } catch (Throwable e) {
+            supervisor.processFailure(message, this, new OnStopException(e));
+        }
+        complete();
+        ActorRef<?> p = parent;
+        if (p == null) {
+            // is root actor (which is the only actor without a parent)
+            queue.offer(new Message<T>((T) Constants.TERMINATED, this, this));
+        } else {
+            p.<Object>recast().tell(Constants.TERMINATED, this);
+        }
+    }
+
+    private void log(String s) {
+        log.debug("{}: {}", name, s);
+    }
+
+    @Override
+    public boolean isDisposed() {
+        return state.get() == DISPOSED;
+    }
+
+    @Override
+    public Context context() {
+        return context;
+    }
+
+    @Override
+    public void restart() {
+        while (true) {
+            int s = state.get();
+            if (s == ACTIVE || s == PAUSED) {
+                if (state.compareAndSet(s, RESTART)) {
+                    run();
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void restart(long duration, TimeUnit unit) {
+        if (state.compareAndSet(ACTIVE, PAUSED)) {
+            scheduler.schedule(() -> restart(), duration, unit);
+        }
+    }
+
+    private Actor<T> createActor() {
+        actor = factory.get();
+        if (actor == null) {
+            throw new CreateException("actor factory cannot return null");
+        }
+        preStartRun = false;
+        return actor;
+    }
+
+    @Override
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public Scheduler scheduler() {
+        return scheduler;
+    }
+
+    @Override
+    public <S> CompletableFuture<S> ask(T message) {
+        AskFuture<S> future = new AskFuture<S>();
+        ActorRef<S> actor = context.<S>matchAny(m -> future.setValue(m.content())).build();
+        future.setDisposable(actor);
+        tell(message, actor);
+        return future;
+    }
+
+    @Override
+    public ActorRef<?> parent() {
+        return parent;
+    }
+
+    @Override
+    public ActorRef<?> child(String name) {
+        return children.get(name);
+    }
+
+    protected void complete() {
+        // do nothing
+    }
+
+    public Supervisor supervisor() {
+        return supervisor;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public void run() {
@@ -224,94 +338,6 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         }
     }
 
-    private void handleTerminationMessage(Message<T> message) {
-        children.remove(message.senderRaw().name());
-        if (children.isEmpty()) {
-            runOnStop(message);
-        }
-    }
-
-    private void sendToDeadLetter(Message<T> message) {
-        if (context.deadLetterActor() != this) {
-            context.deadLetterActor().tell(message, this);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void runOnStop(Message<T> message) {
-        setState(STOPPED);
-        try {
-            actor.onStop(context);
-        } catch (Throwable e) {
-            supervisor.processFailure(message, this, new OnStopException(e));
-        }
-        complete();
-        ActorRef<?> p = parent;
-        if (p == null) {
-            // is root actor (which is the only actor without a parent)
-            queue.offer(new Message<T>((T) Constants.TERMINATED, this, this));
-        } else {
-            p.<Object>recast().tell(Constants.TERMINATED, this);
-        }
-    }
-
-    private void log(String s) {
-        log.debug("{}: {}", name, s);
-    }
-
-    @Override
-    public boolean isDisposed() {
-        return state.get() == DISPOSED;
-    }
-
-    @Override
-    public Context context() {
-        return context;
-    }
-
-    @Override
-    public void restart() {
-        while (true) {
-            int s  = state.get();
-            if ((s == ACTIVE || s == PAUSED) ) {
-                if (state.compareAndSet(s, RESTART)) {
-                run();
-                break;
-                } 
-            } else {
-                break;
-            }
-        }
-    }
-
-    private Actor<T> createActor() {
-        actor = factory.get();
-        if (actor == null) {
-            throw new CreateException("actor factory cannot return null");
-        }
-        preStartRun = false;
-        return actor;
-    }
-
-    @Override
-    public String name() {
-        return name;
-    }
-
-    @Override
-    public Scheduler scheduler() {
-        return scheduler;
-    }
-
-    @Override
-    public <S> CompletableFuture<S> ask(T message) {
-        AskFuture<S> future = new AskFuture<S>();
-        ActorRef<S> actor = context.<S>matchAny(m -> future.setValue(m.content())).build();
-        future.setDisposable(actor);
-        tell(message, actor);
-        return future;
-    }
-
     @Override
     public String toString() {
         return name;
@@ -354,24 +380,6 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
             complete(value);
             dispose();
         }
-    }
-
-    @Override
-    public ActorRef<?> parent() {
-        return parent;
-    }
-
-    @Override
-    public ActorRef<?> child(String name) {
-        return children.get(name);
-    }
-
-    protected void complete() {
-        // do nothing
-    }
-
-    public Supervisor supervisor() {
-        return supervisor;
     }
 
 }
