@@ -21,6 +21,7 @@ import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Message;
 import com.github.davidmoten.reels.OnStopException;
 import com.github.davidmoten.reels.PoisonPill;
+import com.github.davidmoten.reels.PreStartException;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.SupervisedActorRef;
 import com.github.davidmoten.reels.Supervisor;
@@ -45,11 +46,11 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     private final ActorRef<?> parent; // nullable
     private final Map<String, ActorRef<?>> children; // concurrent
     private Actor<T> actor; // mutable because recreated if restart called
-    private boolean preStartRun;
+    private boolean preStartHasBeenRun;
     protected final AtomicInteger state = new AtomicInteger(); // ACTIVE
     private Message<T> lastMessage; // used for retrying
     private boolean retry;
-    
+
     protected static final int ACTIVE = 0;
     private static final int STOPPING = 1;
     private static final int STOPPED = 2;
@@ -204,24 +205,37 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     }
 
     @Override
-    public void restart() {
+    public boolean restart() {
         while (true) {
             int s = state.get();
             if (s == ACTIVE || s == PAUSED) {
                 if (state.compareAndSet(s, RESTART)) {
                     run();
-                    break;
+                    return true;
                 }
             } else {
-                break;
+                return false;
             }
         }
     }
 
     @Override
-    public void restart(long duration, TimeUnit unit) {
+    public boolean pause(long duration, TimeUnit unit) {
         if (state.compareAndSet(ACTIVE, PAUSED)) {
-            scheduler.schedule(() -> restart(), duration, unit);
+            scheduler.schedule(() -> state.compareAndSet(PAUSED, ACTIVE), duration, unit);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean restart(long delay, TimeUnit unit) {
+        if (pause(delay, unit)) {
+            scheduler.schedule(() -> restart(), delay, unit);
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -230,7 +244,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         if (actor == null) {
             throw new CreateException("actor factory cannot return null");
         }
-        preStartRun = false;
+        preStartHasBeenRun = false;
         return actor;
     }
 
@@ -270,12 +284,12 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     public Supervisor supervisor() {
         return supervisor;
     }
-    
+
     @Override
     public void retry() {
         retry = true;
     }
-    
+
     private Message<T> poll() {
         if (retry) {
             retry = false;
@@ -333,9 +347,8 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
                     } else if (message.content() == Constants.TERMINATED) {
                         handleTerminationMessage(message);
                     } else {
-                        if (!preStartRun) {
-                            actor.preStart(context);
-                            preStartRun = true;
+                        if (!preStartHasBeenRun) {
+                            runPreStart(message);
                         }
                         try {
 //                        info("calling onMessage");
@@ -353,6 +366,17 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
                     break;
                 }
             }
+        }
+    }
+
+    private void runPreStart(Message<T> message) {
+        try {
+            actor.preStart(context);
+            preStartHasBeenRun = true;
+        } catch (Throwable e) {
+            // if the line below throws then the actor will no longer process messages
+            // (because wip will be != 0)
+            supervisor.processFailure(message, this, new PreStartException(e));
         }
     }
 

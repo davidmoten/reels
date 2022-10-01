@@ -51,11 +51,11 @@ public final class Context implements Disposable {
         this(Supervisor.defaultSupervisor());
     }
 
-    public Context(Supervisor supervisor) {
+    Context(Supervisor supervisor) {
         this(supervisor, () -> createActorObject(DeadLetterActor.class));
     }
 
-    public Context(Supervisor supervisor, Supplier<? extends Actor<Object>> deadLetterActorFactory) {
+    Context(Supervisor supervisor, Supplier<? extends Actor<Object>> deadLetterActorFactory) {
         this.supervisor = supervisor;
         // TODO this escaping the constructor
         this.root = new RootActorRefImpl(Constants.ROOT_ACTOR_NAME, deadLetterActorFactory,
@@ -68,6 +68,10 @@ public final class Context implements Disposable {
         return new Context();
     }
 
+    public static ContextBuilder builder() {
+        return new ContextBuilder();
+    }
+    
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass) {
         return createActor(actorClass, actorClass.getName() + "-" + Long.toString(counter.incrementAndGet()));
     }
@@ -158,7 +162,7 @@ public final class Context implements Disposable {
     // builder entry methods
     ////////////////////////////
 
-    public <T> ActorBuilder<T> builder() {
+    public <T> ActorBuilder<T> actorBuilder() {
         return new ActorBuilder<T>(this);
     }
 
@@ -172,19 +176,19 @@ public final class Context implements Disposable {
      * @return builder builder
      */
     public <T, S extends T> ActorBuilder<T> match(Class<S> matchClass, Consumer<? super Message<T>> consumer) {
-        return this.<T>builder().match(matchClass, consumer);
+        return this.<T>actorBuilder().match(matchClass, consumer);
     }
 
     public <T> ActorBuilder<T> matchAny(Consumer<? super Message<T>> consumer) {
-        return this.<T>builder().matchAny(consumer);
+        return this.<T>actorBuilder().matchAny(consumer);
     }
 
     public <T> ActorBuilder<T> matchEquals(T value, Consumer<? super Message<T>> consumer) {
-        return this.<T>builder().matchEquals(value, consumer);
+        return this.<T>actorBuilder().matchEquals(value, consumer);
     }
 
     public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
-        return this.<T>builder().factory(factory);
+        return this.<T>actorBuilder().factory(factory);
     }
 
     /////////////////////////////
@@ -192,7 +196,7 @@ public final class Context implements Disposable {
     ////////////////////////////
 
     @SuppressWarnings("unchecked")
-    private static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass) {
+    static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass) {
         Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors()).filter(x -> x.getParameterCount() == 0)
                 .findFirst();
         if (!c.isPresent()) {

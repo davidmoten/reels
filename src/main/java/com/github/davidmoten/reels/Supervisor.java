@@ -6,12 +6,16 @@ import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
 public interface Supervisor {
 
     /**
-     * Processes an error thrown by {@link Actor#onMessage(MessageContext, T)} or an
-     * error thrown by {@link Actor#onStop(MessageContext)}.
+     * Processes an error thrown by {@link Actor#onMessage(Message<T>)} or by
+     * {@link Actor#onStop(Context)} or by {@link Actor#preStart(Context)}.
      * 
      * <p>
-     * An error thrown by the {@link Actor#onStop(MessageContext)} will be wrapped
-     * in an {@link OnStopException}.
+     * An error thrown by the {@link Actor#onStop(Context)} will be wrapped in an
+     * {@link OnStopException}.
+     * 
+     * <p>
+     * An error thrown by the {@link Actor#preStart(Context)} will be wrapped in a
+     * {@link PreStartException}.
      * 
      * <P>
      * This method <b>must not throw</b>.
@@ -25,14 +29,15 @@ public interface Supervisor {
      * <p>
      * A {@link SupervisedActorRef} can restart the actor (recreate the actor object
      * which discards current state in the actor) but retain the queued messages.
-     * This should only be called synchronously in the processFailure
-     * method because of type safety constraints.
+     * This should only be called synchronously in the processFailure method because
+     * of type safety constraints.
      * 
      * @param message  message the actor failed to process (includes context
      *                 reference)
      * @param actorRef reference to the actor where the error occurred
      * @param error    the error throw in the Actor.onMessage method. Wrapped in
-     *                 OnStopException if thrown by onStop method.
+     *                 OnStopException if thrown by onStop method, or
+     *                 PreStartException if thrown by the preStart method.
      */
     void processFailure(Message<?> message, SupervisedActorRef<?> self, Throwable error);
 
