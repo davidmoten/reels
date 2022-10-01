@@ -231,6 +231,55 @@ public class ActorTest {
     }
 
     @Test
+    public void testSupervisorRetriesAndRestartsAfterDelay()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        Context c = new Context();
+        Supervisor supervisor = (context, actor, error) -> {
+            actor.retry();
+            actor.restart(1, TimeUnit.MILLISECONDS);
+        };
+        AtomicBoolean once = new AtomicBoolean();
+        AtomicInteger count = new AtomicInteger();
+        ActorRef<Integer> a = c //
+                .match(Integer.class, m -> {
+                    count.incrementAndGet();
+                    if (once.compareAndSet(false, true)) {
+                        throw new RuntimeException("boo");
+                    }
+                }) //
+                .scheduler(Scheduler.immediate()) //
+                .supervisor(supervisor) //
+                .build();
+        a.tell(123);
+        assertEquals(2, count.get());
+        c.shutdownGracefully().get(5, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void testSupervisorRetriesAndRestarts() throws InterruptedException, ExecutionException, TimeoutException {
+        Context c = new Context();
+        Supervisor supervisor = (context, actor, error) -> {
+            actor.retry();
+            actor.restart(1, TimeUnit.MILLISECONDS);
+        };
+        AtomicBoolean once = new AtomicBoolean();
+        AtomicInteger count = new AtomicInteger();
+        ActorRef<Integer> a = c //
+                .match(Integer.class, m -> {
+                    count.incrementAndGet();
+                    if (once.compareAndSet(false, true)) {
+                        throw new RuntimeException("boo");
+                    }
+                }) //
+                .scheduler(Scheduler.immediate()) //
+                .supervisor(supervisor) //
+                .build();
+        a.tell(123);
+        assertEquals(2, count.get());
+        c.shutdownGracefully().get(5, TimeUnit.SECONDS);
+    }
+
+    @Test
     public void testBuilderOnError() throws InterruptedException {
         AtomicBoolean supervisorCalled = new AtomicBoolean();
         Supervisor supervisor = (context, actor, error) -> supervisorCalled.set(true);

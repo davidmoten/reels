@@ -22,4 +22,10 @@ public interface SupervisedActorRef<T> extends ActorRef<T> {
      */
     void restart(long delay, TimeUnit unit);
 
+    /**
+     * Ensures that the message that prompted failure is retried (for example with a
+     * restarted actor if you also call {@link SupervisedActorRef#restart()}).
+     */
+    void retry();
+
 }

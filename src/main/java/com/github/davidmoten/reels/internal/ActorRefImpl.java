@@ -47,6 +47,9 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     private Actor<T> actor; // mutable because recreated if restart called
     private boolean preStartRun;
     protected final AtomicInteger state = new AtomicInteger(); // ACTIVE
+    private Message<T> lastMessage; // used for retrying
+    private boolean retry;
+    
     protected static final int ACTIVE = 0;
     private static final int STOPPING = 1;
     private static final int STOPPED = 2;
@@ -267,6 +270,21 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     public Supervisor supervisor() {
         return supervisor;
     }
+    
+    @Override
+    public void retry() {
+        retry = true;
+    }
+    
+    private Message<T> poll() {
+        if (retry) {
+            retry = false;
+            return lastMessage;
+        }
+        Message<T> v = queue.poll();
+        lastMessage = v;
+        return v;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -279,7 +297,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
                 int missed = 1;
                 Message<T> message;
                 int s;
-                while ((s = state.get()) != PAUSED && (message = queue.poll()) != null) {
+                while ((s = state.get()) != PAUSED && (message = poll()) != null) {
                     if (debug)
                         log("message polled=" + message.content() + ", state=" + s);
                     if (s == RESTART) {
