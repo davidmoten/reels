@@ -29,6 +29,7 @@ public class RetryExampleMain {
         actor.tell("again");
         Thread.sleep(10000);
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
+        log.info("shutdown");
     }
 
     public static final class Query extends AbstractActor<String> {
