@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -149,6 +150,7 @@ public class SplitResponsibilityScheduledExecutorServiceTest {
     }
 
     @Test
+    @Ignore
     public void testIsTerminated() {
         ExecutorService a = mock(ExecutorService.class);
         ScheduledExecutorService b = mock(ScheduledExecutorService.class);
