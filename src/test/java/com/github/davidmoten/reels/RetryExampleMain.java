@@ -30,6 +30,7 @@ public class RetryExampleMain {
         Thread.sleep(10000);
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
         log.info("shutdown");
+        Scheduler.forkJoin().shutdown();
     }
 
     public static final class Query extends AbstractActor<String> {
@@ -53,7 +54,7 @@ public class RetryExampleMain {
 
         @Override
         public void onMessage(Message<String> message) {
-            if (message.content().equals("error")){
+            if (message.content().equals("error")) {
                 throw new RuntimeException("boo");
             }
             try {
