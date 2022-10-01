@@ -55,7 +55,7 @@ public class RetryExampleMain {
             try {
                 try (ResultSet rs = ps.executeQuery()) {
                     rs.next();
-                    log.info("{}", rs.getObject(1));
+                    log.info("returned {}", rs.getObject(1));
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
