@@ -21,17 +21,17 @@ public class RetryExampleMain {
                 .builder() //
                 .supervisor((message, actor, error) -> {
                     log.warn(error.getMessage());
-                    actor.retry();
                     actor.restart(1, TimeUnit.SECONDS);
                 }).build();
-        ActorRef<Object> actor = context.createActor(Query.class);
+        ActorRef<String> actor = context.createActor(Query.class);
         actor.tell("run");
+        actor.tell("error");
         actor.tell("again");
         Thread.sleep(10000);
-        context.shutdownGracefully().get(10, TimeUnit.SECONDS);
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
     }
 
-    public static final class Query extends AbstractActor<Object> {
+    public static final class Query extends AbstractActor<String> {
 
         private static final Logger log = LoggerFactory.getLogger(Query.class);
 
@@ -51,7 +51,10 @@ public class RetryExampleMain {
         }
 
         @Override
-        public void onMessage(Message<Object> message) {
+        public void onMessage(Message<String> message) {
+            if (message.content().equals("error")){
+                throw new RuntimeException("boo");
+            }
             try {
                 try (ResultSet rs = ps.executeQuery()) {
                     rs.next();
