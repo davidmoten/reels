@@ -236,7 +236,7 @@ public class ActorTest {
         Context c = new Context();
         Supervisor supervisor = (context, actor, error) -> {
             actor.retry();
-            actor.restart(1, TimeUnit.MILLISECONDS);
+            actor.pauseAndRestart(1, TimeUnit.MILLISECONDS);
         };
         AtomicBoolean once = new AtomicBoolean();
         AtomicInteger count = new AtomicInteger();
@@ -260,7 +260,7 @@ public class ActorTest {
         Context c = new Context();
         Supervisor supervisor = (context, actor, error) -> {
             actor.retry();
-            actor.restart(1, TimeUnit.MILLISECONDS);
+            actor.pauseAndRestart(1, TimeUnit.MILLISECONDS);
         };
         AtomicBoolean once = new AtomicBoolean();
         AtomicInteger count = new AtomicInteger();

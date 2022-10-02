@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLNonTransientConnectionException;
+import java.sql.SQLTransientException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -21,8 +23,20 @@ public class RetryExampleMain {
                 .builder() //
                 .supervisor((message, actor, error) -> {
                     log.warn(error.getMessage());
-                    actor.restart(1, TimeUnit.SECONDS);
+                    long intervalSeconds = 1;
+                    if (error.getCause() != null && error.getCause() instanceof SQLTransientException) {
+                        actor.retry();
+                        actor.pause(intervalSeconds, TimeUnit.SECONDS);
+                    } else if (error.getCause() != null
+                            && error.getCause() instanceof SQLNonTransientConnectionException) {
+                        // connection failed so retry the message and recreate the connection
+                        actor.retry();
+                        actor.pauseAndRestart(intervalSeconds, TimeUnit.SECONDS);
+                    } else {
+                        actor.pauseAndRestart(intervalSeconds, TimeUnit.SECONDS);
+                    }
                 }).build();
+
         ActorRef<String> actor = context.createActor(Query.class);
         actor.tell("run");
         actor.tell("error");

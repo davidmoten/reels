@@ -230,7 +230,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     }
 
     @Override
-    public boolean restart(long delay, TimeUnit unit) {
+    public boolean pauseAndRestart(long delay, TimeUnit unit) {
         if (pause(delay, unit)) {
             scheduler.schedule(() -> restart(), delay, unit);
             return true;
