@@ -34,7 +34,7 @@ public class ActorTest {
     @Test
     public void test() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        Context c = new Context();
+        Context c = Context.create();
         AtomicBoolean once = new AtomicBoolean();
         ActorRef<Object> a = c //
                 .<Object, Integer>match(Integer.class, m -> {
@@ -58,7 +58,7 @@ public class ActorTest {
 
     @Test
     public void testPreStartCalled() throws InterruptedException, ExecutionException, TimeoutException {
-        Context c = new Context();
+        Context c = Context.create();
         List<String> list = new ArrayList<>();
         ActorRef<Object> a = c.matchAny(m -> list.add("message")) //
                 .preStart(context -> list.add("preStart")) //
@@ -78,7 +78,7 @@ public class ActorTest {
     @Test
     public void testTyped() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        Context c = new Context();
+        Context c = Context.create();
         AtomicBoolean once = new AtomicBoolean();
         ActorRef<Number> a = c //
                 .<Number, Integer>match(Integer.class, m -> {
@@ -98,7 +98,7 @@ public class ActorTest {
     @Test
     public void testSupervisorCalled() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        Context c = new Context();
+        Context c = Context.create();
         Supervisor supervisor = (m, self, error) -> latch.countDown();
         ActorRef<Integer> a = c //
                 .match(Integer.class, m -> {
@@ -113,7 +113,7 @@ public class ActorTest {
 
     @Test
     public void onStopCalled() {
-        Context c = new Context();
+        Context c = Context.create();
         AtomicBoolean called = new AtomicBoolean();
         ActorRef<Object> a = c.matchAny(m -> {
         }).onStop(m -> called.set(true)).scheduler(Scheduler.immediate()).build();
@@ -126,7 +126,7 @@ public class ActorTest {
     @Test
     public void testSupervisorCreatesAgainOnRestart() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(2);
-        Context c = new Context();
+        Context c = Context.create();
         Supervisor supervisor = (m, self, error) -> self.restart();
         ActorRef<Integer> a = c //
                 .<Integer>factory(() -> new AbstractActor<Integer>() {
@@ -148,13 +148,13 @@ public class ActorTest {
 
     @Test(expected = CreateException.class)
     public void testFactoryReturnsNull() {
-        Context c = new Context();
+        Context c = Context.create();
         c.factory(() -> null).build();
     }
 
     @Test
     public void testAddChildToDisposedParentWillDisposeChild() {
-        Context c = new Context();
+        Context c = Context.create();
         ActorRef<Object> a = c.createActor(() -> new ActorDoNothing<Object>());
         a.dispose();
         ActorRef<Object> b = c.matchAny(m -> {
@@ -207,7 +207,7 @@ public class ActorTest {
     @Test
     public void testSupervisorDisposesActor() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        Context c = new Context();
+        Context c = Context.create();
         Supervisor supervisor = (context, actor, error) -> {
             actor.dispose();
             latch.countDown();
@@ -233,7 +233,7 @@ public class ActorTest {
     @Test
     public void testSupervisorRetriesAndRestartsAfterDelay()
             throws InterruptedException, ExecutionException, TimeoutException {
-        Context c = new Context();
+        Context c = Context.create();
         Supervisor supervisor = (context, actor, error) -> {
             actor.retry();
             actor.pauseAndRestart(1, TimeUnit.MILLISECONDS);
@@ -257,7 +257,7 @@ public class ActorTest {
 
     @Test
     public void testSupervisorRetriesAndRestarts() throws InterruptedException, ExecutionException, TimeoutException {
-        Context c = new Context();
+        Context c = Context.create();
         Supervisor supervisor = (context, actor, error) -> {
             actor.retry();
             actor.pauseAndRestart(1, TimeUnit.MILLISECONDS);
@@ -284,7 +284,7 @@ public class ActorTest {
         AtomicBoolean supervisorCalled = new AtomicBoolean();
         Supervisor supervisor = (context, actor, error) -> supervisorCalled.set(true);
         CountDownLatch latch = new CountDownLatch(1);
-        Context c = new Context();
+        Context c = Context.create();
         ActorRef<Integer> a = c //
                 .match(Integer.class, m -> {
                     throw new RuntimeException("boo");
@@ -304,7 +304,7 @@ public class ActorTest {
 
     @Test
     public void testCustomActorWithoutBuilder() throws InterruptedException {
-        Context c = new Context();
+        Context c = Context.create();
         ActorRef<Integer> a = c.createActor(MyActor.class);
         a.tell(123);
         Thread.sleep(500);
@@ -313,13 +313,13 @@ public class ActorTest {
 
     @Test(expected = CreateException.class)
     public void testCustomActorWithoutBuilderNoPublicNoArgConstructor() throws InterruptedException {
-        Context c = new Context();
+        Context c = Context.create();
         c.createActor(MyActorBad.class);
     }
 
     @Test
     public void testKill() throws InterruptedException {
-        Context context = new Context();
+        Context context = Context.create();
         AtomicInteger count = new AtomicInteger();
         ActorRef<Integer> a = context //
                 .match(Integer.class, m -> count.incrementAndGet()) //
@@ -333,7 +333,7 @@ public class ActorTest {
 
     @Test
     public void testLookup() {
-        Context c = new Context();
+        Context c = Context.create();
         ActorRef<Integer> a = c //
                 .match(Integer.class, m -> {
                     throw new RuntimeException("boo");
@@ -376,7 +376,7 @@ public class ActorTest {
     @Test
     public void testContextShutdownGracefully() throws InterruptedException, ExecutionException, TimeoutException {
         AtomicInteger count = new AtomicInteger();
-        Context context = new Context();
+        Context context = Context.create();
         ActorRef<Integer> actor = context.<Integer>matchAny(m -> {
             if (m.content() == 1) {
                 try {
@@ -403,7 +403,7 @@ public class ActorTest {
     @Test
     public void testContextShutdownNow() throws InterruptedException, ExecutionException, TimeoutException {
         AtomicInteger count = new AtomicInteger();
-        Context context = new Context();
+        Context context = Context.create();
         ActorRef<Integer> actor = context.<Integer>matchAny(m -> {
             if (m.content() == 1) {
                 try {
@@ -428,7 +428,7 @@ public class ActorTest {
     public void testDisposeWhileProcessingMessageClearsQueue()
             throws InterruptedException, ExecutionException, TimeoutException {
         AtomicInteger count = new AtomicInteger();
-        Context context = new Context();
+        Context context = Context.create();
         ActorRef<Integer> actor = context.<Integer>matchAny(m -> {
             if (m.content() == 1) {
                 try {
@@ -452,14 +452,14 @@ public class ActorTest {
     @Test
     public void testContextShutsDownImmediatelyIfNoActors()
             throws InterruptedException, ExecutionException, TimeoutException {
-        Context context = new Context();
+        Context context = Context.create();
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
     }
 
     @Test(expected = CreateException.class)
     public void testActorCreateAfterContextShutdown()
             throws InterruptedException, ExecutionException, TimeoutException {
-        Context context = new Context();
+        Context context = Context.create();
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
         context //
                 .matchAny(m -> {
@@ -469,7 +469,7 @@ public class ActorTest {
 
     @Test
     public void testDisposeTwice() {
-        Context context = new Context();
+        Context context = Context.create();
         assertFalse(context.isDisposed());
         context.dispose();
         assertTrue(context.isDisposed());
@@ -479,7 +479,7 @@ public class ActorTest {
 
     @Test(expected = ExecutionException.class)
     public void testShutdownGracefullyAfterDispose() throws InterruptedException, ExecutionException, TimeoutException {
-        Context context = new Context();
+        Context context = Context.create();
         context.dispose();
         context.shutdownGracefully().get(1, TimeUnit.SECONDS);
     }
@@ -497,7 +497,7 @@ public class ActorTest {
         log.info("========================================================================");
         long t = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(1);
-        Context context = new Context();
+        Context context = Context.create();
         int[] count = new int[] { runners * messagesPerRunner };
         ActorRef<Object> root = context //
                 .<Object, Start>match(Start.class, m -> {
@@ -533,7 +533,7 @@ public class ActorTest {
     public void testTennis() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         int maxMessages = 10000;
-        Context c = new Context();
+        Context c = Context.create();
         try {
             ActorRef<Integer> b = c.<Integer>matchAny(m -> {
                 m.sender().ifPresent(sender -> sender.tell(m.content() + 1));
@@ -556,7 +556,7 @@ public class ActorTest {
     public void testTennisByLookup() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         int maxMessages = 100;
-        Context c = new Context();
+        Context c = Context.create();
         try {
             c.<Integer>matchAny(m -> {
                 m.context().lookupActor("a").get().tell(m.content() + 1);
@@ -581,7 +581,7 @@ public class ActorTest {
 
     @Test
     public void testDisposeParentDisposesChild() {
-        Context context = new Context();
+        Context context = Context.create();
         AtomicBoolean called = new AtomicBoolean();
         ActorRef<Object> a = context.matchAny(m -> {
         }).build();
@@ -593,7 +593,7 @@ public class ActorTest {
 
     @Test
     public void testStopParentStopsChild() {
-        Context context = new Context();
+        Context context = Context.create();
         AtomicBoolean called = new AtomicBoolean();
         ActorRef<Object> a = context.matchAny(m -> {
         }) //
@@ -611,7 +611,7 @@ public class ActorTest {
 
     @Test
     public void testAsk() throws InterruptedException, ExecutionException, TimeoutException {
-        Context context = new Context();
+        Context context = Context.create();
         ActorRef<String> actor = context.<String>matchAny(m -> m.sender().ifPresent(sender -> sender.tell("boo"))) //
                 .build();
         assertEquals("boo", actor.ask("hi").get(1000, TimeUnit.MILLISECONDS));
@@ -620,10 +620,11 @@ public class ActorTest {
 
     @Test
     public void testCreateAndStop() throws InterruptedException, ExecutionException, TimeoutException {
-        Context context = new Context((c, actor, error) -> {
-            log.error(actor.name() + ":" + error.getMessage(), error);
-        }, //
-                () -> new ActorDoNothing<Object>());
+        Context context = Context //
+                .builder() //
+                .supervisor((c, actor, error) -> log.error(actor.name() + ":" + error.getMessage(), error)) //
+                .deadLetterActorFactory(() -> new ActorDoNothing<Object>()) //
+                .build();
         context //
                 .matchAny(m -> m.self().stop()) //
                 .scheduler(Scheduler.immediate()) //
@@ -635,12 +636,7 @@ public class ActorTest {
     @Test
     public void testOnStopThrows() throws InterruptedException, ExecutionException, TimeoutException {
         AtomicReference<Throwable> e = new AtomicReference<>();
-        Context context = new Context(new Supervisor() {
-            @Override
-            public void processFailure(Message<?> message, SupervisedActorRef<?> self, Throwable error) {
-                e.set(error);
-            }
-        });
+        Context context = Context.builder().supervisor((m, self, error) -> e.set(error)).build();
         context //
                 .matchAny(m -> m.self().stop()) //
                 .onStop(c -> {
@@ -657,7 +653,7 @@ public class ActorTest {
 
     @Test
     public void testAs() {
-        Context context = new Context();
+        Context context = Context.create();
         ActorRef<Number> a = context.<Number>matchAny(m -> {
         }) //
                 .build();
@@ -669,7 +665,7 @@ public class ActorTest {
 
     @Test
     public void testMatchEquals() throws InterruptedException, ExecutionException, TimeoutException {
-        Context context = new Context();
+        Context context = Context.create();
         CountDownLatch latch = new CountDownLatch(1);
         ActorRef<Integer> a = context //
                 .matchEquals(1, m -> m.self().tell(2)) //
@@ -684,7 +680,7 @@ public class ActorTest {
 
     @Test
     public void testDelayed() {
-        Context c = new Context();
+        Context c = Context.create();
         AtomicInteger count = new AtomicInteger();
         TestScheduler ts = Scheduler.test();
         ActorRef<Object> a = c.matchAny(m -> count.incrementAndGet()).scheduler(ts).build();
@@ -703,7 +699,7 @@ public class ActorTest {
     public void testScheduledWithDelay() throws InterruptedException {
         for (Scheduler scheduler : new Scheduler[] { Scheduler.forkJoin(), Scheduler.computation(),
                 Scheduler.immediate(), Scheduler.io() }) {
-            Context c = new Context();
+            Context c = Context.create();
             AtomicInteger n = new AtomicInteger();
             ActorRef<Object> a = c.matchAny(m -> n.incrementAndGet()).scheduler(scheduler).build();
             a.tell(1);
