@@ -2,7 +2,7 @@ package com.github.davidmoten.reels;
 
 import java.util.Optional;
 
-public class Message<T> implements MessageContext<T> {
+public class Message<T> {
 
     private final T content;
     private final ActorRef<?> sender; // nullable
@@ -46,7 +46,6 @@ public class Message<T> implements MessageContext<T> {
         return (ActorRef<S>) sender;
     }
 
-    @Override
     public Context context() {
         return self.context();
     }

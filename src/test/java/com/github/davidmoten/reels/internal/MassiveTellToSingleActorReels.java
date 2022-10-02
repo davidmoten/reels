@@ -14,7 +14,7 @@ public class MassiveTellToSingleActorReels {
 
     public static void main(String[] args) throws InterruptedException, ExecutionException, TimeoutException {
         for (int j = 0; j < 20; j++) {
-            Context c = new Context();
+            Context c = Context.create();
             int n = 100000;
             int[] count = new int[1];
             CountDownLatch latch = new CountDownLatch(1);

@@ -47,7 +47,7 @@ public final class Context implements Disposable {
 
     final RootActorRefImpl root;
 
-    public Context() {
+    Context() {
         this(Supervisor.defaultSupervisor());
     }
 

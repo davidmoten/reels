@@ -12,7 +12,7 @@ public class ActorRefDisposedTest {
 
     @Test
     public void testActorRefDisposed() {
-        Context context = new Context();
+        Context context = Context.create();
         ActorRefDisposed<Boolean> a = new ActorRefDisposed<>(context, "a");
         assertEquals(context, a.context());
         assertTrue(a.isDisposed());
