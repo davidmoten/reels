@@ -15,14 +15,14 @@ public interface Actor<T> {
      */
     void onMessage(Message<T> message);
     
-    void preStart(Context context);
+    void preStart(ActorRef<T> self);
 
     /**
      * This method called after an actor is stopped (via {@link ActorRef#stop()} or
      * when an actor is restarted.
      * 
-     * @param context owning Context
+     * @param self actor ref for this
      */
-    void onStop(Context context);
+    void onStop(ActorRef<T> self);
 
 }

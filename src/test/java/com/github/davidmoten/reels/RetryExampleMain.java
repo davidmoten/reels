@@ -55,7 +55,7 @@ public class RetryExampleMain {
         private PreparedStatement ps;
 
         @Override
-        public void preStart(Context context) {
+        public void preStart(ActorRef<String> self) {
             log.info("preStart");
             try {
                 con = DriverManager.getConnection("jdbc:derby:memory:db;create=true");
@@ -82,7 +82,7 @@ public class RetryExampleMain {
         }
 
         @Override
-        public void onStop(Context context) {
+        public void onStop(ActorRef<String> self) {
             log.info("onStop");
             if (con != null) {
                 try {

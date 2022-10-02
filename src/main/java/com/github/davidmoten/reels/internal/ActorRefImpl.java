@@ -176,7 +176,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     private void runOnStop(Message<T> message) {
         setState(STOPPED);
         try {
-            actor.onStop(context);
+            actor.onStop(this);
         } catch (Throwable e) {
             supervisor.processFailure(message, this, new OnStopException(e));
         }
@@ -315,7 +315,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
                     if (debug)
                         log("message polled=" + message.content() + ", state=" + s);
                     if (s == RESTART) {
-                        actor.onStop(context);
+                        actor.onStop(this);
                         createActor();
                         setState(ACTIVE);
                         s = state.get();
@@ -371,7 +371,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
 
     private void runPreStart(Message<T> message) {
         try {
-            actor.preStart(context);
+            actor.preStart(this);
             preStartHasBeenRun = true;
         } catch (Throwable e) {
             // if the line below throws then the actor will no longer process messages

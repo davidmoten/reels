@@ -24,8 +24,8 @@ public final class ActorBuilder<T> {
     private String name = "Anonymous-" + counter.incrementAndGet();
     private ActorRef<?> parent; // nullable
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
-    private Consumer<? super Context> onStop = null;
-    private Consumer<? super Context> preStart = null;
+    private Consumer<? super ActorRef<T>> onStop = null;
+    private Consumer<? super ActorRef<T>> preStart = null;
 
     ActorBuilder(Context context) {
         this.context = context;
@@ -44,7 +44,13 @@ public final class ActorBuilder<T> {
         return this;
     }
 
+    public ActorBuilder<T> actorClass(Class<? extends Actor<T>> actorClass) {
+        Preconditions.checkArgumentNonNull(actorClass, "actorClass");
+        return factory(() -> Context.createActorObject(actorClass));
+    }
+
     public ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
+        Preconditions.checkArgumentNonNull(factory, "factory");
         Preconditions.checkArgument(matches.isEmpty(), "cannot set both matches and factory in builder");
         this.factory = Optional.of(factory);
         return this;
@@ -87,13 +93,13 @@ public final class ActorBuilder<T> {
         return this;
     }
 
-    public ActorBuilder<T> preStart(Consumer<? super Context> preStart) {
+    public ActorBuilder<T> preStart(Consumer<? super ActorRef<T>> preStart) {
         Preconditions.checkArgumentNonNull(preStart, "preStart");
         this.preStart = preStart;
         return this;
     }
 
-    public ActorBuilder<T> onStop(Consumer<? super Context> onStop) {
+    public ActorBuilder<T> onStop(Consumer<? super ActorRef<T>> onStop) {
         Preconditions.checkArgumentNonNull(onStop, "onStop");
         this.onStop = onStop;
         return this;
@@ -129,11 +135,11 @@ public final class ActorBuilder<T> {
 
         private final List<Matcher<T, ? extends T>> matchers;
         private final Consumer<? super Throwable> onError;
-        private final Consumer<? super Context> preStart;
-        private final Consumer<? super Context> onStop;
+        private final Consumer<? super ActorRef<T>> preStart;
+        private final Consumer<? super ActorRef<T>> onStop;
 
         public MatchingActor(List<Matcher<T, ? extends T>> matchers, Consumer<? super Throwable> onError,
-                Consumer<? super Context> preStart, Consumer<? super Context> onStop) {
+                Consumer<? super ActorRef<T>> preStart, Consumer<? super ActorRef<T>> onStop) {
             this.matchers = matchers;
             this.onError = onError;
             this.preStart = preStart;
@@ -161,16 +167,16 @@ public final class ActorBuilder<T> {
         }
 
         @Override
-        public void preStart(Context context) {
+        public void preStart(ActorRef<T> self) {
             if (preStart != null) {
-                preStart.accept(context);
+                preStart.accept(self);
             }
         }
 
         @Override
-        public void onStop(Context context) {
+        public void onStop(ActorRef<T> self) {
             if (onStop != null) {
-                onStop.accept(context);
+                onStop.accept(self);
             }
         }
     }
