@@ -232,7 +232,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     @Override
     public boolean pauseAndRestart(long delay, TimeUnit unit) {
         if (pause(delay, unit)) {
-            scheduler.schedule(() -> restart(), delay, unit);
+            scheduler.schedule(this::restart, delay, unit);
             return true;
         } else {
             return false;
@@ -312,8 +312,9 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
                 Message<T> message;
                 int s;
                 while ((s = state.get()) != PAUSED && (message = poll()) != null) {
-                    if (debug)
+                    if (debug) {
                         log("message polled=" + message.content() + ", state=" + s);
+                    }
                     if (s == RESTART) {
                         actor.onStop(this);
                         createActor();
