@@ -72,7 +72,6 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     protected ActorRefImpl(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler, Context context,
             Supervisor supervisor, ActorRef<?> parent) {
-        super();
         this.name = name;
         this.factory = factory;
         this.context = context;
