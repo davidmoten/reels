@@ -60,8 +60,7 @@ public final class SchedulerComputationSticky extends AbstractCanScheduleDisposa
     }
 
     private int nextIndex() {
-        index = (index + 1) % workers.size();
-        return index;
+        return index = (index + 1) % workers.size();
     }
 
     @Override
