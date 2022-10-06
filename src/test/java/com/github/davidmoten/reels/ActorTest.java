@@ -100,6 +100,21 @@ public class ActorTest {
         c.shutdownGracefully().get(5, TimeUnit.SECONDS);
     }
     
+    @Test(expected = IllegalArgumentException.class)
+    public void testFactoryPresentWhenMatchAnyCalled() {
+        Context c = new Context();
+        c.factory(() -> new MyActor()) //
+                .matchAny(m -> {
+                });
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testFactoryPresentWhenMatchEqualsCalled() {
+        Context c = new Context();
+        c.factory(() -> new MyActor()) //
+                .matchEquals(1, m -> {
+                });
+    }
     @Test
     public void testTyped() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
