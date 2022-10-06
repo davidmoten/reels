@@ -30,7 +30,10 @@ public final class SchedulerComputationSticky extends AbstractCanScheduleDisposa
 
     @Override
     public Worker createWorker() {
-        return new SchedulerWorker(workers.get(index++ % workers.size()));
+        if (workers.size() == 0) {
+            return WorkerDisposed.INSTANCE;
+        }
+        return new SchedulerWorker(workers.get(nextIndex()));
     }
 
     @Override
