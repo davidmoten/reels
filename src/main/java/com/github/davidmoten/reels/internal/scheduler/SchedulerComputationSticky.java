@@ -21,7 +21,8 @@ public final class SchedulerComputationSticky extends AtomicInteger implements S
 
     private int index;
 
-    private SchedulerComputationSticky() {
+    //VisibleForTesting
+    SchedulerComputationSticky() {
         int size = Integer.getInteger("reels.computation.pool.size", Runtime.getRuntime().availableProcessors());
         ThreadFactory factory = SchedulerHelper.createThreadFactory("ReelsComputation");
         workers = IntStream //
@@ -45,6 +46,9 @@ public final class SchedulerComputationSticky extends AtomicInteger implements S
 
     @Override
     public Disposable schedule(Runnable run) {
+        if (workers.isEmpty()) {
+            return Disposable.disposed();
+        }
         return workers.get(nextIndex()).schedule(run);
     }
 
@@ -53,12 +57,18 @@ public final class SchedulerComputationSticky extends AtomicInteger implements S
         if (delay <= 0) {
             return schedule(run);
         } else {
+            if (workers.isEmpty()) {
+                return Disposable.disposed();
+            }
             return workers.get(nextIndex()).schedule(run, delay, unit);
         }
     }
 
     @Override
     public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
+        if (workers.isEmpty()) {
+            return Disposable.disposed();
+        }
         return workers.get(nextIndex()).schedulePeriodically(run, initialDelay, period, unit);
     }
 
