@@ -11,10 +11,14 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -219,5 +223,53 @@ public class SplitResponsibilityScheduledExecutorServiceTest {
         when(b.awaitTermination(1, TimeUnit.SECONDS)).thenReturn(false);
         assertFalse(s.awaitTermination(1, TimeUnit.SECONDS));
     }
+ 
+    @Test
+    public void testInvokeAll() throws InterruptedException {
+        ExecutorService a = mock(ExecutorService.class);
+        ScheduledExecutorService b = mock(ScheduledExecutorService.class);
+        List<Callable<Object>> list = Arrays.asList(() -> null);
+        SplitResponsibilityScheduledExecutorService s = new SplitResponsibilityScheduledExecutorService(a, b);
+        s.invokeAll(list);
+        verify(a, times(1)).invokeAll(list);
+        verifyNoMoreInteractions(a);
+        verifyNoInteractions(b);
+    }
     
+    @Test
+    public void testInvokeAllWithTimeout() throws InterruptedException {
+        ExecutorService a = mock(ExecutorService.class);
+        ScheduledExecutorService b = mock(ScheduledExecutorService.class);
+        List<Callable<Object>> list = Arrays.asList(() -> null);
+        SplitResponsibilityScheduledExecutorService s = new SplitResponsibilityScheduledExecutorService(a, b);
+        s.invokeAll(list, 1, TimeUnit.SECONDS);
+        verify(b, times(1)).invokeAll(eq(list), eq(1L), eq(TimeUnit.SECONDS));
+        verifyNoInteractions(a);
+        verifyNoMoreInteractions(b);
+    }
+    
+    @Test
+    public void testInvokeAny() throws InterruptedException, ExecutionException {
+        ExecutorService a = mock(ExecutorService.class);
+        ScheduledExecutorService b = mock(ScheduledExecutorService.class);
+        List<Callable<Object>> list = Arrays.asList(() -> null);
+        SplitResponsibilityScheduledExecutorService s = new SplitResponsibilityScheduledExecutorService(a, b);
+        s.invokeAny(list);
+        verify(a, times(1)).invokeAny(list);
+        verifyNoMoreInteractions(a);
+        verifyNoInteractions(b);
+    }
+    
+    @Test
+    public void testInvokeAnyWithTimeout() throws InterruptedException, ExecutionException, TimeoutException {
+        ExecutorService a = mock(ExecutorService.class);
+        ScheduledExecutorService b = mock(ScheduledExecutorService.class);
+        List<Callable<Object>> list = Arrays.asList(() -> null);
+        SplitResponsibilityScheduledExecutorService s = new SplitResponsibilityScheduledExecutorService(a, b);
+        s.invokeAny(list, 1, TimeUnit.SECONDS);
+        verify(b, times(1)).invokeAny(eq(list), eq(1L), eq(TimeUnit.SECONDS));
+        verifyNoInteractions(a);
+        verifyNoMoreInteractions(b);
+    }
+ 
 }
