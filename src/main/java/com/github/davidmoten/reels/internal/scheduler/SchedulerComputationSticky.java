@@ -66,5 +66,10 @@ public final class SchedulerComputationSticky extends AtomicInteger implements S
         index = (index + 1) % workers.size();
         return index;
     }
+
+    @Override
+    public boolean requiresSerialization() {
+        return false;
+    }
     
 }

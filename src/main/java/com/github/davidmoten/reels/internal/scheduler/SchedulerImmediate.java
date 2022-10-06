@@ -48,4 +48,9 @@ public class SchedulerImmediate implements Scheduler {
         throw new UnsupportedOperationException("immediate scheduler does not support periodic scheduling");
     }
 
+    @Override
+    public boolean requiresSerialization() {
+        return false;
+    }
+
 }

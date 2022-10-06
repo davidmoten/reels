@@ -294,4 +294,9 @@ public final class SchedulerIo implements Scheduler {
         return new CompositeDisposable(d, w);
     }
 
+    @Override
+    public boolean requiresSerialization() {
+        return true;
+    }
+
 }

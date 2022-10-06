@@ -155,4 +155,9 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
 
     }
 
+    @Override
+    public boolean requiresSerialization() {
+        return false;
+    }
+
 }

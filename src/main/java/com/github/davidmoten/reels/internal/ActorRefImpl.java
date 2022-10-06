@@ -45,6 +45,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     private final Worker worker;
     private final ActorRef<?> parent; // nullable
     private final Map<String, ActorRef<?>> children; // concurrent
+    private final boolean requiresSerialization;
     private Actor<T> actor; // mutable because recreated if restart called
     private boolean preStartHasBeenRun;
     protected final AtomicInteger state = new AtomicInteger(); // ACTIVE
@@ -79,6 +80,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         this.parent = parent;
         this.scheduler = scheduler;
         this.children = new ConcurrentHashMap<>();
+        this.requiresSerialization = scheduler.requiresSerialization();
         createActor();
     }
 
@@ -301,72 +303,92 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     }
 
     @SuppressWarnings("unchecked")
+    private void drain() {
+        Message<T> message;
+        int s;
+        while ((s = state.get()) != PAUSED && (message = poll()) != null) {
+            if (debug) {
+                log("message polled=" + message.content() + ", state=" + s);
+            }
+            if (s == RESTART) {
+                actor.onStop(this);
+                createActor();
+                setState(ACTIVE);
+                s = state.get();
+            }
+            if (s == DISPOSED) {
+                queue.clear();
+                return;
+            } else if (s == STOPPING) {
+                if (message.content() == Constants.TERMINATED) {
+                    handleTerminationMessage(message);
+                } else {
+                    sendToDeadLetter(message);
+                }
+            } else if (s == STOPPED) {
+                if (message.content() != PoisonPill.INSTANCE) {
+                    sendToDeadLetter(message);
+                }
+            } else if (message.content() == PoisonPill.INSTANCE) {
+                setState(STOPPING);
+                boolean isEmpty = true;
+                for (ActorRef<?> child : children.values()) {
+                    ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
+                    isEmpty = false;
+                }
+                if (isEmpty) {
+                    // no children, run onStop and send Terminated to parent
+                    runOnStop(message);
+                }
+            } else if (message.content() == Constants.TERMINATED) {
+                handleTerminationMessage(message);
+            } else {
+                if (!preStartHasBeenRun) {
+                    runPreStart(message);
+                }
+                try {
+//                info("calling onMessage");
+                    actor.onMessage(message);
+//                info("called onMessage");
+                } catch (Throwable e) {
+                    // if the line below throws then the actor will no longer process messages
+                    // (because wip will be != 0)
+                    supervisor.processFailure(message, this, e);
+                }
+            }
+        }
+
+    }
+
     @Override
     public void run() {
-        // drain queue
-//        info("run called");
+        if (requiresSerialization) {
+            runSerialized();
+        } else {
+            runSimple();
+        }
+    }
+
+    private void runSerialized() {
         if (getAndIncrement() == 0) {
-//            info("starting drain");
             while (true) {
                 int missed = 1;
-                Message<T> message;
-                int s;
-                while ((s = state.get()) != PAUSED && (message = poll()) != null) {
-                    if (debug) {
-                        log("message polled=" + message.content() + ", state=" + s);
-                    }
-                    if (s == RESTART) {
-                        actor.onStop(this);
-                        createActor();
-                        setState(ACTIVE);
-                        s = state.get();
-                    }
-                    if (s == DISPOSED) {
-                        queue.clear();
-                        return;
-                    } else if (s == STOPPING) {
-                        if (message.content() == Constants.TERMINATED) {
-                            handleTerminationMessage(message);
-                        } else {
-                            sendToDeadLetter(message);
-                        }
-                    } else if (s == STOPPED) {
-                        if (message.content() != PoisonPill.INSTANCE) {
-                            sendToDeadLetter(message);
-                        }
-                    } else if (message.content() == PoisonPill.INSTANCE) {
-                        setState(STOPPING);
-                        boolean isEmpty = true;
-                        for (ActorRef<?> child : children.values()) {
-                            ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
-                            isEmpty = false;
-                        }
-                        if (isEmpty) {
-                            // no children, run onStop and send Terminated to parent
-                            runOnStop(message);
-                        }
-                    } else if (message.content() == Constants.TERMINATED) {
-                        handleTerminationMessage(message);
-                    } else {
-                        if (!preStartHasBeenRun) {
-                            runPreStart(message);
-                        }
-                        try {
-//                        info("calling onMessage");
-                            actor.onMessage(message);
-//                        info("called onMessage");
-                        } catch (Throwable e) {
-                            // if the line below throws then the actor will no longer process messages
-                            // (because wip will be != 0)
-                            supervisor.processFailure(message, this, e);
-                        }
-                    }
-                }
+                drain();
                 missed = addAndGet(-missed);
                 if (missed == 0) {
                     break;
                 }
             }
+        }
+    }
+
+    boolean running;
+
+    private void runSimple() {
+        if (!running) {
+            running = true;
+            drain();
+            running = false;
         }
     }
 

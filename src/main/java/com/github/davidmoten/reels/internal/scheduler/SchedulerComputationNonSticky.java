@@ -12,7 +12,7 @@ public final class SchedulerComputationNonSticky extends SchedulerFromExecutor {
 
     private SchedulerComputationNonSticky() {
         super(Executors.newScheduledThreadPool(size(),
-                SchedulerHelper.createThreadFactory("ReelsComputationNonSticky")));
+                SchedulerHelper.createThreadFactory("ReelsComputationNonSticky")), true);
     }
 
     private static int size() {

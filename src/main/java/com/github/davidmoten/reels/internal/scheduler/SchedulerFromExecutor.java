@@ -11,9 +11,11 @@ public class SchedulerFromExecutor implements Scheduler {
 
     private final ScheduledExecutorService executor;
     private final ExecutorWorker worker;
+    private final boolean requiresSerialization;
 
-    public SchedulerFromExecutor(ScheduledExecutorService executor) {
+    public SchedulerFromExecutor(ScheduledExecutorService executor, boolean requiresSerialization) {
         this.executor = executor;
+        this.requiresSerialization = requiresSerialization;
         // this worker will not necessarily be constrained to a single thread,
         // message ordering to an actor should still be maintained due
         this.worker = new ExecutorWorker(executor);
@@ -47,5 +49,10 @@ public class SchedulerFromExecutor implements Scheduler {
     @Override
     public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
         return new FutureTask(executor.scheduleAtFixedRate(run, initialDelay, period, unit));
+    }
+
+    @Override
+    public boolean requiresSerialization() {
+        return requiresSerialization;
     }
 }

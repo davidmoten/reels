@@ -24,6 +24,8 @@ public interface Scheduler {
 
     void shutdown();
 
+    boolean requiresSerialization();
+
     static Scheduler defaultScheduler() {
         return forkJoin();
     }
@@ -50,13 +52,17 @@ public interface Scheduler {
     }
 
     static Scheduler fromExecutor(ScheduledExecutorService executor) {
-        return new SchedulerFromExecutor(executor);
+        return new SchedulerFromExecutor(executor, true);
+    }
+
+    static Scheduler fromExecutor(ScheduledExecutorService executor, boolean requiresSerialization) {
+        return new SchedulerFromExecutor(executor, requiresSerialization);
     }
 
     static Scheduler doNothing() {
         return SchedulerDoNothing.INSTANCE;
     }
-    
+
     static TestScheduler test() {
         return new TestScheduler();
     }

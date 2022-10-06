@@ -34,5 +34,10 @@ public enum SchedulerDoNothing implements Scheduler {
     public void shutdown() {
         // do nothing
     }
+    
+    @Override
+    public boolean requiresSerialization() {
+        return false;
+    }
 
 }
