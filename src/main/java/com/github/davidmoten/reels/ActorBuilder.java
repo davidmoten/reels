@@ -50,6 +50,7 @@ public final class ActorBuilder<T> {
 
     public ActorBuilder<T> actorClass(Class<? extends Actor<T>> actorClass) {
         Preconditions.checkArgumentNonNull(actorClass, "actorClass");
+        Preconditions.checkArgument(matches.isEmpty(), "cannot set both matches and actorClass in builder");
         return factory(() -> Context.createActorObject(actorClass));
     }
 

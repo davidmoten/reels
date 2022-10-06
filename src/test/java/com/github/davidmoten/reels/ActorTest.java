@@ -115,6 +115,15 @@ public class ActorTest {
                 .matchEquals(1, m -> {
                 });
     }
+
+    @Test
+    public void testActorClass() {
+        Context c = new Context();
+        ActorRef<Integer> a = c.<Integer>actorBuilder().actorClass(MyActor.class).scheduler(Scheduler.immediate()).build();
+        a.tell(1234);
+        assertEquals(1234, (int) MyActor.last);
+    }
+    
     @Test
     public void testTyped() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
