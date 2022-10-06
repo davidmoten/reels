@@ -150,7 +150,7 @@ public class SplitResponsibilityScheduledExecutorServiceTest {
     }
 
     @Test
-    @Ignore
+    //@Ignore
     public void testIsTerminated() {
         ExecutorService a = mock(ExecutorService.class);
         ScheduledExecutorService b = mock(ScheduledExecutorService.class);
