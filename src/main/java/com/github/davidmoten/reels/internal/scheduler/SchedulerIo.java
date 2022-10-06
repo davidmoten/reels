@@ -186,7 +186,7 @@ public final class SchedulerIo implements Scheduler {
         return pool.get().allWorkers.size();
     }
 
-    static final class EventLoopWorker implements Worker {
+    static final class EventLoopWorker extends AbstractCanScheduleDisposable implements Worker {
         private final CompositeDisposable tasks;
         private final CachedWorkerPool pool;
         private final ThreadWorker threadWorker;
@@ -214,25 +214,21 @@ public final class SchedulerIo implements Scheduler {
         }
 
         @Override
-        public Disposable schedule(Runnable action, long delayTime, TimeUnit unit) {
-            if (tasks.isDisposed()) {
-                // don't schedule, we are unsubscribed
-                return Disposable.disposed();
-            }
+        public Disposable _schedule(Runnable run) {
+            Disposable d = threadWorker.schedule(run);
+            tasks.add(d);
+            return d;
+        }
+        
+        @Override
+        public Disposable _schedule(Runnable action, long delayTime, TimeUnit unit) {
             Disposable d = threadWorker.schedule(action, delayTime, unit);
             tasks.add(d);
             return d;
         }
 
         @Override
-        public Disposable schedule(Runnable run) {
-            Disposable d = threadWorker.schedule(run);
-            tasks.add(d);
-            return d;
-        }
-
-        @Override
-        public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
+        public Disposable _schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
             Disposable d = threadWorker.schedulePeriodically(run, initialDelay, period, unit);
             tasks.add(d);
             return d;
