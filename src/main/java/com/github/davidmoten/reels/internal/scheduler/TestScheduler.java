@@ -2,15 +2,13 @@ package com.github.davidmoten.reels.internal.scheduler;
 
 import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
 
-public class TestScheduler extends AtomicInteger implements Scheduler {
+public class TestScheduler extends AbstractCanScheduleDisposable implements Scheduler {
 
-    private static final long serialVersionUID = 4484385678522955967L;
     private final PriorityQueue<ScheduledTask> queue = new PriorityQueue<ScheduledTask>(
             (a, b) -> Long.compare(a.time, b.time));
 
@@ -20,55 +18,52 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
 
     @Override
     public Worker createWorker() {
-        return new Worker() {
+        return new TestWorker();
+    }
 
-            volatile boolean disposed;
+    private final class TestWorker extends AbstractCanScheduleDisposable implements Worker {
 
-            @Override
-            public void dispose() {
-                disposed = true;
-            }
+        volatile boolean disposed;
 
-            @Override
-            public boolean isDisposed() {
-                return disposed;
-            }
+        @Override
+        public void dispose() {
+            disposed = true;
+        }
 
-            @Override
-            public Disposable schedule(Runnable run) {
-                if (disposed) {
-                    return Disposable.disposed();
-                }
-                return TestScheduler.this.schedule(run);
-            }
+        @Override
+        public boolean isDisposed() {
+            return disposed;
+        }
 
-            @Override
-            public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
-                if (delay <= 0) {
-                    return schedule(run);
-                }
-                if (disposed) {
-                    return Disposable.disposed();
-                }
-                return TestScheduler.this.schedule(run, delay, unit);
-            }
+        @Override
+        protected Disposable _schedule(Runnable run) {
+            return TestScheduler.this.schedule(run);
+        }
 
-            @Override
-            public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
-                if (disposed) {
-                    return Disposable.disposed();
-                }
-                return TestScheduler.this.schedulePeriodically(run, initialDelay, period, unit);
-            }
+        @Override
+        protected Disposable _schedule(Runnable run, long delay, TimeUnit unit) {
+            return TestScheduler.this.schedule(run, delay, unit);
+        }
 
-        };
+        @Override
+        protected Disposable _schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
+            return TestScheduler.this.schedulePeriodically(run, initialDelay, period, unit);
+        }
+
     }
 
     @Override
-    public Disposable schedule(Runnable run) {
-        if (disposed) {
-            return Disposable.disposed();
-        }
+    public void dispose() {
+        disposed = true;
+    }
+
+    @Override
+    public boolean isDisposed() {
+        return disposed;
+    }
+
+    @Override
+    protected Disposable _schedule(Runnable run) {
         ScheduledTask task = new ScheduledTask(time, run);
         queue.add(task);
         drain();
@@ -76,21 +71,16 @@ public class TestScheduler extends AtomicInteger implements Scheduler {
     }
 
     @Override
-    public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
-        if (disposed) {
-            return Disposable.disposed();
-        }
+    protected Disposable _schedule(Runnable run, long delay, TimeUnit unit) {
         ScheduledTask task = new ScheduledTask(time + unit.toMillis(delay), run);
         queue.add(task);
         drain();
         return task.disposable;
+
     }
 
     @Override
-    public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
-        if (disposed) {
-            return Disposable.disposed();
-        }
+    protected Disposable _schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
         Disposable d = Disposable.simple();
         ScheduledTask task = new ScheduledTask(time + unit.toMillis(initialDelay), run, unit.toMillis(period), d);
         queue.add(task);

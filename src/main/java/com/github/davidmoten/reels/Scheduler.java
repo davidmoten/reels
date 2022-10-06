@@ -1,7 +1,6 @@
 package com.github.davidmoten.reels;
 
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import com.github.davidmoten.reels.internal.Constants;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationSticky;
@@ -12,15 +11,9 @@ import com.github.davidmoten.reels.internal.scheduler.SchedulerImmediate;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerIo;
 import com.github.davidmoten.reels.internal.scheduler.TestScheduler;
 
-public interface Scheduler {
+public interface Scheduler extends CanSchedule {
 
     Worker createWorker();
-
-    Disposable schedule(Runnable run);
-
-    Disposable schedule(Runnable run, long delay, TimeUnit unit);
-
-    Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit);
 
     void shutdown();
 
