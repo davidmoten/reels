@@ -2,6 +2,7 @@ package com.github.davidmoten.reels.internal.scheduler;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -22,4 +23,23 @@ public class SchedulerComputationStickyTest {
         }, 1, 2, TimeUnit.SECONDS));
     }
 
+    @Test
+    public void testSchedule() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(2);
+        SchedulerComputationSticky s = new SchedulerComputationSticky();
+        s.schedule(() -> latch.countDown());
+        s.schedule(() -> latch.countDown());
+        latch.await(5, TimeUnit.SECONDS);
+        s.shutdown();
+    }
+    
+    @Test
+    public void testSchedulewithDelay() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(2);
+        SchedulerComputationSticky s = new SchedulerComputationSticky();
+        s.schedule(() -> latch.countDown(), 1, TimeUnit.MILLISECONDS);
+        s.schedule(() -> latch.countDown(),1, TimeUnit.MILLISECONDS);
+        latch.await(5, TimeUnit.SECONDS);
+        s.shutdown();
+    }
 }
