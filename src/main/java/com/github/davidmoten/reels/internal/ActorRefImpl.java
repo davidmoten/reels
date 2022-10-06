@@ -150,8 +150,11 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
         if (state.get() == DISPOSED) {
             return;
         }
-//        info(message + " arrived from " + sender + " to " + this);
         queue.offer(new Message<T>(message, this, sender));
+        scheduleDrain();
+    }
+
+    private void scheduleDrain() {
         worker.schedule(this);
     }
 
