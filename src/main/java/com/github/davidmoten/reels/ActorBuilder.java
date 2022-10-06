@@ -33,12 +33,16 @@ public final class ActorBuilder<T> {
     }
 
     public <S extends T> ActorBuilder<T> match(Class<S> matchClass, Consumer<? super Message<T>> consumer) {
+        Preconditions.checkArgumentNonNull(matchClass, "matchClass");
+        Preconditions.checkArgumentNonNull(consumer, "consumer");
         Preconditions.checkArgument(!factory.isPresent(), "cannot set both matches and factory in builder");
         matches.add(new Matcher<T, S>(matchClass, null, consumer));
         return this;
     }
 
     public <S extends T> ActorBuilder<T> matchEquals(T value, Consumer<? super Message<T>> consumer) {
+        Preconditions.checkArgumentNonNull(value, "value");
+        Preconditions.checkArgumentNonNull(consumer, "consumer");
         Preconditions.checkArgument(!factory.isPresent(), "cannot set both matches and factory in builder");
         matches.add(new Matcher<T, S>(null, value, consumer));
         return this;
@@ -58,6 +62,7 @@ public final class ActorBuilder<T> {
 
     @SuppressWarnings("unchecked")
     public ActorBuilder<T> matchAny(Consumer<? super Message<T>> consumer) {
+        Preconditions.checkArgumentNonNull(consumer, "consumer");
         Preconditions.checkArgument(!factory.isPresent(), "cannot set both matches and factory in builder");
         return match((Class<T>) Object.class, consumer);
     }

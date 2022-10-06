@@ -76,6 +76,31 @@ public class ActorTest {
     }
 
     @Test
+    public void testPreStartThrows() throws InterruptedException, ExecutionException, TimeoutException {
+        Context c = Context.create();
+        List<String> list = new ArrayList<>();
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Throwable> err = new AtomicReference<>();
+        ActorRef<Object> a = c.matchAny(m -> list.add("message")) //
+                .preStart(context -> {
+                    throw new RuntimeException("boo");
+                }) //
+                .scheduler(Scheduler.immediate()) //
+                .supervisor((m, self, error) -> {
+                    err.set(error);
+                    latch.countDown();
+                }) //
+                .name("test") //
+                .build();
+        a.tell(123);
+        latch.await(5, TimeUnit.SECONDS);
+        assertTrue(err.get() instanceof PreStartException);
+        assertEquals("boo", err.get().getCause().getMessage());
+        // will send another stop so we are testing that onStop gets called only once
+        c.shutdownGracefully().get(5, TimeUnit.SECONDS);
+    }
+    
+    @Test
     public void testTyped() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         Context c = Context.create();
@@ -179,6 +204,9 @@ public class ActorTest {
         assertFalse(f.isCancelled());
         assertFalse(f.isDone());
         f.cancel(true);
+        assertTrue(f.isCancelled());
+        f.cancel(true);
+        assertTrue(f.isCancelled());
         latch.countDown();
         c.shutdownGracefully().get(5, TimeUnit.SECONDS);
         assertTrue(f.isCompletedExceptionally());
