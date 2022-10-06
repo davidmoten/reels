@@ -32,14 +32,36 @@ public class SchedulerComputationStickyTest {
         latch.await(5, TimeUnit.SECONDS);
         s.shutdown();
     }
-    
+
     @Test
     public void testSchedulewithDelay() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(2);
         SchedulerComputationSticky s = new SchedulerComputationSticky();
         s.schedule(() -> latch.countDown(), 1, TimeUnit.MILLISECONDS);
-        s.schedule(() -> latch.countDown(),1, TimeUnit.MILLISECONDS);
+        s.schedule(() -> latch.countDown(), 1, TimeUnit.MILLISECONDS);
         latch.await(5, TimeUnit.SECONDS);
+        s.shutdown();
+    }
+    
+    @Test
+    public void testSchedulewithneNegativeDelay() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(2);
+        SchedulerComputationSticky s = new SchedulerComputationSticky();
+        s.schedule(() -> latch.countDown(), -1, TimeUnit.MILLISECONDS);
+        s.schedule(() -> latch.countDown(), -1, TimeUnit.MILLISECONDS);
+        latch.await(5, TimeUnit.SECONDS);
+        s.shutdown();
+    }
+
+    @Test
+    public void testSchedulePeriodically() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(2);
+        SchedulerComputationSticky s = new SchedulerComputationSticky();
+        Disposable a = s.schedulePeriodically(() -> latch.countDown(), 1, 1, TimeUnit.MILLISECONDS);
+        Disposable b = s.schedulePeriodically(() -> latch.countDown(), 1, 1, TimeUnit.MILLISECONDS);
+        latch.await(5, TimeUnit.SECONDS);
+        a.dispose();
+        b.dispose();
         s.shutdown();
     }
 }
