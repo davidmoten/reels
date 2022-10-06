@@ -193,4 +193,19 @@ Benchmarks.groupRandomMessagesIo                  thrpt   10       0.849 ±    0
 BenchmarksAkka.ask                                thrpt   10       7.118 ±    0.445  ops/s
 Benchmarks.sequential                                ss   10       2.510 ±    0.235   s/op
 
+Post special serialized/non-serialized subclasses of ActorRefImpl:
+
+Benchmark                                          Mode  Cnt       Score     Error  Units
+Benchmarks.actorCreateAndStop                     thrpt   10  252101.909 ± 502.912  ops/s
+Benchmarks.ask                                    thrpt   10       5.403 ±   0.016  ops/s
+Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.887 ±   0.078  ops/s
+Benchmarks.contendedConcurrencyForkJoin           thrpt   10       5.663 ±   0.080  ops/s
+Benchmarks.contendedConcurrencyImmediate          thrpt   10      10.799 ±   0.295  ops/s
+Benchmarks.groupRandomMessagesComputationSticky   thrpt   10       1.663 ±   0.007  ops/s
+Benchmarks.groupRandomMessagesForkJoin            thrpt   10      17.935 ±   0.263  ops/s
+Benchmarks.groupRandomMessagesImmediate           thrpt   10      33.316 ±   1.086  ops/s
+Benchmarks.groupRandomMessagesIo                  thrpt   10       0.848 ±   0.019  ops/s
+BenchmarksAkka.ask                                thrpt   10       7.256 ±   0.266  ops/s
+Benchmarks.sequential                                ss   10       2.351 ±   0.543   s/op
+
 ```
