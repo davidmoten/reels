@@ -34,21 +34,17 @@ public class SchedulerFromExecutor implements Scheduler {
 
     @Override
     public Disposable schedule(Runnable run) {
-        return new FutureTask(executor.submit(run));
+        return worker.schedule(run);
     }
 
     @Override
     public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
-        if (delay <= 0) {
-            return schedule(run);
-        } else {
-            return new FutureTask(executor.schedule(run, delay, unit));
-        }
+        return worker.schedule(run, delay, unit);
     }
 
     @Override
     public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
-        return new FutureTask(executor.scheduleAtFixedRate(run, initialDelay, period, unit));
+        return worker.schedulePeriodically(run, initialDelay, period, unit);
     }
 
     @Override

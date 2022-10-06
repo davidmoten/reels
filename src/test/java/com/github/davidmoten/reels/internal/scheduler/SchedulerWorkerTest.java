@@ -39,7 +39,6 @@ public class SchedulerWorkerTest {
         s.schedule(r);
         Mockito.verify(w, Mockito.times(1)).schedule(r);
         Mockito.verifyNoMoreInteractions(w);
-
     }
 
     @Test
