@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.github.davidmoten.reels.Disposable;
+
 public class ExecutorWorkerTest {
 
     @Test
@@ -40,7 +42,9 @@ public class ExecutorWorkerTest {
         Future future = Mockito.mock(Future.class);
         Mockito.<Future>when(s.submit(Mockito.<Runnable>any())).thenReturn(future);
         ExecutorWorker w = new ExecutorWorker(s);
-        assertTrue(w.schedule(r) instanceof FutureTask);
+        Disposable d = w.schedule(r);
+        assertTrue(d instanceof FutureTask);
+        assertFalse(d.isDisposed());
         Mockito.verify(s, Mockito.times(1)).submit(Mockito.<Runnable>any());
     }
 

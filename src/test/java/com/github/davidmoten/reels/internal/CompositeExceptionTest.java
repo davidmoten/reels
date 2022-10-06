@@ -74,6 +74,17 @@ public class CompositeExceptionTest  {
         err.println("----------------------------- print cause stacktrace");
         ce.getCause().printStackTrace(err);
     }
+    
+    @Test
+    public void testPrintStackTrace() {
+        Throwable rootCause = new Throwable("RootCause");
+        Throwable e1 = new Throwable("1", rootCause);
+        CompositeException ce = new CompositeException(e1);
+        PrintStream stderr = System.err;
+        System.setErr(err);
+        ce.printStackTrace();
+        System.setErr(stderr);
+    }
 
     @Test
     public void emptyErrors() {
