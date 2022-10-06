@@ -116,6 +116,15 @@ public class ActorTest {
                 });
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testFactoryPresentWhenMatchCalled() {
+        Context c = new Context();
+        c.factory(() -> new MyActor()) //
+                .match(Integer.class, m -> {
+                });
+    }
+
+    
     @Test
     public void testActorClass() {
         Context c = new Context();
