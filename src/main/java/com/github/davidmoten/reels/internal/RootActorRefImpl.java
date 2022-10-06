@@ -8,9 +8,7 @@ import com.github.davidmoten.reels.Context;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Supervisor;
 
-public final class RootActorRefImpl extends ActorRefImpl<Object> {
-
-    private static final long serialVersionUID = -7059590596057714328L;
+public final class RootActorRefImpl extends ActorRefSerialized<Object> {
 
     private final CompletableFuture<Void> stopFuture = new CompletableFuture<>();
 

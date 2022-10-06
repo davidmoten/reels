@@ -29,13 +29,11 @@ import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
 import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
-public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef<T>, Runnable, Disposable {
+public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, Disposable {
 
     public static final boolean debug = false;
-
     private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
-    private static final long serialVersionUID = 8766398270492289693L;
     private final String name;
     private final Supplier<? extends Actor<T>> factory; // used to recreate actor
     private transient final SimplePlainQueue<Message<T>> queue; // mailbox
@@ -45,7 +43,6 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     private final Worker worker;
     private final ActorRef<?> parent; // nullable
     private final Map<String, ActorRef<?>> children; // concurrent
-    private final boolean requiresSerialization;
     private Actor<T> actor; // mutable because recreated if restart called
     private boolean preStartHasBeenRun;
     protected final AtomicInteger state = new AtomicInteger(); // ACTIVE
@@ -61,7 +58,12 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
 
     public static <T> ActorRefImpl<T> create(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
             Context context, Supervisor supervisor, ActorRef<?> parent) {
-        ActorRefImpl<T> a = new ActorRefImpl<T>(name, factory, scheduler, context, supervisor, parent);
+        final ActorRefImpl<T> a;
+        if (scheduler.requiresSerialization()) {
+            a = new ActorRefSerialized<T>(name, factory, scheduler, context, supervisor, parent);
+        } else {
+            a = new ActorRefNotSerialized<T>(name, factory, scheduler, context, supervisor, parent);
+        }
         if (parent != null) {
             ((ActorRefImpl<?>) parent).addChild(a);
         }
@@ -80,7 +82,6 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
         this.parent = parent;
         this.scheduler = scheduler;
         this.children = new ConcurrentHashMap<>();
-        this.requiresSerialization = scheduler.requiresSerialization();
         createActor();
     }
 
@@ -303,7 +304,7 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
     }
 
     @SuppressWarnings("unchecked")
-    private void drain() {
+    protected void drain() {
         Message<T> message;
         int s;
         while ((s = state.get()) != PAUSED && (message = poll()) != null) {
@@ -358,38 +359,6 @@ public class ActorRefImpl<T> extends AtomicInteger implements SupervisedActorRef
             }
         }
 
-    }
-
-    @Override
-    public void run() {
-        if (requiresSerialization) {
-            runSerialized();
-        } else {
-            runSimple();
-        }
-    }
-
-    private void runSerialized() {
-        if (getAndIncrement() == 0) {
-            while (true) {
-                int missed = 1;
-                drain();
-                missed = addAndGet(-missed);
-                if (missed == 0) {
-                    break;
-                }
-            }
-        }
-    }
-
-    boolean running;
-
-    private void runSimple() {
-        if (!running) {
-            running = true;
-            drain();
-            running = false;
-        }
     }
 
     private void runPreStart(Message<T> message) {
