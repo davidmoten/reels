@@ -3,7 +3,6 @@ package com.github.davidmoten.reels.internal.scheduler;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -11,9 +10,7 @@ import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
 
-public final class SchedulerComputationSticky extends AtomicInteger implements Scheduler {
-
-    private static final long serialVersionUID = -6316108674515948678L;
+public final class SchedulerComputationSticky extends AbstractCanScheduleDisposable implements Scheduler {
 
     public static final SchedulerComputationSticky INSTANCE = new SchedulerComputationSticky();
 
@@ -21,7 +18,7 @@ public final class SchedulerComputationSticky extends AtomicInteger implements S
 
     private int index;
 
-    //VisibleForTesting
+    // VisibleForTesting
     SchedulerComputationSticky() {
         int size = Integer.getInteger("reels.computation.pool.size", Runtime.getRuntime().availableProcessors());
         ThreadFactory factory = SchedulerHelper.createThreadFactory("ReelsComputation");
@@ -45,30 +42,17 @@ public final class SchedulerComputationSticky extends AtomicInteger implements S
     }
 
     @Override
-    public Disposable schedule(Runnable run) {
-        if (workers.isEmpty()) {
-            return Disposable.disposed();
-        }
+    public Disposable _schedule(Runnable run) {
         return workers.get(nextIndex()).schedule(run);
     }
 
     @Override
-    public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
-        if (delay <= 0) {
-            return schedule(run);
-        } else {
-            if (workers.isEmpty()) {
-                return Disposable.disposed();
-            }
-            return workers.get(nextIndex()).schedule(run, delay, unit);
-        }
+    public Disposable _schedule(Runnable run, long delay, TimeUnit unit) {
+        return workers.get(nextIndex()).schedule(run, delay, unit);
     }
 
     @Override
-    public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
-        if (workers.isEmpty()) {
-            return Disposable.disposed();
-        }
+    public Disposable _schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
         return workers.get(nextIndex()).schedulePeriodically(run, initialDelay, period, unit);
     }
 
@@ -81,5 +65,15 @@ public final class SchedulerComputationSticky extends AtomicInteger implements S
     public boolean requiresSerialization() {
         return false;
     }
-    
+
+    @Override
+    public void dispose() {
+        shutdown();
+    }
+
+    @Override
+    public boolean isDisposed() {
+        return workers.isEmpty();
+    }
+
 }
