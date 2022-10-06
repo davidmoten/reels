@@ -47,6 +47,18 @@ public class SplitResponsibilityScheduledExecutorServiceTest {
     }
 
     @Test
+    public void testSubmitWithValue() {
+        ExecutorService a = mock(ExecutorService.class);
+        ScheduledExecutorService b = mock(ScheduledExecutorService.class);
+        SplitResponsibilityScheduledExecutorService s = new SplitResponsibilityScheduledExecutorService(a, b);
+        Runnable r = mock(Runnable.class);
+        s.submit(r, 10);
+        verify(a, times(1)).submit(r, 10);
+        verifyNoMoreInteractions(a);
+        verifyNoInteractions(b);
+    }
+    
+    @Test
     public void testSubmitCallable() {
         ExecutorService a = mock(ExecutorService.class);
         ScheduledExecutorService b = mock(ScheduledExecutorService.class);
@@ -150,7 +162,7 @@ public class SplitResponsibilityScheduledExecutorServiceTest {
     }
 
     @Test
-    //@Ignore
+    @Ignore
     public void testIsTerminated() {
         ExecutorService a = mock(ExecutorService.class);
         ScheduledExecutorService b = mock(ScheduledExecutorService.class);
