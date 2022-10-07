@@ -6,7 +6,7 @@ public class ActorDoNothingTest {
 
     @Test
     public void test() {
-        new ActorDoNothing<Object>().onMessage(null);
+        ActorDoNothing.create().onMessage(null);
     }
 
 }

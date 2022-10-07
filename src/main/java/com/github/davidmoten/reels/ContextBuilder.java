@@ -8,7 +8,7 @@ import com.github.davidmoten.reels.internal.Preconditions;
 public final class ContextBuilder {
 
     private Supervisor supervisor = Supervisor.defaultSupervisor();
-    private Supplier<? extends Actor<Object>> deadLetterActorFactory = () -> Context
+    private Supplier<? extends Actor<DeadLetter>> deadLetterActorFactory = () -> Context
             .createActorObject(DeadLetterActor.class);
 
     ContextBuilder() {
@@ -20,7 +20,7 @@ public final class ContextBuilder {
         return this;
     }
 
-    public ContextBuilder deadLetterActorFactory(Supplier<? extends Actor<Object>> factory) {
+    public ContextBuilder deadLetterActorFactory(Supplier<? extends Actor<DeadLetter>> factory) {
         Preconditions.checkArgumentNonNull(factory, "factory");
         this.deadLetterActorFactory = factory;
         return this;

@@ -3,9 +3,31 @@
 [![codecov](https://codecov.io/gh/davidmoten/reels/branch/master/graph/badge.svg)](https://codecov.io/gh/davidmoten/reels)<br/>
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/au.gov.amsa/reels/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/au.gov.amsa/reels)<br/>
 
-Actor framework for Java, non-blocking, performant
+Actor framework for Java, non-blocking, performant.
 
-# Actor lifecycle
+## Features
+*
+*
+*
+*
+
+## Background
+
+# How to build
+```bash
+mvn clean install
+```
+
+## Getting started
+Add this dependency to your pom.xml:
+```xml
+```
+
+## Usage
+
+## Notes
+
+### Actor lifecycle
 
 * An Actor is created by a Context object. The Context object has a singleton root actor that is not accessible but is the parent for an Actor you create unless you provide it with an explicit parent. 
 * An Actor is either **Active**, **Stopping** or **Disposed**. 
@@ -18,6 +40,8 @@ Actor framework for Java, non-blocking, performant
 * When an actor is disposed no more children can be created for it  
 * Dispose happens synchronously (the actor and all its children and descendants are disposed before the method returns) 
 * Restarting an actor from a supervisor will dispose all that actors children
+
+## Design 
 
 ```
 Benchmarks.actorCreateAndStop                     thrpt   10  1036159.638 ± 11147.430  ops/s

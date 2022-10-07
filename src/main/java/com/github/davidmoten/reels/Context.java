@@ -43,7 +43,7 @@ public final class Context implements Disposable {
 
     // final state is TERMINATED indicated by latch having counted down to 0
 
-    private final ActorRefImpl<Object> deadLetterActor;
+    private final ActorRefImpl<DeadLetter> deadLetterActor;
 
     final RootActorRefImpl root;
 
@@ -55,12 +55,12 @@ public final class Context implements Disposable {
         this(supervisor, () -> createActorObject(DeadLetterActor.class));
     }
 
-    Context(Supervisor supervisor, Supplier<? extends Actor<Object>> deadLetterActorFactory) {
+    Context(Supervisor supervisor, Supplier<? extends Actor<DeadLetter>> deadLetterActorFactory) {
         this.supervisor = supervisor;
         // TODO this escaping the constructor
-        this.root = new RootActorRefImpl(Constants.ROOT_ACTOR_NAME, deadLetterActorFactory,
+        this.root = new RootActorRefImpl(Constants.ROOT_ACTOR_NAME, ActorDoNothing::create,
                 Scheduler.defaultScheduler(), this, supervisor);
-        this.deadLetterActor = (ActorRefImpl<Object>) createActor(deadLetterActorFactory,
+        this.deadLetterActor = (ActorRefImpl<DeadLetter>) createActor(deadLetterActorFactory,
                 Constants.DEAD_LETTER_ACTOR_NAME);
     }
 
@@ -154,7 +154,7 @@ public final class Context implements Disposable {
         return root.stopFuture();
     }
 
-    public ActorRef<Object> deadLetterActor() {
+    public ActorRef<DeadLetter> deadLetterActor() {
         return deadLetterActor;
     }
 

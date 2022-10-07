@@ -17,6 +17,7 @@ import com.github.davidmoten.reels.Actor;
 import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
 import com.github.davidmoten.reels.CreateException;
+import com.github.davidmoten.reels.DeadLetter;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Message;
 import com.github.davidmoten.reels.OnStopException;
@@ -173,7 +174,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     private void sendToDeadLetter(Message<T> message) {
         if (context.deadLetterActor() != this) {
-            context.deadLetterActor().tell(message, this);
+            context.deadLetterActor().tell(new DeadLetter(message), this);
         }
     }
 

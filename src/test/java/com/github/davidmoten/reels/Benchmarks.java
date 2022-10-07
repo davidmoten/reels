@@ -36,7 +36,7 @@ public class Benchmarks {
         context = new Context((c, actor, error) -> {
             log.error(actor.name() + ":" + error.getMessage(), error);
         }, //
-                () -> new ActorDoNothing<Object>());
+                ActorDoNothing::create);
         askActor = context.<String>matchAny(m -> m.senderRaw().tell("boo")) //
                 .build();
     }

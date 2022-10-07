@@ -99,7 +99,7 @@ public class ActorTest {
         // will send another stop so we are testing that onStop gets called only once
         c.shutdownGracefully().get(5, TimeUnit.SECONDS);
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void testFactoryPresentWhenMatchAnyCalled() {
         Context c = new Context();
@@ -107,7 +107,7 @@ public class ActorTest {
                 .matchAny(m -> {
                 });
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void testFactoryPresentWhenMatchEqualsCalled() {
         Context c = new Context();
@@ -124,15 +124,15 @@ public class ActorTest {
                 });
     }
 
-    
     @Test
     public void testActorClass() {
         Context c = new Context();
-        ActorRef<Integer> a = c.<Integer>actorBuilder().actorClass(MyActor.class).scheduler(Scheduler.immediate()).build();
+        ActorRef<Integer> a = c.<Integer>actorBuilder().actorClass(MyActor.class).scheduler(Scheduler.immediate())
+                .build();
         a.tell(1234);
         assertEquals(1234, (int) MyActor.last);
     }
-    
+
     @Test
     public void testTyped() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
@@ -213,7 +213,7 @@ public class ActorTest {
     @Test
     public void testAddChildToDisposedParentWillDisposeChild() {
         Context c = Context.create();
-        ActorRef<Object> a = c.createActor(() -> new ActorDoNothing<Object>());
+        ActorRef<Object> a = c.createActor(ActorDoNothing::create);
         a.dispose();
         ActorRef<Object> b = c.matchAny(m -> {
         }).parent(a).build();
@@ -684,7 +684,7 @@ public class ActorTest {
         Context context = Context //
                 .builder() //
                 .supervisor((c, actor, error) -> log.error(actor.name() + ":" + error.getMessage(), error)) //
-                .deadLetterActorFactory(() -> new ActorDoNothing<Object>()) //
+                .deadLetterActorFactory(ActorDoNothing::create) //
                 .build();
         context //
                 .matchAny(m -> m.self().stop()) //
