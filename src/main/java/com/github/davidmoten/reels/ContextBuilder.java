@@ -27,7 +27,7 @@ public final class ContextBuilder {
         return this;
     }
     
-    public ContextBuilder defaultScheduler(Scheduler scheduler) {
+    public ContextBuilder scheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
         return this;
     }

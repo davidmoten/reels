@@ -40,7 +40,7 @@ Context context = Context
   .builder()
   .supervisor(supervisor)
   .deadLetterActorFactory(factory)
-  .defaultScheduler(scheduler)
+  .scheduler(scheduler)
   .build();
 ```
 
