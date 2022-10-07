@@ -28,6 +28,10 @@ public class Message<T> {
     public ActorRef<T> self() {
         return self;
     }
+    
+    public ActorRef<T> recipient() {
+        return self;
+    }
 
     @SuppressWarnings("unchecked")
     public <S> Optional<ActorRef<S>> sender() {
