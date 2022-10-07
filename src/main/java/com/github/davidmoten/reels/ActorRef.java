@@ -1,5 +1,6 @@
 package com.github.davidmoten.reels;
 
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -73,6 +74,8 @@ public interface ActorRef<T> extends Disposable {
     <S> ActorRef<S> parent();
 
     <S> ActorRef<S> child(String name);
+    
+    <S> Collection<ActorRef<S>> children();
     
     /**
      * Returns type-safe recasting of ActorRef message type.

@@ -1,6 +1,8 @@
 package com.github.davidmoten.reels.internal;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -154,7 +156,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
         queue.offer(new Message<T>(message, this, sender));
         scheduleDrain();
     }
-    
+
     private void scheduleDrain() {
         worker.schedule(this);
     }
@@ -273,14 +275,22 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
         return future;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public ActorRef<?> parent() {
-        return parent;
+    public <S> ActorRef<S> parent() {
+        return (ActorRef<S>) parent;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public ActorRef<?> child(String name) {
-        return children.get(name);
+    public <S> ActorRef<S> child(String name) {
+        return (ActorRef<S>) children.get(name);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <S> Collection<ActorRef<S>> children() {
+        return (Collection<ActorRef<S>>) (Collection<?>) new ArrayList<>(children.values());
     }
 
     protected void complete() {
