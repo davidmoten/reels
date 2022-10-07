@@ -60,6 +60,8 @@ Thread.sleep(1000);
 Here's a "kitchen sink" example that demonstrates many options when creating actors:
 ```java
 Context context = Context.create();
+
+// create a parent actor (you can setup heirarchies)
 ActorRef<Number> a = context 
     .<Number>matchAny(m -> {
         log.info("{}: parent received {}", m.self(), m.content());
@@ -69,6 +71,8 @@ ActorRef<Number> a = context
     .scheduler(Scheduler.single()) 
     .onStop(self -> log.info("{}: onStop", self)) 
     .build();
+
+// create a child actor of a
 context 
     .<Number>matchEquals(1, m -> {
         log.info("{}: equal matched, sender = {}", m.self(), m.sender());
@@ -89,11 +93,13 @@ context
         actor.retry();
     }) 
     .build();
+
 a.tell(1);
 a.tell(2);
 a.tell(3.5);
 a.tell(4f);
- give enough time to run
+
+// give enough time to run (especially for b to respond to `a.tell(1)`
 Thread.sleep(500);
 context.shutdownGracefully().get(5000, TimeUnit.SECONDS);
 ```
