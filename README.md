@@ -25,6 +25,7 @@ Add this dependency to your pom.xml:
 
 ## Usage
 
+### Create a Context
 * Create a `Context` (`ActorSystem` in Akka) object to create your actors and control their lifecycle
 * `Scheduler`s (`Dispatcher`s in Akka) live outside your `Context` object and thus can be shared across `Context`s (for greater efficiency)
 
@@ -43,7 +44,7 @@ Context context = Context
   .scheduler(scheduler)
   .build();
 ```
-
+### Create an Actor
 Now use a `Context` to create typed Actors:
 
 ```java
@@ -55,6 +56,56 @@ Thread.sleep(1000);
 
 `Actor.tell` is asynchronous (with the default scheduler) so we wait with `Thread.sleep` to see something happen. The result of course is that 
 "hi there" will be written to the console and it will generally happen on a different thread to the call of `tell`.
+
+Here's a "kitchen sink" example that demonstrates many options when creating actors:
+```java
+Context context = Context.create();
+ActorRef<Number> a = context
+    .<Number>matchAny(m -> {
+        log.info("{}: parent received {}", m.self(), m.content());
+        m.self().child("b").tell(m.content(), m.senderRaw());
+    }) 
+    .name("a") 
+    .scheduler(Scheduler.single()) 
+    .onStop(self -> log.info("{}: onStop", self)) 
+    .build();
+context 
+    .<Number>matchEquals(1, m -> m.sender().ifPresent(x -> x.tell("hi to you"))) 
+    .match(Integer.class, m -> log.info("{}: received integer {}", m.self(), m.content())) 
+    .match(Double.class, m -> log.info("{}: received double {}", m.self(), m.content())) 
+    .matchAny(m -> log.info("{}: received something else {}", m.self(), m.content())) 
+    .name("b") 
+    .onError(e -> e.printStackTrace()) 
+    .preStart(self -> log.info("{}: preStart", self)) 
+    .onStop(self -> log.info("{}: onStop", self)) 
+    .scheduler(Scheduler.computation()) 
+    .parent(a) 
+    .supervisor((m, actor, e) -> {
+        log.error(e.getMessage(), e);
+        actor.pause(30, TimeUnit.SECONDS);
+        actor.retry();
+    }) 
+    .build();
+a.tell(1);
+a.tell(2);
+a.tell(3.5);
+a.tell(4f);
+a.stop();
+context.shutdownGracefully().get(5, TimeUnit.SECONDS);
+```
+Output:
+```
+2022-10-07T21:15:12:370 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 1
+2022-10-07T21:15:12:372 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 2
+2022-10-07T21:15:12:372 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: preStart
+2022-10-07T21:15:12:372 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: received integer 2
+2022-10-07T21:15:12:374 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 3.5
+2022-10-07T21:15:12:374 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 4.0
+2022-10-07T21:15:12:378 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: received double 3.5
+2022-10-07T21:15:12:378 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: received something else 4.0
+2022-10-07T21:15:12:378 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: onStop
+2022-10-07T21:15:12:378 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: onStop
+```
 
 ## Notes
 

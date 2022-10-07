@@ -24,7 +24,7 @@ public interface ActorRef<T> extends Disposable {
      * @param sender  message sender (for replies as an example)
      */
     void tell(T message, ActorRef<?> sender);
-
+    
     /**
      * Creates a temporary actor that sends the message to {@code this} and the
      * returned {@link CompletableFuture} waits on a response. The arrival of the
@@ -70,9 +70,9 @@ public interface ActorRef<T> extends Disposable {
      * 
      * @return parent actor reference
      */
-    ActorRef<?> parent();
+    <S> ActorRef<S> parent();
 
-    ActorRef<?> child(String name);
+    <S> ActorRef<S> child(String name);
     
     /**
      * Returns type-safe recasting of ActorRef message type.

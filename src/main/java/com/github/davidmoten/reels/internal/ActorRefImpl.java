@@ -154,7 +154,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
         queue.offer(new Message<T>(message, this, sender));
         scheduleDrain();
     }
-
+    
     private void scheduleDrain() {
         worker.schedule(this);
     }

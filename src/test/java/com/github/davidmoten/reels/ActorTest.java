@@ -725,6 +725,43 @@ public class ActorTest {
     }
 
     @Test
+    public void createActorKitchenSink() throws InterruptedException, ExecutionException, TimeoutException {
+        Context context = Context.create();
+        ActorRef<Number> a = context //
+                .<Number>matchAny(m -> {
+                    log.info("{}: parent received {}", m.self(), m.content());
+                    m.self().child("b").tell(m.content(), m.senderRaw());
+                }) //
+                .name("a") //
+                .scheduler(Scheduler.single()) //
+                .onStop(self -> log.info("{}: onStop", self)) //
+                .build();
+        context //
+                .<Number>matchEquals(1, m -> m.sender().ifPresent(x -> x.tell("hi to you"))) //
+                .match(Integer.class, m -> log.info("{}: received integer {}", m.self(), m.content())) //
+                .match(Double.class, m -> log.info("{}: received double {}", m.self(), m.content())) //
+                .matchAny(m -> log.info("{}: received something else {}", m.self(), m.content())) //
+                .name("b") //
+                .onError(e -> e.printStackTrace()) //
+                .preStart(self -> log.info("{}: preStart", self)) //
+                .onStop(self -> log.info("{}: onStop", self)) //
+                .scheduler(Scheduler.computation()) //
+                .parent(a) //
+                .supervisor((m, actor, e) -> {
+                    log.error(e.getMessage(), e);
+                    actor.pause(30, TimeUnit.SECONDS);
+                    actor.retry();
+                }) //
+                .build();
+        a.tell(1);
+        a.tell(2);
+        a.tell(3.5);
+        a.tell(4f);
+        a.stop();
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
+    }
+
+    @Test
     public void testMatchEquals() throws InterruptedException, ExecutionException, TimeoutException {
         Context context = Context.create();
         CountDownLatch latch = new CountDownLatch(1);

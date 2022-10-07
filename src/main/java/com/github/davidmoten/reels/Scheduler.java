@@ -1,5 +1,6 @@
 package com.github.davidmoten.reels;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.github.davidmoten.reels.internal.Constants;
@@ -42,6 +43,10 @@ public interface Scheduler extends CanSchedule {
 
     static Scheduler single() {
         return Constants.SINGLE;
+    }
+    
+    static Scheduler newSingle() {
+        return Scheduler.fromExecutor(Executors.newSingleThreadScheduledExecutor(), false);
     }
 
     static Scheduler fromExecutor(ScheduledExecutorService executor) {
