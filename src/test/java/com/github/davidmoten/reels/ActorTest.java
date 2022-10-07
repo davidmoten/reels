@@ -730,14 +730,17 @@ public class ActorTest {
         ActorRef<Number> a = context //
                 .<Number>matchAny(m -> {
                     log.info("{}: parent received {}", m.self(), m.content());
-                    m.self().child("b").tell(m.content(), m.senderRaw());
+                    m.self().child("b").tell(m.content(), m.self());
                 }) //
                 .name("a") //
                 .scheduler(Scheduler.single()) //
                 .onStop(self -> log.info("{}: onStop", self)) //
                 .build();
         context //
-                .<Number>matchEquals(1, m -> m.sender().ifPresent(x -> x.tell("hi to you"))) //
+                .<Number>matchEquals(1, m -> {
+                    log.info("{}: equal matched, sender = {}", m.self(), m.sender());
+                    m.sender().ifPresent(x -> x.tell(9999));
+                }) //
                 .match(Integer.class, m -> log.info("{}: received integer {}", m.self(), m.content())) //
                 .match(Double.class, m -> log.info("{}: received double {}", m.self(), m.content())) //
                 .matchAny(m -> log.info("{}: received something else {}", m.self(), m.content())) //
@@ -757,8 +760,9 @@ public class ActorTest {
         a.tell(2);
         a.tell(3.5);
         a.tell(4f);
-        a.stop();
-        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
+        // give enough time to run
+        Thread.sleep(500);
+        context.shutdownGracefully().get(5000, TimeUnit.SECONDS);
     }
 
     @Test

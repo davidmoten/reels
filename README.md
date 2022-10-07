@@ -1,7 +1,7 @@
 # reels
-<a href="https://github.com/davidmoten/reels/actions/workflows/ci.yml"><img src="https://github.com/davidmoten/reels/actions/workflows/ci.yml/badge.svg"/></a><br/>
-[![codecov](https://codecov.io/gh/davidmoten/reels/branch/master/graph/badge.svg)](https://codecov.io/gh/davidmoten/reels)<br/>
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/au.gov.amsa/reels/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/au.gov.amsa/reels)<br/>
+<a href="https:github.com/davidmoten/reels/actions/workflows/ci.yml"><img src="https:github.com/davidmoten/reels/actions/workflows/ci.yml/badge.svg"/></a><br/>
+[![codecov](https:codecov.io/gh/davidmoten/reels/branch/master/graph/badge.svg)](https:codecov.io/gh/davidmoten/reels)<br/>
+[![Maven Central](https:maven-badges.herokuapp.com/maven-central/au.gov.amsa/reels/badge.svg?style=flat)](https:maven-badges.herokuapp.com/maven-central/au.gov.amsa/reels)<br/>
 
 Actor framework for Java, non-blocking, performant.
 
@@ -60,17 +60,20 @@ Thread.sleep(1000);
 Here's a "kitchen sink" example that demonstrates many options when creating actors:
 ```java
 Context context = Context.create();
-ActorRef<Number> a = context
+ActorRef<Number> a = context 
     .<Number>matchAny(m -> {
         log.info("{}: parent received {}", m.self(), m.content());
-        m.self().child("b").tell(m.content(), m.senderRaw());
+        m.self().child("b").tell(m.content(), m.self());
     }) 
     .name("a") 
     .scheduler(Scheduler.single()) 
     .onStop(self -> log.info("{}: onStop", self)) 
     .build();
 context 
-    .<Number>matchEquals(1, m -> m.sender().ifPresent(x -> x.tell("hi to you"))) 
+    .<Number>matchEquals(1, m -> {
+        log.info("{}: equal matched, sender = {}", m.self(), m.sender());
+        m.sender().ifPresent(x -> x.tell(9999));
+    }) 
     .match(Integer.class, m -> log.info("{}: received integer {}", m.self(), m.content())) 
     .match(Double.class, m -> log.info("{}: received double {}", m.self(), m.content())) 
     .matchAny(m -> log.info("{}: received something else {}", m.self(), m.content())) 
@@ -90,21 +93,26 @@ a.tell(1);
 a.tell(2);
 a.tell(3.5);
 a.tell(4f);
-a.stop();
-context.shutdownGracefully().get(5, TimeUnit.SECONDS);
+ give enough time to run
+Thread.sleep(500);
+context.shutdownGracefully().get(5000, TimeUnit.SECONDS);
 ```
+
 Output:
 ```
-2022-10-07T21:15:12:370 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 1
-2022-10-07T21:15:12:372 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 2
-2022-10-07T21:15:12:372 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: preStart
-2022-10-07T21:15:12:372 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: received integer 2
-2022-10-07T21:15:12:374 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 3.5
-2022-10-07T21:15:12:374 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 4.0
-2022-10-07T21:15:12:378 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: received double 3.5
-2022-10-07T21:15:12:378 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: received something else 4.0
-2022-10-07T21:15:12:378 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: onStop
-2022-10-07T21:15:12:378 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: onStop
+2022-10-07T21:47:28:055 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 1
+2022-10-07T21:47:28:057 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 2
+2022-10-07T21:47:28:057 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: preStart
+2022-10-07T21:47:28:057 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: equal matched, sender = Optional[a]
+2022-10-07T21:47:28:058 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: received integer 2
+2022-10-07T21:47:28:059 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 3.5
+2022-10-07T21:47:28:059 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 4.0
+2022-10-07T21:47:28:059 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: received double 3.5
+2022-10-07T21:47:28:060 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: parent received 9999
+2022-10-07T21:47:28:060 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: received something else 4.0
+2022-10-07T21:47:28:060 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: received integer 9999
+2022-10-07T21:47:28:562 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: onStop
+2022-10-07T21:47:28:564 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: onStop
 ```
 
 ## Notes
