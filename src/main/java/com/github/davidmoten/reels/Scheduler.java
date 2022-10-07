@@ -46,7 +46,7 @@ public interface Scheduler extends CanSchedule {
     }
     
     static Scheduler newSingle() {
-        return Scheduler.fromExecutor(Executors.newSingleThreadScheduledExecutor(), false);
+        return Scheduler.fromExecutor(Executors.newSingleThreadScheduledExecutor(Constants.NEW_SINGLE_THREAD_FACTORY), false);
     }
 
     static Scheduler fromExecutor(ScheduledExecutorService executor) {
