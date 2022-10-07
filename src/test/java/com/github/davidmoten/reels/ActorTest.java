@@ -745,7 +745,7 @@ public class ActorTest {
                 .match(Double.class, m -> log.info("{}: received double {}", m.self(), m.content())) //
                 .matchAny(m -> log.info("{}: received something else {}", m.self(), m.content())) //
                 .name("b") //
-                .onError(e -> e.printStackTrace()) //
+                .onError(e -> log.error(e.getMessage(), e)) //
                 .preStart(self -> log.info("{}: preStart", self)) //
                 .onStop(self -> log.info("{}: onStop", self)) //
                 .scheduler(Scheduler.computation()) //

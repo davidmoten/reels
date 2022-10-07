@@ -74,6 +74,7 @@ ActorRef<Number> a = context
 
 // create a child actor of `a` using a builder
 context 
+    // specify a series of matches to apply to incoming message content
     .<Number>matchEquals(1, m -> {
         log.info("{}: equal matched, sender = {}", m.self(), m.sender());
         m.sender().ifPresent(x -> x.tell(9999));
@@ -82,7 +83,7 @@ context
     .match(Double.class, m -> log.info("{}: received double {}", m.self(), m.content())) 
     .matchAny(m -> log.info("{}: received something else {}", m.self(), m.content())) 
     .name("b") 
-    .onError(e -> e.printStackTrace()) 
+    .onError(e -> log.error(e.getMessage(), e)) 
     .preStart(self -> log.info("{}: preStart", self)) 
     .onStop(self -> log.info("{}: onStop", self)) 
     .scheduler(Scheduler.computation()) 
