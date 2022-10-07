@@ -61,7 +61,7 @@ Here's a "kitchen sink" example that demonstrates many options when creating act
 ```java
 Context context = Context.create();
 
-// create a parent actor (you can setup heirarchies)
+// create a parent actor (you can setup heirarchies) using a builder
 ActorRef<Number> a = context 
     .<Number>matchAny(m -> {
         log.info("{}: parent received {}", m.self(), m.content());
@@ -72,7 +72,7 @@ ActorRef<Number> a = context
     .onStop(self -> log.info("{}: onStop", self)) 
     .build();
 
-// create a child actor of a
+// create a child actor of `a` using a builder
 context 
     .<Number>matchEquals(1, m -> {
         log.info("{}: equal matched, sender = {}", m.self(), m.sender());
