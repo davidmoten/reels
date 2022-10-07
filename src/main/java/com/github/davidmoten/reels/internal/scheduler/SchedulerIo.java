@@ -32,7 +32,7 @@ import com.github.davidmoten.reels.internal.Preconditions;
  * Scheduler that creates and caches a set of thread pools and reuses them if
  * possible.
  */
-public final class SchedulerIo implements Scheduler {
+public final class SchedulerIo extends AbstractCanScheduleDisposable implements Scheduler {
 
     private static final String WORKER_THREAD_NAME_PREFIX = "ReelsCachedThreadScheduler";
     private static final String EVICTOR_THREAD_NAME_PREFIX = "ReelsCachedWorkerPoolEvictor";
@@ -219,7 +219,7 @@ public final class SchedulerIo implements Scheduler {
             tasks.add(d);
             return d;
         }
-        
+
         @Override
         public Disposable _schedule(Runnable action, long delayTime, TimeUnit unit) {
             Disposable d = threadWorker.schedule(action, delayTime, unit);
@@ -266,25 +266,21 @@ public final class SchedulerIo implements Scheduler {
     }
 
     @Override
-    public Disposable schedule(Runnable run) {
+    public Disposable _schedule(Runnable run) {
         Worker w = createWorker();
         Disposable d = w.schedule(run);
         return new CompositeDisposable(d, w);
     }
 
     @Override
-    public Disposable schedule(Runnable run, long delay, TimeUnit unit) {
-        if (delay <= 0) {
-            return schedule(run);
-        } else {
-            Worker w = createWorker();
-            Disposable d = w.schedule(run, delay, unit);
-            return new CompositeDisposable(d, w);
-        }
+    public Disposable _schedule(Runnable run, long delay, TimeUnit unit) {
+        Worker w = createWorker();
+        Disposable d = w.schedule(run, delay, unit);
+        return new CompositeDisposable(d, w);
     }
 
     @Override
-    public Disposable schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
+    public Disposable _schedulePeriodically(Runnable run, long initialDelay, long period, TimeUnit unit) {
         Worker w = createWorker();
         Disposable d = w.schedulePeriodically(run, initialDelay, period, unit);
         return new CompositeDisposable(d, w);
@@ -293,6 +289,16 @@ public final class SchedulerIo implements Scheduler {
     @Override
     public boolean requiresSerialization() {
         return true;
+    }
+
+    @Override
+    public void dispose() {
+        shutdown();
+    }
+
+    @Override
+    public boolean isDisposed() {
+        return pool.get() == NONE;
     }
 
 }
