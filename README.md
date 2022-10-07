@@ -40,9 +40,21 @@ Context context = Context
   .builder()
   .supervisor(supervisor)
   .deadLetterActorFactory(factory)
+  .defaultScheduler(scheduler)
   .build();
 ```
 
+Now use a `Context` to create typed Actors:
+
+```java
+Context context = Context.create();
+ActorRef<String> a = context.matchAny(m -> System.out.println(m.content())).build();
+a.tell("hi there");
+Thread.sleep(1000);
+```
+
+`Actor.tell` is asynchronous (with the default scheduler) so we wait with `Thread.sleep` to see something happen. The result of course is that 
+"hi there" will be written to the console and it will generally happen on a different thread to the call of `tell`.
 
 ## Notes
 
