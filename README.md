@@ -54,7 +54,7 @@ a.tell("hi there");
 Thread.sleep(1000);
 ```
 
-`Actor.tell` is asynchronous (with the default scheduler) so we wait with `Thread.sleep` to see something happen. The result of course is that 
+`ActorRef.tell` is asynchronous (with the default scheduler) so we wait with `Thread.sleep` to see something happen. The result of course is that 
 "hi there" will be written to the console and it will generally happen on a different thread to the call of `tell`.
 
 Here's a "kitchen sink" example that demonstrates many options when creating actors:
