@@ -10,6 +10,7 @@ public final class ContextBuilder {
     private Supervisor supervisor = Supervisor.defaultSupervisor();
     private Supplier<? extends Actor<DeadLetter>> deadLetterActorFactory = () -> Context
             .createActorObject(DeadLetterActor.class);
+    private Scheduler scheduler = Scheduler.defaultScheduler();
 
     ContextBuilder() {
     }
@@ -25,9 +26,14 @@ public final class ContextBuilder {
         this.deadLetterActorFactory = factory;
         return this;
     }
+    
+    public ContextBuilder defaultScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
+        return this;
+    }
 
     public Context build() {
-        return new Context(supervisor, deadLetterActorFactory);
+        return new Context(supervisor, deadLetterActorFactory, scheduler);
     }
 
 }

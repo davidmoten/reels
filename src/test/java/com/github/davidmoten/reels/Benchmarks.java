@@ -33,10 +33,13 @@ public class Benchmarks {
 
     @Setup(Level.Invocation)
     public void setup() {
-        context = new Context((c, actor, error) -> {
-            log.error(actor.name() + ":" + error.getMessage(), error);
-        }, //
-                ActorDoNothing::create);
+        context = Context //
+                .builder() //
+                .supervisor((c, actor, error) -> {
+                    log.error(actor.name() + ":" + error.getMessage(), error);
+                }) //
+                .deadLetterActorFactory(ActorDoNothing::create) //
+                .build();
         askActor = context.<String>matchAny(m -> m.senderRaw().tell("boo")) //
                 .build();
     }
@@ -56,7 +59,7 @@ public class Benchmarks {
         a.tell(0);
         assertTrue(latch.await(60, TimeUnit.SECONDS));
     }
-    
+
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void actorCreateAndStop() throws InterruptedException {
@@ -218,7 +221,7 @@ public class Benchmarks {
                 b.contendedConcurrencyImmediate();
                 System.out.println((System.currentTimeMillis() - t) + "ms");
             }
-            
+
 //            b.tearDown();
         }
     }

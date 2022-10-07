@@ -2,11 +2,10 @@ package com.github.davidmoten.reels.internal;
 
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.github.davidmoten.junit.Asserts;
-
-import junit.framework.Assert;
 
 public class ExceptionsTest {
 
@@ -17,8 +16,7 @@ public class ExceptionsTest {
 
     @Test
     public void throwIfVirtualMachineError() {
-        Throwable t = new VirtualMachineError() {
-        };
+        Throwable t = new OutOfMemoryError();
         try {
             Exceptions.throwIfFatal(t);
             Assert.fail();

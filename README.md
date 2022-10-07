@@ -25,6 +25,25 @@ Add this dependency to your pom.xml:
 
 ## Usage
 
+* Create a `Context` (`ActorSystem` in Akka) object to create your actors and control their lifecycle
+* `Scheduler`s (`Dispatcher`s in Akka) live outside your `Context` object and thus can be shared across `Context`s (for greater efficiency)
+
+The simplest way to create a `Context` object is:
+
+```java
+Context context = Context.create();
+```
+
+You can use a builder to configure the `Context`:
+```java
+Context context = Context
+  .builder()
+  .supervisor(supervisor)
+  .deadLetterActorFactory(factory)
+  .build();
+```
+
+
 ## Notes
 
 ### Actor lifecycle
