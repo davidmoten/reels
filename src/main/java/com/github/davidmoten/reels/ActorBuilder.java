@@ -20,7 +20,7 @@ public final class ActorBuilder<T> {
     private final List<Matcher<T, ? extends T>> matches = new ArrayList<>();
     private Supervisor supervisor;
     private Consumer<? super Throwable> onError;
-    private Scheduler scheduler = Scheduler.forkJoin();
+    private Scheduler scheduler;
     private String name = "Anonymous-" + counter.incrementAndGet();
     private ActorRef<?> parent; // nullable
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
@@ -120,6 +120,9 @@ public final class ActorBuilder<T> {
     public ActorRef<T> build() {
         if (supervisor == null) {
             supervisor = ((ActorRefImpl<?>) parent).supervisor();
+        }
+        if (scheduler == null) {
+            scheduler = parent.scheduler();
         }
         Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError, preStart, onStop));
         return context.createActor(f, name, scheduler, supervisor, parent);

@@ -93,7 +93,7 @@ public class Benchmarks {
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyComputationSticky() throws InterruptedException {
-        contendedConcurrency(Scheduler.computation(), MESSAGES_PER_RUNNER);
+        contendedConcurrency(Scheduler.computationSticky(), MESSAGES_PER_RUNNER);
     }
 
     @Benchmark
@@ -111,7 +111,7 @@ public class Benchmarks {
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesComputationSticky() throws InterruptedException {
-        groupRandomMessages(Scheduler.computation());
+        groupRandomMessages(Scheduler.computationSticky());
     }
 
     @Benchmark

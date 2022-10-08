@@ -34,8 +34,8 @@ import com.github.davidmoten.reels.internal.Preconditions;
  */
 public final class SchedulerIo extends AbstractCanScheduleDisposable implements Scheduler {
 
-    private static final String WORKER_THREAD_NAME_PREFIX = "ReelsCachedThreadScheduler";
-    private static final String EVICTOR_THREAD_NAME_PREFIX = "ReelsCachedWorkerPoolEvictor";
+    private static final String WORKER_THREAD_NAME_PREFIX = "ReelsIo";
+    private static final String EVICTOR_THREAD_NAME_PREFIX = "ReelsIoEvictor";
     private static final ThreadFactory WORKER_THREAD_FACTORY = SchedulerHelper
             .createThreadFactory(WORKER_THREAD_NAME_PREFIX);
     private static final ThreadFactory EVICTOR_THREAD_FACTORY = SchedulerHelper
@@ -288,7 +288,7 @@ public final class SchedulerIo extends AbstractCanScheduleDisposable implements 
 
     @Override
     public boolean requiresSerialization() {
-        return true;
+        return false;
     }
 
     @Override

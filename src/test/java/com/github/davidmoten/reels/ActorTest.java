@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -16,6 +17,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -46,7 +49,7 @@ public class ActorTest {
                         latch.countDown();
                     }
                 }) //
-                .scheduler(Scheduler.computation()) //
+                .scheduler(Scheduler.computationSticky()) //
                 .supervisor(Supervisor.defaultSupervisor()) //
                 .name("test") //
                 .build();
@@ -147,7 +150,7 @@ public class ActorTest {
                         m.self().tell(2);
                         latch.countDown();
                     }
-                }).scheduler(Scheduler.computation()) //
+                }).scheduler(Scheduler.computationSticky()) //
                 .build();
         a.tell(123);
         assertTrue(latch.await(5, TimeUnit.SECONDS));
@@ -162,7 +165,7 @@ public class ActorTest {
                 .match(Integer.class, m -> {
                     throw new RuntimeException("boo");
                 }) //
-                .scheduler(Scheduler.computation()) //
+                .scheduler(Scheduler.computationSticky()) //
                 .supervisor(supervisor) //
                 .build();
         a.tell(123);
@@ -196,7 +199,7 @@ public class ActorTest {
                     }
 
                 }) //
-                .scheduler(Scheduler.computation()) //
+                .scheduler(Scheduler.computationSticky()) //
                 .supervisor(supervisor) //
                 .build();
         a.tell(123);
@@ -279,7 +282,7 @@ public class ActorTest {
                     count.incrementAndGet();
                     throw new RuntimeException("boo");
                 }) //
-                .scheduler(Scheduler.computation()) //
+                .scheduler(Scheduler.computationSticky()) //
                 .supervisor(supervisor) //
                 .build();
         a.tell(123);
@@ -350,7 +353,7 @@ public class ActorTest {
                 .match(Integer.class, m -> {
                     throw new RuntimeException("boo");
                 }) //
-                .scheduler(Scheduler.computation()) //
+                .scheduler(Scheduler.computationSticky()) //
                 .supervisor(supervisor) //
                 .onError(e -> {
                     if ("boo".equals(e.getMessage())) {
@@ -421,7 +424,7 @@ public class ActorTest {
 
     @Test
     public void testParallelSticky() throws InterruptedException, ExecutionException, TimeoutException {
-        concurrencyTest(Scheduler.computation(), RUNNERS, Integer.getInteger("sticky", NUM_MESSAGES));
+        concurrencyTest(Scheduler.computationSticky(), RUNNERS, Integer.getInteger("sticky", NUM_MESSAGES));
     }
 
     @Test
@@ -748,7 +751,7 @@ public class ActorTest {
                 .onError(e -> log.error(e.getMessage(), e)) //
                 .preStart(self -> log.info("{}: preStart", self)) //
                 .onStop(self -> log.info("{}: onStop", self)) //
-                .scheduler(Scheduler.computation()) //
+                .scheduler(Scheduler.computationSticky()) //
                 .parent(a) //
                 .supervisor((m, actor, e) -> {
                     log.error(e.getMessage(), e);
@@ -763,6 +766,25 @@ public class ActorTest {
         // give enough time to run
         Thread.sleep(500);
         context.shutdownGracefully().get(5000, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void testIoHonoursOrder() throws InterruptedException, ExecutionException, TimeoutException {
+        for (int j = 0; j < 5; j++) {
+            Context c = Context.builder().scheduler(Scheduler.io()).build();
+            List<Integer> list = new CopyOnWriteArrayList<>();
+            ActorRef<Integer> a = c.<Integer>matchAny(m -> {
+                assertTrue(Thread.currentThread().getName().startsWith("ReelsIo-"));
+                list.add(m.content());
+            }).build();
+            assertTrue(a.scheduler() == Scheduler.io());
+            int n = 10000;
+            for (int i = 1; i <= n; i++) {
+                a.tell(i);
+            }
+            c.shutdownGracefully().get(5, TimeUnit.SECONDS);
+            assertEquals(IntStream.range(1, n + 1).boxed().collect(Collectors.toList()), list);
+        }
     }
 
     @Test
@@ -799,7 +821,7 @@ public class ActorTest {
 
     @Test
     public void testScheduledWithDelay() throws InterruptedException {
-        for (Scheduler scheduler : new Scheduler[] { Scheduler.forkJoin(), Scheduler.computation(),
+        for (Scheduler scheduler : new Scheduler[] { Scheduler.forkJoin(), Scheduler.computationSticky(),
                 Scheduler.immediate(), Scheduler.io() }) {
             Context c = Context.create();
             AtomicInteger n = new AtomicInteger();

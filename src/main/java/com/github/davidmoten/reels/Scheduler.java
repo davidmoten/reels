@@ -24,11 +24,19 @@ public interface Scheduler extends CanSchedule {
         return forkJoin();
     }
 
+    /**
+     * Work-stealing Scheduler using the ForkJoin.common pool
+     * @return Scheduler using the ForkJoin.common pool
+     */
     static Scheduler forkJoin() {
         return SchedulerForkJoinPool.INSTANCE;
     }
 
     static Scheduler computation() {
+        return forkJoin();
+    }
+    
+    static Scheduler computationSticky() {
         // outperforms NonSticky
         return SchedulerComputationSticky.INSTANCE;
     }
