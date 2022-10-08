@@ -6,6 +6,7 @@ activate ActorRef
 ActorRef -> Actor: create
 activate Actor
 ActorRef -> Actor: preStart
+Actor -> Actor: preStart
 
 User -> ActorRef: tell(msg)
 ActorRef -> Actor: msg
