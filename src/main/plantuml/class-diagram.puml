@@ -16,7 +16,7 @@ interface "ActorRef<T>" as ActorRef_T_ [[java:com.github.davidmoten.reels.ActorR
     recast(): ActorRef<S>
     narrow(): ActorRef<S>
 }
-ActorRef_T_ --> "1" Context : context
+Context --> "creates\n*" ActorRef_T_
 ActorRef_T_ --> "1" Scheduler : scheduler
 Disposable <|-- ActorRef_T_
 class Context [[java:com.github.davidmoten.reels.Context]] {
