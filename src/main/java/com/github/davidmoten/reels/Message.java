@@ -56,6 +56,6 @@ public class Message<T> {
 
     @Override
     public String toString() {
-        return "Message[" + content + ", sender=" + sender + ", self=" + recipient + "]";
+        return "Message[" + content + ", sender=" + sender + ", recipient=" + recipient + "]";
     }
 }
