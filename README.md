@@ -35,12 +35,19 @@ Add this dependency to your pom.xml:
   <version>VERSION_HERE</version>
 </dependency><
 ```
-## Usagee
 ## Glossary
 
 * Actor
 * ActorRef
 * Context
+* Supervisor
+* SupervisedActorRef
+
+## Class Diagram
+
+![Class Diagram](src/docs/class-diagram.svg)
+
+## Usage
 
 ### Create a Contextt
 * Create a `Context` (`ActorSystem` in Akka) object to create your actors and control their lifecyclee
