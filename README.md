@@ -45,7 +45,7 @@ Add this dependency to your pom.xml:
 
 ## Class Diagram
 
-![Class Diagram](src/docs/class-diagram.svg)
+![Class Diagram](src/docs/class-diagram.png)
 
 ## Usage
 
