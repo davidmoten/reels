@@ -42,10 +42,11 @@ Add this dependency to your pom.xml:
 * Context
 * Supervisor
 * SupervisedActorRef
+* Message
 
 ## Class Diagram
 
-![Class Diagram](src/docs/class-diagram.png)
+![Class Diagram](src/docs/class-diagram.svg)
 
 ## Usage
 
