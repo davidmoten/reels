@@ -5,22 +5,23 @@
 
 Actor framework for Java, non-blocking, performant. Developed as a reaction to the Akka licence change. Akka is a huge framework with a large number of extensions including persistence, web serving, and more. My needs are limited to core of Akka, namely in-memory actor pattern support (including supervision) and that's what this library provides.
 
-Why would you trust this library with plenty of concurrency-sensitive code? I've been involved in concurrency-sensitive projects for many years as a frequent contributor to RxJava 1.x and the author of numerous popular RxJava libraries (rxjava-extras, rxjava-jdbc, rxjava-pool, rxjava-slf4j, rxjava-http, rxjava-aws).
+Why would you trust this library with plenty of concurrency-sensitive code? I've been involved in concurrency-sensitive projects since 2014 as a frequent contributor to RxJava 1.x and the author of numerous popular RxJava libraries (rxjava-extras, rxjava-jdbc, rxjava-pool, rxjava-slf4j, rxjava-http, rxjava-aws). All these libraries involve a lot of concurrency-aware and performance-aware work so this is not new ground for me.
+
+Why do we need another Actor library on the JVM? I think there's a space for an in-memory Actor library that has a small footprint (only *slf4j-api* as a logging dependency and jar is 84K), is easy to use (the API is discoverable and sensible), offers a goodly number of useful features, and is thread-safe and performant.
 
 ## Features
 * Discoverable concise API (Akka is not, partly due to the way it's evolved and a lot of Scala library stuff)
-* Custom supervisors including the ability to retry processing later
+* Custom supervisors including the ability to retry processing later and/or restart the actor (recreate the Actor object)
 * Parent-child actor heirarchies
 * Dead letter actor
 * SLF4J logging (add the implementation that you like)
-* Performant
 * Akka stop semantics (stopping an actor stops its children first)
 
 TODO 
 * Lifecycle monitoring (DeathWatch) support
-* Add Actor.preRestart, Actor.postRestart methods?
+* Add Actor.preRestart, Actor.postRestart methods? Jury still out on this. 
 
-# How to build
+## How to build
 ```bash
 mvn clean install
 ```
@@ -28,13 +29,22 @@ mvn clean install
 ## Getting started
 Add this dependency to your pom.xml:
 ```xml
+<dependency>
+  <groupId>com.github.davidmoten</groupId>
+  <artifactId>reels</artifactId>
+  <version>VERSION_HERE</version>
+</dependency><
 ```
+## Usagee
+## Glossary
 
-## Usage
+* Actor
+* ActorRef
+* Context
 
-### Create a Context
-* Create a `Context` (`ActorSystem` in Akka) object to create your actors and control their lifecycle
-* `Scheduler`s (`Dispatcher`s in Akka) live outside your `Context` object and thus can be shared across `Context`s (for greater efficiency)
+### Create a Contextt
+* Create a `Context` (`ActorSystem` in Akka) object to create your actors and control their lifecyclee
+* `Scheduler`s (`Dispatcher`s in Akka) live outside your `Context` object and thus can be shared across `Context`s (for greater efficiency))
 
 The simplest way to create a `Context` object is:
 
