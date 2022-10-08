@@ -20,7 +20,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +30,7 @@ import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationNonSti
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.scheduler.TestScheduler;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ActorTest {
 
     private static final Logger log = LoggerFactory.getLogger(ActorTest.class);
@@ -728,47 +731,6 @@ public class ActorTest {
     }
 
     @Test
-    public void createActorKitchenSink() throws InterruptedException, ExecutionException, TimeoutException {
-        Context context = Context.create();
-        ActorRef<Number> a = context //
-                .<Number>matchAny(m -> {
-                    log.info("{}: parent received {}", m.self(), m.content());
-                    m.self().child("b").tell(m.content(), m.self());
-                }) //
-                .name("a") //
-                .scheduler(Scheduler.single()) //
-                .onStop(self -> log.info("{}: onStop", self)) //
-                .build();
-        context //
-                .<Number>matchEquals(1, m -> {
-                    log.info("{}: equal matched, sender = {}", m.self(), m.sender());
-                    m.sender().ifPresent(x -> x.tell(9999));
-                }) //
-                .match(Integer.class, m -> log.info("{}: received integer {}", m.self(), m.content())) //
-                .match(Double.class, m -> log.info("{}: received double {}", m.self(), m.content())) //
-                .matchAny(m -> log.info("{}: received something else {}", m.self(), m.content())) //
-                .name("b") //
-                .onError(e -> log.error(e.getMessage(), e)) //
-                .preStart(self -> log.info("{}: preStart", self)) //
-                .onStop(self -> log.info("{}: onStop", self)) //
-                .scheduler(Scheduler.computationSticky()) //
-                .parent(a) //
-                .supervisor((m, actor, e) -> {
-                    log.error(e.getMessage(), e);
-                    actor.pause(30, TimeUnit.SECONDS);
-                    actor.retry();
-                }) //
-                .build();
-        a.tell(1);
-        a.tell(2);
-        a.tell(3.5);
-        a.tell(4f);
-        // give enough time to run
-        Thread.sleep(500);
-        context.shutdownGracefully().get(5000, TimeUnit.SECONDS);
-    }
-
-    @Test
     public void testIoHonoursOrder() throws InterruptedException, ExecutionException, TimeoutException {
         for (int j = 0; j < 5; j++) {
             Context c = Context.builder().scheduler(Scheduler.io()).build();
@@ -832,6 +794,47 @@ public class ActorTest {
             assertEquals(2, n.get());
             c.shutdownGracefully();
         }
+    }
+
+    @Test
+    public void createActorKitchenSink() throws InterruptedException, ExecutionException, TimeoutException {
+        Context context = Context.create();
+        ActorRef<Number> a = context //
+                .<Number>matchAny(m -> {
+                    log.info("{}: parent received {}", m.self(), m.content());
+                    m.self().child("b").tell(m.content(), m.self());
+                }) //
+                .name("a") //
+                .scheduler(Scheduler.single()) //
+                .onStop(self -> log.info("{}: onStop", self)) //
+                .build();
+        context //
+                .<Number>matchEquals(1, m -> {
+                    log.info("{}: equal matched, sender = {}", m.self(), m.sender());
+                    m.sender().ifPresent(x -> x.tell(9999));
+                }) //
+                .match(Integer.class, m -> log.info("{}: received integer {}", m.self(), m.content())) //
+                .match(Double.class, m -> log.info("{}: received double {}", m.self(), m.content())) //
+                .matchAny(m -> log.info("{}: received something else {}", m.self(), m.content())) //
+                .name("b") //
+                .onError(e -> log.error(e.getMessage(), e)) //
+                .preStart(self -> log.info("{}: preStart", self)) //
+                .onStop(self -> log.info("{}: onStop", self)) //
+                .scheduler(Scheduler.computationSticky()) //
+                .parent(a) //
+                .supervisor((m, actor, e) -> {
+                    log.error(e.getMessage(), e);
+                    actor.pause(30, TimeUnit.SECONDS);
+                    actor.retry();
+                }) //
+                .build();
+        a.tell(1);
+        a.tell(2);
+        a.tell(3.5);
+        a.tell(4f);
+        // give enough time to run
+        Thread.sleep(500);
+        context.shutdownGracefully().get(5000, TimeUnit.SECONDS);
     }
 
     public static final class MyActor extends AbstractActor<Integer> {
