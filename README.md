@@ -50,7 +50,7 @@ Add this dependency to your pom.xml:
 
 ## Usage
 
-### Create a Contextt
+### Create a Context
 * Create a `Context` (`ActorSystem` in Akka) object to create your actors and control their lifecyclee
 * `Scheduler`s (`Dispatcher`s in Akka) live outside your `Context` object and thus can be shared across `Context`s (for greater efficiency))
 
