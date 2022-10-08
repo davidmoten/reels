@@ -3,15 +3,22 @@
 [![codecov](https:codecov.io/gh/davidmoten/reels/branch/master/graph/badge.svg)](https:codecov.io/gh/davidmoten/reels)<br/>
 [![Maven Central](https:maven-badges.herokuapp.com/maven-central/au.gov.amsa/reels/badge.svg?style=flat)](https:maven-badges.herokuapp.com/maven-central/au.gov.amsa/reels)<br/>
 
-Actor framework for Java, non-blocking, performant.
+Actor framework for Java, non-blocking, performant. Developed as a reaction to the Akka licence change. Akka is a huge framework with a large number of extensions including persistence, web serving, and more. My needs are limited to core of Akka, namely in-memory actor pattern support (including supervision) and that's what this library provides.
+
+Why would you trust this library with plenty of concurrency-sensitive code? I've been involved in concurrency-sensitive projects for many years as a frequent contributor to RxJava 1.x and the author of numerous popular RxJava libraries (rxjava-extras, rxjava-jdbc, rxjava-pool, rxjava-slf4j, rxjava-http, rxjava-aws).
 
 ## Features
-*
-*
-*
-*
+* Discoverable concise API (Akka is not, partly due to the way it's evolved and a lot of Scala library stuff)
+* Custom supervisors including the ability to retry processing later
+* Parent-child actor heirarchies
+* Dead letter actor
+* SLF4J logging (add the implementation that you like)
+* Performant
+* Akka stop semantics (stopping an actor stops its children first)
 
-## Background
+TODO 
+* Lifecycle monitoring (DeathWatch) support
+* Add Actor.preRestart, Actor.postRestart methods?
 
 # How to build
 ```bash
