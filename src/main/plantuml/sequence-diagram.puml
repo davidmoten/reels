@@ -1,0 +1,41 @@
+@startuml
+User -> Context: createActor
+
+Context -> ActorRef: createActor
+activate ActorRef
+ActorRef -> Actor: create
+activate Actor
+ActorRef -> Actor: preStart
+
+User -> ActorRef: tell(msg)
+ActorRef -> Actor: msg
+Actor -> Actor: processMessage
+Actor -> ActorRef: error
+ActorRef -> Supervisor: msg,error
+Supervisor -> Supervisor: log error
+Supervisor -> ActorRef: restart
+User -> ActorRef: tell(msg2)
+ActorRef -> Actor: onStop
+Actor -> Actor: onStop
+deactivate Actor
+ActorRef -> Actor: create
+activate Actor
+ActorRef -> Actor: preStart
+Actor -> Actor: preStart
+ActorRef -> Actor: msg2
+Actor -> Actor: processMessage
+
+User -> ActorRef: stop
+ActorRef -> Actor: onStop
+Actor -> Actor: onStop
+Actor -> ActorRef: stopped
+ActorRef -> Context: stopped
+User -> ActorRef: tell(msg3)
+ActorRef -> DeadLetterActor: DeadLetter(msg3)
+DeadLetterActor -> DeadLetterActor: processMessage
+User -> ActorRef: dispose
+deactivate Actor
+deactivate ActorRef
+
+
+@enduml
