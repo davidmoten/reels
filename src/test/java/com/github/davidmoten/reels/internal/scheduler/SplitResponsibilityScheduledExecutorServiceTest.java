@@ -24,6 +24,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+@Ignore
 public class SplitResponsibilityScheduledExecutorServiceTest {
 
     @Test
