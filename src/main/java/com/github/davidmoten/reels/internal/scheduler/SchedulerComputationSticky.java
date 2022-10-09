@@ -9,6 +9,7 @@ import java.util.stream.IntStream;
 import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Worker;
+import com.github.davidmoten.reels.internal.util.FastRandomInt;
 
 public final class SchedulerComputationSticky extends AbstractCanScheduleDisposable implements Scheduler {
 
@@ -16,7 +17,7 @@ public final class SchedulerComputationSticky extends AbstractCanScheduleDisposa
 
     private final List<Worker> workers;
 
-    private int index;
+    private final FastRandomInt random = new FastRandomInt();
 
     // VisibleForTesting
     SchedulerComputationSticky() {
@@ -30,7 +31,7 @@ public final class SchedulerComputationSticky extends AbstractCanScheduleDisposa
 
     @Override
     public Worker createWorker() {
-        if (workers.size() == 0) {
+        if (workers.isEmpty()) {
             return WorkerDisposed.INSTANCE;
         }
         return new SchedulerWorker(workers.get(nextIndex()));
@@ -60,7 +61,7 @@ public final class SchedulerComputationSticky extends AbstractCanScheduleDisposa
     }
 
     private int nextIndex() {
-        return index = (index + 1) % workers.size();
+        return random.nextInt(workers.size());
     }
 
     @Override
