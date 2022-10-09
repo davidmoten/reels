@@ -6,15 +6,15 @@ import com.github.davidmoten.reels.internal.supervisor.SupervisorDefault;
 public interface Supervisor {
 
     /**
-     * Processes an error thrown by {@link Actor#onMessage(Message<T>)} or by
-     * {@link Actor#onStop(Context)} or by {@link Actor#preStart(Context)}.
+     * Processes an error thrown by {@link Actor#onMessage} or by
+     * {@link Actor#onStop} or by {@link Actor#preStart}.
      * 
      * <p>
-     * An error thrown by the {@link Actor#onStop(Context)} will be wrapped in an
+     * An error thrown by the {@link Actor#onStop} will be wrapped in an
      * {@link OnStopException}.
      * 
      * <p>
-     * An error thrown by the {@link Actor#preStart(Context)} will be wrapped in a
+     * An error thrown by the {@link Actor#preStart} will be wrapped in a
      * {@link PreStartException}.
      * 
      * <P>
