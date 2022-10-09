@@ -52,7 +52,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     private Message<T> lastMessage; // used for retrying
     private boolean retry;
 
-    protected static final int ACTIVE = 0;
+    private static final int ACTIVE = 0;
     private static final int STOPPING = 1;
     private static final int STOPPED = 2;
     private static final int DISPOSED = 3;
@@ -182,19 +182,20 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     @SuppressWarnings("unchecked")
     private void runOnStop(Message<T> message) {
-        setState(STOPPED);
-        try {
-            actor.onStop(this);
-        } catch (Throwable e) {
-            supervisor.processFailure(message, this, new OnStopException(e));
-        }
-        complete();
-        ActorRef<?> p = parent;
-        if (p == null) {
-            // is root actor (which is the only actor without a parent)
-            queue.offer(new Message<T>((T) Constants.TERMINATED, this, this));
-        } else {
-            p.<Object>recast().tell(Constants.TERMINATED, this);
+        if (setState(STOPPED)) {
+            try {
+                actor.onStop(this);
+            } catch (Throwable e) {
+                supervisor.processFailure(message, this, new OnStopException(e));
+            }
+            complete();
+            ActorRef<?> p = parent;
+            if (p == null) {
+                // is root actor (which is the only actor without a parent)
+                queue.offer(new Message<T>((T) Constants.TERMINATED, this, this));
+            } else {
+                p.<Object>recast().tell(Constants.TERMINATED, this);
+            }
         }
     }
 
@@ -327,8 +328,11 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
             if (s == RESTART) {
                 actor.onStop(this);
                 createActor();
-                setState(ACTIVE);
-                s = state.get();
+                if (setState(ACTIVE)) {
+                    s = ACTIVE;
+                } else {
+                    s = state.get();
+                }
             }
             if (s == DISPOSED) {
                 queue.clear();
@@ -344,15 +348,16 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                     sendToDeadLetter(message);
                 }
             } else if (message.content() == PoisonPill.INSTANCE) {
-                setState(STOPPING);
-                boolean isEmpty = true;
-                for (ActorRef<?> child : children.values()) {
-                    ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
-                    isEmpty = false;
-                }
-                if (isEmpty) {
-                    // no children, run onStop and send Terminated to parent
-                    runOnStop(message);
+                if (setState(STOPPING)) {
+                    boolean isEmpty = true;
+                    for (ActorRef<?> child : children.values()) {
+                        ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
+                        isEmpty = false;
+                    }
+                    if (isEmpty) {
+                        // no children, run onStop and send Terminated to parent
+                        runOnStop(message);
+                    }
                 }
             } else if (message.content() == Constants.TERMINATED) {
                 handleTerminationMessage(message);
