@@ -19,6 +19,7 @@ public class ActorRefNotSerialized<T> extends ActorRefImpl<T> {
     
     @Override
     public void run() {
+        // protect against recursion
         if (!running) {
             running = true;
             drain();
