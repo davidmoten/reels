@@ -7,9 +7,6 @@ public interface Actor<T> {
      * Supervisor allocated to the Actor will handle it (default is
      * {@code Supervisor.defaultSupervisor()}.
      * 
-     * @param context gives access to self (recipient) and sender {@link ActorRef}s and to
-     *                overall {@link Context} (which might be used for creating more
-     *                actors for example)
      * @param message message to be processed
      */
     void onMessage(Message<T> message);
