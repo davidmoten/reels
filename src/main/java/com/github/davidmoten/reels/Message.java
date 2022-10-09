@@ -2,7 +2,7 @@ package com.github.davidmoten.reels;
 
 import java.util.Optional;
 
-public class Message<T> {
+public final class Message<T> {
 
     private final T content;
     private final ActorRef<?> sender; // nullable

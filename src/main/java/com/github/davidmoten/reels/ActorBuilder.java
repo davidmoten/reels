@@ -12,6 +12,11 @@ import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.util.Util;
 
+/**
+ * Builds an ActorRef.
+ * 
+ * @param <T> message type
+ */
 public final class ActorBuilder<T> {
 
     private static final AtomicLong counter = new AtomicLong();
@@ -81,18 +86,37 @@ public final class ActorBuilder<T> {
         return this;
     }
 
+    /**
+     * Sets the supervisor to be used for this Actor and for its child Actors (if
+     * another supervisor not specified).
+     * 
+     * @param supervisor supervisor to use
+     * @return builder
+     */
     public ActorBuilder<T> supervisor(Supervisor supervisor) {
         Preconditions.checkArgumentNonNull(supervisor, "supervisor");
         this.supervisor = supervisor;
         return this;
     }
 
+    /**
+     * Sets unique name of the actor (should be unique amongst sibling Actors).
+     * 
+     * @param name unique name of the actor (should be unique amongst sibling Actors).
+     * @return builder
+     */
     public ActorBuilder<T> name(String name) {
         Preconditions.checkArgumentNonNull(name, "name");
         this.name = name;
         return this;
     }
 
+    /**
+     * Define what to do if one of the matchers throws.
+     * 
+     * @param onError what to do if one of the matchers throws.
+     * @return builder
+     */
     public ActorBuilder<T> onError(Consumer<? super Throwable> onError) {
         Preconditions.checkArgumentNonNull(onError, "onError");
         this.onError = onError;

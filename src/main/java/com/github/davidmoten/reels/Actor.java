@@ -12,7 +12,9 @@ public interface Actor<T> {
     void onMessage(Message<T> message);
 
     /**
-     * Called just after creating this, before processing any messages.
+     * Called just after creating this (either initially or on supervisor initiated
+     * restart), before processing any messages.
+     * 
      * @param self ActorRef referring to this
      */
     void preStart(ActorRef<T> self);
