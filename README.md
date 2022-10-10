@@ -44,6 +44,10 @@ Add this dependency to your pom.xml:
 * SupervisedActorRef
 * Message
 
+## Actor Lifecycle
+
+![Actor Lifecycle](src/docs/state-diagram.svg)
+
 ## Class Diagram
 
 ![Class Diagram](src/docs/class-diagram.svg)
