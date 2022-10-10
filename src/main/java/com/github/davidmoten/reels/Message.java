@@ -3,7 +3,7 @@ package com.github.davidmoten.reels;
 public final class Message<T> {
 
     private final T content;
-    private final ActorRef<?> sender; // nullable
+    private final ActorRef<?> sender;
     private final ActorRef<T> recipient;
 
     /**
@@ -11,7 +11,7 @@ public final class Message<T> {
      * 
      * @param content   message content
      * @param recipient message receiver
-     * @param sender    message sender
+     * @param sender    message sender, use {@code ActorRef.none()} if not present
      */
     public Message(T content, ActorRef<T> recipient, ActorRef<?> sender) {
         this.content = content;
