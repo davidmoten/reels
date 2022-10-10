@@ -24,18 +24,18 @@ public interface Scheduler extends CanSchedule {
     Worker createWorker();
 
     /**
-     * Shuts this scheduler down so that subsequent tasks submitted to it will be
-     * ignored.
-     */
-    void shutdown();
-
-    /**
      * Returns true If and only if the draining and processing of messages from the
      * queue (mailbox) needs enforced serialization.
      * 
      * @return true true iff requires serialization
      */
     boolean requiresSerialization();
+
+    /**
+     * Shuts this scheduler down so that subsequent tasks submitted to it will be
+     * ignored.
+     */
+    void shutdown();
 
     static Scheduler defaultScheduler() {
         return forkJoin();
@@ -78,7 +78,7 @@ public interface Scheduler extends CanSchedule {
 
     /**
      * Use this scheduler for actors that perform blocking operations (like network
-     * calls, file system access).
+     * calls, database access, file system access).
      * 
      * @return io scheduler
      */
