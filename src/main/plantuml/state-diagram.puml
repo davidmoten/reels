@@ -25,6 +25,6 @@ Stopped: onStop method run,\nmessages queued after\nthis point are sent to\nDead
 Paused: messages\nbuffered
 Disposed: mailbox cleared,\nnew messages\ndiscarded
 Errored: handled by\nsupervisor
-Restart: 
+Starting: preStart method run
 
 @enduml
