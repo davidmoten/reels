@@ -47,6 +47,8 @@ public final class Context implements Disposable {
     
     final RootActorRefImpl root;
 
+    private final Scheduler scheduler;
+
     Context() {
         this(Supervisor.defaultSupervisor(), () -> createActorObject(DeadLetterActor.class), Scheduler.defaultScheduler());
     }
@@ -58,6 +60,7 @@ public final class Context implements Disposable {
                 scheduler, this, supervisor);
         this.deadLetterActor = (ActorRefImpl<DeadLetter>) createActor(deadLetterActorFactory,
                 Constants.DEAD_LETTER_ACTOR_NAME);
+        this.scheduler = scheduler;
     }
 
     public static Context create() {
@@ -141,6 +144,10 @@ public final class Context implements Disposable {
         return supervisor;
     }
 
+    public Scheduler scheduler() {
+        return scheduler;
+    }
+
     public void shutdownNow() throws InterruptedException, TimeoutException {
         dispose();
     }
@@ -186,7 +193,7 @@ public final class Context implements Disposable {
     public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
         return this.<T>actorBuilder().factory(factory);
     }
-
+    
     /////////////////////////////
     // private methods
     ////////////////////////////
@@ -212,5 +219,4 @@ public final class Context implements Disposable {
             throw new CreateException(e);
         }
     }
-
 }
