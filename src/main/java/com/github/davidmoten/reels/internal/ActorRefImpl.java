@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -269,11 +268,9 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     @Override
     public <S> CompletableFuture<S> ask(T message) {
-        AskFuture<S> future = new AskFuture<S>();
-        ActorRef<S> actor = context.<S>matchAny(m -> future.setValue(m.content())).build();
-        future.setDisposable(actor);
+        ActorRefCompletableFuture<S> actor = new ActorRefCompletableFuture<>();
         tell(message, actor);
-        return future;
+        return actor;
     }
 
     @SuppressWarnings("unchecked")
@@ -393,45 +390,6 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     @Override
     public String toString() {
         return name;
-    }
-
-    // VisibleForTesting
-    static final class AskFuture<T> extends CompletableFuture<T> {
-
-        private final AtomicBoolean disposed;
-        private Disposable disposable = Disposable.disposed(); // mutable
-
-        AskFuture() {
-            super();
-            this.disposed = new AtomicBoolean();
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            super.cancel(mayInterruptIfRunning);
-            dispose();
-            return true;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return disposable.isDisposed();
-        }
-
-        private void dispose() {
-            if (disposed.compareAndSet(false, true)) {
-                disposable.dispose();
-            }
-        }
-
-        void setDisposable(Disposable disposable) {
-            this.disposable = disposable;
-        }
-
-        void setValue(T value) {
-            complete(value);
-            dispose();
-        }
     }
 
 }
