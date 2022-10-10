@@ -195,7 +195,8 @@ ActorRef<Integer> square =
 
 ## Schedulers
  
-
+## Benchmarks
+Using JDK 17:
 ```
 Benchmarks.actorCreateAndStop                     thrpt   10  1036159.638 ± 11147.430  ops/s
 Benchmarks.ask                                    thrpt   10    49202.346 ±  1347.799  ops/s
