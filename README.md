@@ -182,11 +182,10 @@ Here's an example of `ask` where an actor does some calculation and returns an a
 ActorRef<Integer> square = 
     context
       .matchAny(m -> 
-          m.sender().ifPresent(sender->sender.tell(m.content()*m.content()))
+          m.sender().ifPresent(sender->sender.<Integer>tell(m.content() * m.content()))
       .build();
-
 ```
-=
+
 ## Notes
 
 * An Actor is created by a Context object. The Context object has an internal singleton root actor but is the parent for an Actor you create unless you provide it with an explicit parent. 
