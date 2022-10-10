@@ -398,17 +398,16 @@ Benchmarks.groupRandomMessagesIo                  thrpt   10       0.868 ±   0.
 BenchmarksAkka.ask                                thrpt   10       7.417 ±   0.291  ops/s
 Benchmarks.sequential                                ss   10       2.696 ±   0.230   s/op
 
-Benchmark                                          Mode  Cnt       Score      Error  Units
-Benchmarks.actorCreateAndStop                     thrpt   10  251077.574 ± 1236.443  ops/s
-Benchmarks.ask                                    thrpt   10       5.436 ±    0.030  ops/s
-Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.876 ±    0.045  ops/s
-Benchmarks.contendedConcurrencyForkJoin           thrpt   10       3.387 ±    0.101  ops/s
-Benchmarks.contendedConcurrencyImmediate          thrpt   10       9.542 ±    0.102  ops/s
-Benchmarks.groupRandomMessagesComputationSticky   thrpt   10       1.872 ±    0.056  ops/s
-Benchmarks.groupRandomMessagesForkJoin            thrpt   10      11.671 ±    0.063  ops/s
-Benchmarks.groupRandomMessagesImmediate           thrpt   10      27.040 ±    2.095  ops/s
-Benchmarks.groupRandomMessagesIo                  thrpt   10       0.893 ±    0.013  ops/s
-BenchmarksAkka.ask                                thrpt   10       6.470 ±    0.406  ops/s
-Benchmarks.sequential                                ss   10       3.616 ±    1.464   s/op
-
+Benchmark                                          Mode  Cnt       Score     Error  Units
+Benchmarks.actorCreateAndStop                     thrpt   10  253968.791 ± 711.432  ops/s
+Benchmarks.ask                                    thrpt   10       5.342 ±   0.356  ops/s
+Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.874 ±   0.030  ops/s
+Benchmarks.contendedConcurrencyForkJoin           thrpt   10       3.259 ±   0.062  ops/s
+Benchmarks.contendedConcurrencyImmediate          thrpt   10       9.641 ±   0.098  ops/s
+Benchmarks.groupRandomMessagesComputationSticky   thrpt   10       1.873 ±   0.063  ops/s
+Benchmarks.groupRandomMessagesForkJoin            thrpt   10      12.199 ±   0.537  ops/s
+Benchmarks.groupRandomMessagesImmediate           thrpt   10      29.550 ±   0.329  ops/s
+Benchmarks.groupRandomMessagesIo                  thrpt   10       0.896 ±   0.009  ops/s
+BenchmarksAkka.ask                                thrpt   10       6.610 ±   0.407  ops/s
+Benchmarks.sequential                                ss   10       3.302 ±   1.673   s/op
 ```
