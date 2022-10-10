@@ -21,7 +21,7 @@ Restart --> Disposed
 
 Active: processes\nmessages
 Stopping: stop has been called\nchildren will be stopped\nfirst
-Stopped: messages queued after\nthis point are sent to\nDeadLetter actor
+Stopped: onStop method run,\nmessages queued after\nthis point are sent to\nDeadLetter actor
 Paused: messages\nbuffered
 Disposed: mailbox cleared,\nnew messages\ndiscarded
 Errored: handled by\nsupervisor
