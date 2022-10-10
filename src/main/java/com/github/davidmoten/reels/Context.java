@@ -190,8 +190,8 @@ public final class Context implements Disposable {
         return this.<T>actorBuilder().matchEquals(value, consumer);
     }
 
-    public <T> ActorBuilder<T> factory(Supplier<? extends Actor<T>> factory) {
-        return this.<T>actorBuilder().factory(factory);
+    public <T> ActorBuilder<T> actorFactory(Supplier<? extends Actor<T>> factory) {
+        return this.<T>actorBuilder().actorFactory(factory);
     }
     
     /////////////////////////////

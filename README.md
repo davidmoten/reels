@@ -12,7 +12,7 @@ Why do we need another Actor library on the JVM? I think there's space for an in
 ## Features
 * Discoverable concise API (Akka is not, partly due to the way it's evolved and a lot of Scala library stuff)
 * Custom supervisors including the ability to retry processing later and/or restart the actor (recreate the Actor object)
-* Parent-child actor heirarchies
+* Parent-child actor hierarchies
 * Dead letter actor
 * SLF4J logging (add the implementation that you like)
 * Akka stop semantics (stopping an actor stops its children first)
@@ -69,7 +69,7 @@ Context context = Context
   .scheduler(scheduler)
   .build();
 ```
-### Create an Actor
+### Create an Actor using matchers
 Now use a `Context` to create typed Actors:
 
 ```java
@@ -145,6 +145,13 @@ Output:
 2022-10-07T21:47:28:060 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: received integer 9999
 2022-10-07T21:47:28:562 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: onStop
 2022-10-07T21:47:28:564 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: onStop
+```
+### Create an Actor using your own class
+
+You can also create an Actor class yourself instead of using the builder. Implement `Actor<T` or extend `AbstractActor<T>`. Suppose you create a class called `MyActor` which extends `AbstractActor<Integer>`. You can create an ActorRef for this class with the Context as follows:
+
+```java
+ActorRef<Integer> actor = context.actorFactory(() -> new MyActor()).build();
 ```
 
 ## Notes

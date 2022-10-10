@@ -109,7 +109,7 @@ public class ActorTest {
     @Test(expected = IllegalArgumentException.class)
     public void testFactoryPresentWhenMatchAnyCalled() {
         Context c = new Context();
-        c.factory(() -> new MyActor()) //
+        c.actorFactory(() -> new MyActor()) //
                 .matchAny(m -> {
                 });
     }
@@ -117,7 +117,7 @@ public class ActorTest {
     @Test(expected = IllegalArgumentException.class)
     public void testFactoryPresentWhenMatchEqualsCalled() {
         Context c = new Context();
-        c.factory(() -> new MyActor()) //
+        c.actorFactory(() -> new MyActor()) //
                 .matchEquals(1, m -> {
                 });
     }
@@ -125,7 +125,7 @@ public class ActorTest {
     @Test(expected = IllegalArgumentException.class)
     public void testFactoryPresentWhenMatchCalled() {
         Context c = new Context();
-        c.factory(() -> new MyActor()) //
+        c.actorFactory(() -> new MyActor()) //
                 .match(Integer.class, m -> {
                 });
     }
@@ -193,7 +193,7 @@ public class ActorTest {
         Context c = Context.create();
         Supervisor supervisor = (m, self, error) -> self.restart();
         ActorRef<Integer> a = c //
-                .<Integer>factory(() -> new AbstractActor<Integer>() {
+                .<Integer>actorFactory(() -> new AbstractActor<Integer>() {
 
                     @Override
                     public void onMessage(Message<Integer> message) {
@@ -213,7 +213,7 @@ public class ActorTest {
     @Test(expected = CreateException.class)
     public void testFactoryReturnsNull() {
         Context c = Context.create();
-        c.factory(() -> null).build();
+        c.actorFactory(() -> null).build();
     }
 
     @Test
