@@ -158,16 +158,44 @@ You can also create an Actor class yourself instead of using the builder. Implem
 ActorRef<Integer> actor = context.actorFactory(() -> new MyActor()).build();
 ```
 
-## Notes
+## Send a message to an Actor
+This sends an anonymous message (the Actor won't have knowledge of the sender actor for instance) to an actor:
 
-### Actor lifecycle
+```java
+ActorRef<Thing> actor = ...
+Thing thing = ...
+actor.tell(thing);
+```
+To include a sender actor (for example as a reply-to actor):
+```java
+ActorRef<Thing> actor = ...
+ActorRef<Object> replyTo = ...
+Thing thing = ...
+actor.tell(thing, replyTo);
+```
+
+## ask
+
+Here's an example of `ask` where an actor does some calculation and returns an answer asynchronously (via a `CompletableFuture`):
+
+```java
+ActorRef<Integer> square = 
+    context
+      .matchAny(m -> 
+          m.sender().ifPresent(sender->sender.tell(m.content()*m.content()))
+      .build();
+
+```
+=
+## Notes
 
 * An Actor is created by a Context object. The Context object has an internal singleton root actor but is the parent for an Actor you create unless you provide it with an explicit parent. 
 * When an actor is disposed no more children can be created for it  
 * Dispose happens synchronously (the actor and all its children and descendants are disposed before the method returns) 
 * Restarting an actor from a supervisor will dispose all that actors children
 
-## Design 
+## Schedulers
+ 
 
 ```
 Benchmarks.actorCreateAndStop                     thrpt   10  1036159.638 ± 11147.430  ops/s
