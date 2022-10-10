@@ -160,8 +160,7 @@ public final class FastRandomInt {
         if ((bound & m) == 0) // i.e., bound is a power of 2
             r = (int) ((bound * (long) r) >> 31);
         else {
-            for (int u = r; u - (r = u % bound) + m < 0; u = next(31))
-                ;
+            for (int u = r; u - (r = u % bound) + m < 0; u = next(31)); // NOPMD
         }
         return r;
     }
