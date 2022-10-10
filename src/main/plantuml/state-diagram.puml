@@ -1,0 +1,22 @@
+@startuml
+hide empty description
+[*] --> Starting 
+Starting --> Active
+Active --> Stopping
+Stopping -> Stopped
+Active --> Disposed
+Stopping --> Disposed
+Stopped --> Disposed
+Active --> Paused
+Paused --> Restart
+Restart --> Starting
+Paused --> Disposed
+Restart --> Active
+Disposed --> [*]
+
+Active: processes messages
+Stopping: stop has been called\nchildren will be stopped first
+Paused: messages buffered
+Restart: 
+
+@enduml

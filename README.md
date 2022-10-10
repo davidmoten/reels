@@ -158,7 +158,7 @@ ActorRef<Integer> actor = context.actorFactory(() -> new MyActor()).build();
 
 ### Actor lifecycle
 
-* An Actor is created by a Context object. The Context object has a singleton root actor that is not accessible but is the parent for an Actor you create unless you provide it with an explicit parent. 
+* An Actor is created by a Context object. The Context object has an internal singleton root actor but is the parent for an Actor you create unless you provide it with an explicit parent. 
 * An Actor is either **Active**, **Stopping** or **Disposed**. 
 * Once created an Actor is **Active** and will process messages sent to it (via `ActorRef.tell`). 
 * If the Actor is disposed (via `ActorRef.dispose()` then the Actor will stop processing messages (after the currently running message if one is being processed).  
