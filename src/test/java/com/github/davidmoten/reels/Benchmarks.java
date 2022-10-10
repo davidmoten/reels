@@ -40,7 +40,7 @@ public class Benchmarks {
                 }) //
                 .deadLetterActorFactory(ActorDoNothing::create) //
                 .build();
-        askActor = context.<String>matchAny(m -> m.senderRaw().tell("boo")) //
+        askActor = context.<String>matchAny(m -> m.sender().tell("boo")) //
                 .build();
     }
 
@@ -129,7 +129,7 @@ public class Benchmarks {
     private static ActorRef<Integer> createSequentialActor(Context c, CountDownLatch latch, int finished, int max) {
         return c.match(Integer.class, m -> {
             int x = m.content();
-            ActorRef<Object> sender = m.senderRaw();
+            ActorRef<Object> sender = m.sender();
             if (sender == null && x == finished) {
                 latch.countDown();
             } else if (x == max) {
@@ -184,7 +184,7 @@ public class Benchmarks {
                     for (int i = 0; i < runners; i++) {
                         ActorRef<int[]> actor = m.context() //
                                 .<int[]>matchAny(m2 -> {
-                                    m2.senderRaw().tell(m2.content(), m2.self());
+                                    m2.sender().tell(m2.content(), m2.self());
                                 }) //
                                 .scheduler(scheduler) //
                                 .build();

@@ -25,7 +25,7 @@ public class MassiveTellToSingleActorReels {
                     // start
                     for (int i = 0; i < n; i++) {
                         ActorRef<Integer> runner = m.context().match(Integer.class, m2 -> {
-                            m2.<Integer>senderRaw().tell(m2.content());
+                            m2.<Integer>sender().tell(m2.content());
                         }).build();
                         runner.tell(i, m.self());
                     }

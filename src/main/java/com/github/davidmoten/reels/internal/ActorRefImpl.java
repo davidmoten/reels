@@ -145,7 +145,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     @Override
     public void tell(T message) {
-        tell(message, null);
+        tell(message, ActorRef.none());
     }
 
     @Override
@@ -168,7 +168,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     }
 
     private void handleTerminationMessage(Message<T> message) {
-        children.remove(message.senderRaw().name());
+        children.remove(message.sender().name());
         if (children.isEmpty()) {
             runOnStop(message);
         }

@@ -1,7 +1,5 @@
 package com.github.davidmoten.reels;
 
-import java.util.Optional;
-
 public final class Message<T> {
 
     private final T content;
@@ -34,19 +32,7 @@ public final class Message<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <S> Optional<ActorRef<S>> sender() {
-        return Optional.ofNullable((ActorRef<S>) sender);
-    }
-
-    /**
-     * Returns the sender {@link ActorRef}. May be null. This method exists to
-     * reduce allocation pressue from Optional creation.
-     * 
-     * @param <S> message type
-     * @return actor reference
-     */
-    @SuppressWarnings("unchecked")
-    public <S> ActorRef<S> senderRaw() {
+    public <S> ActorRef<S> sender() {
         return (ActorRef<S>) sender;
     }
 

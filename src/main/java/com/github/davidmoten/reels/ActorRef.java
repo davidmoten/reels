@@ -3,6 +3,8 @@ package com.github.davidmoten.reels;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
+import com.github.davidmoten.reels.internal.ActorRefNone;
+
 /**
  * Calling {@link #dispose()} will clear the message queue for the Actor and
  * prevent more work being queued for the Actor.
@@ -99,4 +101,9 @@ public interface ActorRef<T> extends Disposable {
         return (ActorRef<S>) this;
     }
 
+    @SuppressWarnings("unchecked")
+    static <S> ActorRef<S> none() {
+        return (ActorRef<S>) ActorRefNone.NONE;
+    }
+    
 }
