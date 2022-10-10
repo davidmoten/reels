@@ -17,10 +17,8 @@ public final class FastRandomInt {
     private static final long addend = 0xBL;
     private static final long mask = (1L << 48) - 1;
 
-    // IllegalArgumentException messages
+    // IllegalArgumentException message
     static final String BadBound = "bound must be positive";
-    static final String BadRange = "bound must be greater than origin";
-    static final String BadSize = "size must be non-negative";
 
     /**
      * Creates a new random number generator. This constructor sets the seed of the
