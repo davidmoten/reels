@@ -27,7 +27,7 @@ public interface ActorRef<T> extends Disposable {
      * @param sender  message sender (for replies as an example)
      */
     void tell(T message, ActorRef<?> sender);
-    
+
     /**
      * Creates a temporary actor that sends the message to {@code this} and the
      * returned {@link CompletableFuture} waits on a response. The arrival of the
@@ -69,16 +69,31 @@ public interface ActorRef<T> extends Disposable {
     Scheduler scheduler();
 
     /**
-     * Nullable.
+     * Returns the parent of this actor.
      * 
      * @return parent actor reference
      */
     <S> ActorRef<S> parent();
 
+    /**
+     * Returns the child of this actor with the given name. Returns null if not
+     * found.
+     * 
+     * @param <S>  message type of child actor
+     * @param name name of actor
+     * @return the child of this actor with the given name. Returns null if not
+     *         found
+     */
     <S> ActorRef<S> child(String name);
-    
+
+    /**
+     * Returns the children of this.
+     * 
+     * @param <S> children type (use Object) if unknown
+     * @return children of this
+     */
     <S> Collection<ActorRef<S>> children();
-    
+
     /**
      * Returns type-safe recasting of ActorRef message type.
      * 
@@ -101,9 +116,16 @@ public interface ActorRef<T> extends Disposable {
         return (ActorRef<S>) this;
     }
 
+    /**
+     * Returns a singleton ActorRef that does nothing (with whatever generic type
+     * for your convenience).
+     * 
+     * @param <S> message type of ActorRef
+     * @return do nothing ActorRef
+     */
     @SuppressWarnings("unchecked")
     static <S> ActorRef<S> none() {
         return (ActorRef<S>) ActorRefNone.NONE;
     }
-    
+
 }
