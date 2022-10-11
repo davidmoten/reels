@@ -39,7 +39,7 @@ public final class ActorRefNone implements ActorRef<Object> {
 
     @Override
     public <S> CompletableFuture<S> ask(Object message) {
-        CompletableFuture<S> f = new CompletableFuture<S>() {};
+        CompletableFuture<S> f = new CompletableFuture<S>();
         f.completeExceptionally(new DisposedException("recipient actor disposed"));
         return f;
     }
