@@ -414,15 +414,16 @@ Benchmarks.sequential                                ss   10       2.670 ±   0.
 
 Post ask perf work:
 
-Benchmark                                          Mode  Cnt       Score     Error  Units
-Benchmarks.actorCreateAndStop                     thrpt   10  243341.131 ± 406.593  ops/s
-Benchmarks.ask                                    thrpt   10       7.853 ±   0.152  ops/s
-Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.722 ±   0.057  ops/s
-Benchmarks.contendedConcurrencyForkJoin           thrpt   10       5.575 ±   0.071  ops/s
-Benchmarks.contendedConcurrencyImmediate          thrpt   10      11.057 ±   0.024  ops/s
-Benchmarks.groupRandomMessagesComputationSticky   thrpt   10       1.869 ±   0.053  ops/s
-Benchmarks.groupRandomMessagesForkJoin            thrpt   10      16.546 ±   0.167  ops/s
-Benchmarks.groupRandomMessagesImmediate           thrpt   10      30.214 ±   0.773  ops/s
-Benchmarks.groupRandomMessagesIo                  thrpt   10       0.854 ±   0.024  ops/s
-BenchmarksAkka.ask                                thrpt   10       6.714 ±   0.263  ops/s
+Benchmark                                          Mode  Cnt       Score      Error  Units
+Benchmarks.actorCreateAndStop                     thrpt   10  238590.356 ± 1991.768  ops/s
+Benchmarks.ask                                    thrpt   10       7.841 ±    0.051  ops/s
+Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.666 ±    0.048  ops/s
+Benchmarks.contendedConcurrencyForkJoin           thrpt   10       5.880 ±    0.195  ops/s
+Benchmarks.contendedConcurrencyImmediate          thrpt   10       9.955 ±    0.101  ops/s
+Benchmarks.groupRandomMessagesComputationSticky   thrpt   10       1.925 ±    0.083  ops/s
+Benchmarks.groupRandomMessagesForkJoin            thrpt   10      17.173 ±    0.252  ops/s
+Benchmarks.groupRandomMessagesImmediate           thrpt   10      31.589 ±    0.553  ops/s
+Benchmarks.groupRandomMessagesIo                  thrpt   10       0.848 ±    0.020  ops/s
+BenchmarksAkka.ask                                thrpt   10       6.618 ±    0.354  ops/s
+Benchmarks.sequential                                ss   10       2.754 ±    0.476   s/op
 ```
