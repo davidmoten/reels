@@ -12,7 +12,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class SplitResponsibilityScheduledExecutorService implements ScheduledExecutorService {
+public final class SplitResponsibilityScheduledExecutorService implements ScheduledExecutorService {
 
     private final ExecutorService executor;
     private final ScheduledExecutorService scheduled;

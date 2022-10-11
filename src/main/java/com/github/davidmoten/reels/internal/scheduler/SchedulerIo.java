@@ -45,7 +45,7 @@ public final class SchedulerIo extends AbstractCanScheduleDisposable implements 
      * The name of the system property for setting the keep-alive time (in seconds)
      * for this Scheduler workers.
      */
-    private static final String KEY_KEEP_ALIVE_TIME = "reels.io-keep-alive-time.seconds";
+    private static final String KEY_KEEP_ALIVE_TIME = "reels.io.keep.alive.time.seconds";
     public static final long KEEP_ALIVE_TIME_DEFAULT = 60;
     private static final TimeUnit KEEP_ALIVE_UNIT = TimeUnit.SECONDS;
     private static final long KEEP_ALIVE_TIME = Long.getLong(KEY_KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_DEFAULT);
