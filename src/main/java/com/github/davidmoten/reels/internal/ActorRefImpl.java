@@ -363,9 +363,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                     runPreStart(message);
                 }
                 try {
-//                info("calling onMessage");
                     actor.onMessage(message);
-//                info("called onMessage");
                 } catch (Throwable e) {
                     // if the line below throws then the actor will no longer process messages
                     // (because wip will be != 0)
