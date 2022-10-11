@@ -130,7 +130,7 @@ public class Benchmarks {
         return c.match(Integer.class, m -> {
             int x = m.content();
             ActorRef<Object> sender = m.sender();
-            if (sender == null && x == finished) {
+            if (sender == ActorRef.none() && x == finished) {
                 latch.countDown();
             } else if (x == max) {
                 sender.tell(finished);
@@ -183,9 +183,7 @@ public class Benchmarks {
                 .<Object, Start>match(Start.class, m -> {
                     for (int i = 0; i < runners; i++) {
                         ActorRef<int[]> actor = m.context() //
-                                .<int[]>matchAny(m2 -> {
-                                    m2.sender().tell(m2.content(), m2.self());
-                                }) //
+                                .<int[]>matchAny(m2 -> m2.sender().tell(m2.content(), m2.self())) //
                                 .scheduler(scheduler) //
                                 .build();
                         for (int j = 0; j < messagesPerRunner; j++) {
@@ -218,7 +216,7 @@ public class Benchmarks {
             b.setup();
             for (;;) {
                 long t = System.currentTimeMillis();
-                b.contendedConcurrencyImmediate();
+                b.sequential();
                 System.out.println((System.currentTimeMillis() - t) + "ms");
             }
 
