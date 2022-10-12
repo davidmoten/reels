@@ -19,11 +19,11 @@ Errored --> Paused
 Restart --> Disposing
 
 Active: processes\nmessages
-Stopping: stop has been called\nchildren will be stopped\nfirst
-Stopped: onStop method run,\nparent advised,\nmessages queued\nnow will be processed\nbut after are sent to\nDeadLetter actor
+Stopping: stop has been called\nchildren will be stopped\nfirst, won't transition\nto Stopped till all children\nterminated
+Stopped: run onStop,\nparent advised,\nremove this from parent,\nmessages queued\nnow will be processed\nbut after are sent to\nDeadLetter actor
 Paused: messages\nbuffered
 Errored: handled by\nsupervisor
-Starting: preStart method run
-Disposing: clear queue
+Starting: run preStart
+Disposing: clear queue,\ndispose children
 
 @enduml

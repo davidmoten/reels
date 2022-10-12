@@ -50,11 +50,13 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     protected final AtomicInteger state = new AtomicInteger(); // ACTIVE
     private Message<T> lastMessage; // used for retrying
     private boolean retry;
+    private boolean ignoreNonSystemMessages;
 
+    // TODO use enum
     private static final int ACTIVE = 0;
     private static final int STOPPING = 1;
     private static final int STOPPED = 2;
-    private static final int DISPOSED = 3;
+    private static final int DISPOSING = 3;
     protected static final int RESTART = 4;
     private static final int PAUSED = 5;
 
@@ -87,7 +89,9 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     }
 
     private void addChild(ActorRef<?> actor) {
-        if (state.get() == DISPOSED) {
+        int s = state.get();
+        // TODO use enum method here
+        if (s == DISPOSING || s == STOPPING || s == STOPPED) {
             actor.dispose();
         } else {
             children.put(actor.name(), actor);
@@ -116,16 +120,19 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     }
 
     public void disposeThis() {
+        if (debug) {
+            log("disposed");
+        }
         while (true) {
-            int s = state.get();
-            if (s == DISPOSED) {
+            final int s = state.get();
+            // TODO use enum
+            if (s == DISPOSING || s == STOPPING || s == STOPPED) {
                 break;
-            } else if (state.compareAndSet(s, DISPOSED)) {
-                worker.dispose();
-                queue.clear();
+            } else if (state.compareAndSet(s, DISPOSING)) {
                 if (parent != null) {
                     ((ActorRefImpl<?>) parent).removeChild(this);
                 }
+                stop();
                 break;
             }
         }
@@ -134,9 +141,8 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     private boolean setState(int value) {
         while (true) {
             int s = state.get();
-            if (s == DISPOSED) {
-                return false;
-            } else if (state.compareAndSet(s, value)) {
+            // TODO disallow bad transitions
+            if (state.compareAndSet(s, value)) {
                 return true;
             }
         }
@@ -149,7 +155,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     @Override
     public void tell(T message, ActorRef<?> sender) {
-        if (state.get() == DISPOSED) {
+        if (state.get() == DISPOSING) {
             return;
         }
         queue.offer(new Message<T>(message, this, sender));
@@ -174,7 +180,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     }
 
     private void sendToDeadLetter(Message<T> message) {
-        if (context.deadLetterActor() != this) {
+        if (context.deadLetterActor() != this && !ignoreNonSystemMessages) {
             context.deadLetterActor().tell(new DeadLetter(message), this);
         }
     }
@@ -204,7 +210,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     @Override
     public boolean isDisposed() {
-        return state.get() == DISPOSED;
+        return state.get() == DISPOSING;
     }
 
     @Override
@@ -331,10 +337,10 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                     s = state.get();
                 }
             }
-            if (s == DISPOSED) {
-                queue.clear();
-                return;
-            } else if (s == STOPPING) {
+            if (s == DISPOSING) {
+                ignoreNonSystemMessages = true;
+            }
+            if (s == STOPPING) {
                 if (message.content() == Constants.TERMINATED) {
                     handleTerminationMessage(message);
                 } else {
@@ -358,7 +364,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                 }
             } else if (message.content() == Constants.TERMINATED) {
                 handleTerminationMessage(message);
-            } else {
+            } else if (!ignoreNonSystemMessages) {
                 if (!preStartHasBeenRun) {
                     runPreStart(message);
                 }
