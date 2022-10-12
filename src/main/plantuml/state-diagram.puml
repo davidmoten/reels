@@ -19,7 +19,7 @@ Errored --> Paused
 Restart --> Disposing
 
 Active: processes\nmessages
-Stopping: stop children,\nprocess already\nbuffered messages
+Stopping: stop children,\nprocess buffered\nmessages
 Stopped: run onStop,\nparent advised,\nremove this from\nparent, further\nmessages sent\nto dead letters
 Paused: messages\nbuffered
 Errored: handled by\nsupervisor

@@ -50,7 +50,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     protected final AtomicInteger state = new AtomicInteger(); // ACTIVE
     private Message<T> lastMessage; // used for retrying
     private boolean retry;
-    private boolean ignoreNonSystemMessages;
+    private boolean systemMessagesOnly;
 
     // TODO use enum
     private static final int ACTIVE = 0;
@@ -125,7 +125,6 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
         }
         while (true) {
             final int s = state.get();
-            // TODO use enum
             if (s == DISPOSING || s == STOPPING || s == STOPPED) {
                 break;
             } else if (state.compareAndSet(s, DISPOSING)) {
@@ -182,7 +181,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     }
 
     private void sendToDeadLetter(Message<T> message) {
-        if (context.deadLetterActor() != this && !ignoreNonSystemMessages) {
+        if (context.deadLetterActor() != this && !systemMessagesOnly) {
             context.deadLetterActor().tell(new DeadLetter(message), this);
         }
     }
@@ -340,7 +339,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                 }
             }
             if (s == DISPOSING) {
-                ignoreNonSystemMessages = true;
+                systemMessagesOnly = true;
             }
             if (s == STOPPING) {
                 if (message.content() == Constants.TERMINATED) {
@@ -366,7 +365,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                 }
             } else if (message.content() == Constants.TERMINATED) {
                 handleTerminationMessage(message);
-            } else if (!ignoreNonSystemMessages) {
+            } else if (!systemMessagesOnly) {
                 if (!preStartHasBeenRun) {
                     runPreStart(message);
                 }
