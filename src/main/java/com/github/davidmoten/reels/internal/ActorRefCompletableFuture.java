@@ -12,7 +12,7 @@ public class ActorRefCompletableFuture<T> extends CompletableFuture<T> implement
     
     @Override
     public void dispose() {
-        
+        // do nothing
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ActorRefCompletableFuture<T> extends CompletableFuture<T> implement
 
     @Override
     public void stop() {
-        
+        // do nothing
     }
 
     @Override
