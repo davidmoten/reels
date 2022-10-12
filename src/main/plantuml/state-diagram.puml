@@ -3,7 +3,7 @@ hide empty description
 [*] --> Starting 
 Starting --> Active
 Active --> Stopping
-Stopping -> Stopped
+Stopping -> Stopped: allChildrenStopped
 Active --> Disposing
 Disposing --> Stopping
 Paused --> Restart
@@ -19,11 +19,11 @@ Errored --> Paused
 Restart --> Disposing
 
 Active: processes\nmessages
-Stopping: stop has been called\nchildren will be stopped\nfirst, won't transition\nto Stopped till all children\nterminated
-Stopped: run onStop,\nparent advised,\nremove this from parent,\nmessages queued\nnow will be processed\nbut after are sent to\nDeadLetter actor
+Stopping: stop children,\nprocess already\nbuffered messages
+Stopped: run onStop,\nparent advised,\nremove this from\nparent, further\nmessages sent\nto dead letters
 Paused: messages\nbuffered
 Errored: handled by\nsupervisor
 Starting: run preStart
-Disposing: clear queue,\ndispose children
+Disposing: clear mailbox,\ndispose children
 
 @enduml
