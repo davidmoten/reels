@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -148,8 +147,9 @@ public final class Context implements Disposable {
         return scheduler;
     }
 
-    public void shutdownNow() throws InterruptedException, TimeoutException {
+    public CompletableFuture<Void> shutdownNow() {
         dispose();
+        return root.stopFuture();
     }
 
     public CompletableFuture<Void> shutdownGracefully() {
