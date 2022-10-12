@@ -141,7 +141,9 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     private boolean setState(int value) {
         while (true) {
             int s = state.get();
-            // TODO disallow bad transitions
+            if (s == STOPPED || s == STOPPING && value == DISPOSING) {
+                return false;
+            }
             if (state.compareAndSet(s, value)) {
                 return true;
             }
