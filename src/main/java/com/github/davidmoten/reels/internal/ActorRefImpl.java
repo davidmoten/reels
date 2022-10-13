@@ -33,7 +33,7 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, Disposable {
 
-    public static final boolean debug = false;
+    public static final boolean debug = true;
     private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
     private final String name;
