@@ -10,9 +10,9 @@ import com.github.davidmoten.reels.DisposedException;
 import com.github.davidmoten.reels.Scheduler;
 
 public final class ActorRefNone implements ActorRef<Object> {
-    
-    public static final ActorRefNone NONE = new ActorRefNone() ;
-    
+
+    public static final ActorRefNone NONE = new ActorRefNone();
+
     private ActorRefNone() {
         // prevent instantiation
     }
@@ -29,12 +29,12 @@ public final class ActorRefNone implements ActorRef<Object> {
 
     @Override
     public void tell(Object message) {
-        // do nothing        
+        // do nothing
     }
 
     @Override
     public void tell(Object message, ActorRef<?> sender) {
-        // do nothing        
+        // do nothing
     }
 
     @Override
@@ -47,6 +47,11 @@ public final class ActorRefNone implements ActorRef<Object> {
     @Override
     public void stop() {
         // do nothing
+    }
+
+    @Override
+    public void stopNow() {
+        dispose();
     }
 
     @Override

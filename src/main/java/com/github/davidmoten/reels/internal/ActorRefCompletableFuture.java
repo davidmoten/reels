@@ -70,4 +70,9 @@ public class ActorRefCompletableFuture<T> extends CompletableFuture<T> implement
         return Collections.emptyList();
     }
 
+    @Override
+    public void stopNow() {
+        dispose();
+    }
+
 }

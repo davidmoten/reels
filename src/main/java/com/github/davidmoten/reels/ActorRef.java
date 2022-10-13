@@ -41,11 +41,18 @@ public interface ActorRef<T> extends Disposable {
     <S> CompletableFuture<S> ask(T message);
 
     /**
-     * Sends a Poision Pill message to the actor which will be disposed when that
+     * Sends a Poison Pill message to the actor which will be stopped when that
      * message is processed. The Poison Pill message does not jump the queue past
      * other already waiting messages on the Actor.
      */
     void stop();
+
+    /**
+     * Sends a Poison Pill message to the actor which will be stopped when that
+     * message is processed. All messages before it in the queue are removed from
+     * the queue and ignored so the Poison Pill message effectively jumps the queue.
+     */
+    void stopNow();
 
     /**
      * Returns the current actor system context.

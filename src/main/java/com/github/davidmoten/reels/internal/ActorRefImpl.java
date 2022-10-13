@@ -172,6 +172,11 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     public void stop() {
         tell((T) PoisonPill.INSTANCE, parent);
     }
+    
+    @Override
+    public void stopNow() {
+        dispose();
+    }
 
     private void handleTerminationMessage(Message<T> message) {
         children.remove(message.sender().name());
