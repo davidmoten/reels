@@ -19,7 +19,7 @@ import com.github.davidmoten.reels.internal.RootActorRefImpl;
 /**
  * Creates actors, disposes actors and looks actors up by name.
  */
-public final class Context implements Disposable {
+public final class Context {
 
 //    private static final Logger log = LoggerFactory.getLogger(Context.class);
 
@@ -119,24 +119,19 @@ public final class Context implements Disposable {
         return Optional.ofNullable((ActorRef<T>) root.child(name));
     }
 
-    @Override
-    public void dispose() {
+    public CompletableFuture<Void> shutdownNow() {
         // cas loop to ensure dispose only gets called once
         while (true) {
             int s = state.get();
             if (s == STATE_DISPOSED) {
-                return;
+                break;
             } else if (state.compareAndSet(s, STATE_DISPOSED)) {
                 break;
             }
         }
         root.dispose();
         root.stopFuture().completeExceptionally(new DisposedException("dispose has been called"));
-    }
-
-    @Override
-    public boolean isDisposed() {
-        return state.get() == STATE_DISPOSED;
+        return root.stopFuture();
     }
 
     public Supervisor supervisor() {
@@ -145,11 +140,6 @@ public final class Context implements Disposable {
 
     public Scheduler scheduler() {
         return scheduler;
-    }
-
-    public CompletableFuture<Void> shutdownNow() {
-        dispose();
-        return root.stopFuture();
     }
 
     public CompletableFuture<Void> shutdownGracefully() {

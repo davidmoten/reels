@@ -184,7 +184,7 @@ public class ActorTest {
         assertFalse(called.get());
         a.stop();
         assertTrue(called.get());
-        c.dispose();
+        c.shutdownNow();
     }
 
     @Test
@@ -537,17 +537,15 @@ public class ActorTest {
     @Test
     public void testDisposeTwice() {
         Context context = Context.create();
-        assertFalse(context.isDisposed());
-        context.dispose();
-        assertTrue(context.isDisposed());
-        context.dispose();
-        assertTrue(context.isDisposed());
+        CompletableFuture<Void> a = context.shutdownNow();
+        CompletableFuture<Void> b = context.shutdownNow();
+        assertTrue(a == b);
     }
 
     @Test(expected = ExecutionException.class)
     public void testShutdownGracefullyAfterDispose() throws InterruptedException, ExecutionException, TimeoutException {
         Context context = Context.create();
-        context.dispose();
+        context.shutdownNow();
         context.shutdownGracefully().get(1, TimeUnit.SECONDS);
     }
 
@@ -615,7 +613,7 @@ public class ActorTest {
             a.tell(0);
             assertTrue(latch.await(10, TimeUnit.SECONDS));
         } finally {
-            c.dispose();
+            c.shutdownNow();
         }
     }
 
@@ -642,7 +640,7 @@ public class ActorTest {
             c.lookupActor("a").get().tell(0);
             latch.await(60, TimeUnit.SECONDS);
         } finally {
-            c.dispose();
+            c.shutdownNow();
         }
     }
 
@@ -682,7 +680,7 @@ public class ActorTest {
         ActorRef<String> actor = context.<String>matchAny(m -> m.sender().tell("boo")) //
                 .build();
         assertEquals("boo", actor.ask("hi").get(1000, TimeUnit.MILLISECONDS));
-        context.dispose();
+        context.shutdownNow();
     }
 
     @Test
