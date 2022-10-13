@@ -118,7 +118,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     }
 
     public void disposeThis() {
-        
+
         while (true) {
             final int s = state.get();
             if (s == DISPOSING || s == STOPPING || s == STOPPED) {
@@ -372,7 +372,9 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                 }
             } else if (message.content() == Constants.TERMINATED) {
                 handleTerminationMessage(message);
-            } else if (!systemMessagesOnly) {
+            } else if (systemMessagesOnly) {
+                sendToDeadLetter(message);
+            } else {
                 if (!preStartHasBeenRun) {
                     runPreStart(message);
                 }
@@ -385,7 +387,6 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                 }
             }
         }
-
     }
 
     private void runPreStart(Message<T> message) {
