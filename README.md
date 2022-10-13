@@ -107,7 +107,7 @@ context
     // specify a series of matches to apply to incoming message content
     .<Number>matchEquals(1, m -> {
         log.info("{}: equal matched, sender = {}", m.self(), m.sender());
-        m.sender().ifPresent(x -> x.tell(9999));
+        m.sender().<Number>tell(9999));
     }) 
     .match(Integer.class, m -> log.info("{}: received integer {}", m.self(), m.content())) 
     .match(Double.class, m -> log.info("{}: received double {}", m.self(), m.content())) 
@@ -160,7 +160,7 @@ ActorRef<Integer> actor = context.actorFactory(() -> new MyActor()).build();
 ```
 
 ## Send a message to an Actor
-This sends an anonymous message (the Actor won't have knowledge of the sender actor for instance) to an actor:
+This sends an anonymous message (the Actor wil be supplied ActorRef.none() as the sender) to an actor:
 
 ```java
 ActorRef<Thing> actor = ...
@@ -182,8 +182,7 @@ Here's an example of `ask` where an actor does some calculation and returns an a
 ```java
 ActorRef<Integer> square = 
     context
-      .matchAny(m -> 
-          m.sender().ifPresent(sender->sender.<Integer>tell(m.content() * m.content()))
+      .matchAny(m -> m.sender().<Integer>tell(m.content() * m.content())
       .build();
 ```
 
