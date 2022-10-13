@@ -19,7 +19,8 @@ Why do we need another Actor library on the JVM? I think there's space for an in
 
 TODO 
 * Lifecycle monitoring (DeathWatch) support
-* Add Actor.preRestart, Actor.postRestart methods? Jury still out on this. 
+* Add Actor.preRestart, Actor.postRestart methods? Jury still out on this. NO
+* Akka has a kill method that forces onMessage to throw an ActorKilledException. Not keen on this.
 
 ## How to build
 ```bash
