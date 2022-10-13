@@ -359,7 +359,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                     boolean isEmpty = true;
                     ActorRef<Object> ch;
                     for (ActorRef<?> child : children.values()) {
-                        ch = ((ActorRef<Object>) child);
+                        ch = (ActorRef<Object>) child;
                         if (systemMessagesOnly) {
                             ch.stopNow();
                         } else {
