@@ -199,9 +199,9 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
             ActorRef<?> p = parent;
             if (p == null) {
                 // is root actor (which is the only actor without a parent)
-                queue.offer(new Message<T>((T) Constants.TERMINATED, this, this));
+                queue.offer(new Message<T>((T) Terminated.INSTANCE, this, this));
             } else {
-                p.<Object>recast().tell(Constants.TERMINATED, this);
+                p.<Object>recast().tell(Terminated.INSTANCE, this);
             }
         }
     }
@@ -343,7 +343,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                 systemMessagesOnly = true;
             }
             if (s == STOPPING) {
-                if (message.content() == Constants.TERMINATED) {
+                if (message.content() == Terminated.INSTANCE) {
                     handleTerminationMessage(message);
                 } else {
                     sendToDeadLetter(message);
@@ -370,7 +370,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                         runOnStop(message);
                     }
                 }
-            } else if (message.content() == Constants.TERMINATED) {
+            } else if (message.content() == Terminated.INSTANCE) {
                 handleTerminationMessage(message);
             } else if (systemMessagesOnly) {
                 sendToDeadLetter(message);

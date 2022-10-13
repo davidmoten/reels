@@ -1,14 +1,14 @@
 package com.github.davidmoten.reels.internal;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
+
+import com.github.davidmoten.junit.Asserts;
 
 public class ConstantsTest {
 
     @Test
-    public void test() {
-        assertEquals("TERMINATED", Constants.TERMINATED.toString());
+    public void isUtilityClass() {
+        Asserts.assertIsUtilityClass(Constants.class);
     }
 
 }
