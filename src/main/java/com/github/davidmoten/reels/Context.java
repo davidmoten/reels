@@ -118,6 +118,11 @@ public final class Context {
     public <T> Optional<ActorRef<T>> lookupActor(String name) {
         return Optional.ofNullable((ActorRef<T>) root.child(name));
     }
+    
+    public CompletableFuture<Void> shutdownGracefully() {
+        state.compareAndSet(STATE_ACTIVE, STATE_STOPPING);
+        return root.stopFuture();
+    }
 
     public CompletableFuture<Void> shutdownNow() {
         // cas loop to ensure dispose only gets called once
@@ -126,11 +131,10 @@ public final class Context {
             if (s == STATE_DISPOSED) {
                 break;
             } else if (state.compareAndSet(s, STATE_DISPOSED)) {
+                root.dispose();
                 break;
             }
         }
-        root.dispose();
-        root.stopFuture().completeExceptionally(new DisposedException("dispose has been called"));
         return root.stopFuture();
     }
 
@@ -140,11 +144,6 @@ public final class Context {
 
     public Scheduler scheduler() {
         return scheduler;
-    }
-
-    public CompletableFuture<Void> shutdownGracefully() {
-        state.compareAndSet(STATE_ACTIVE, STATE_STOPPING);
-        return root.stopFuture();
     }
 
     public ActorRef<DeadLetter> deadLetterActor() {
