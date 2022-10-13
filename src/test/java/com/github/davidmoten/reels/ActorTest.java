@@ -542,11 +542,12 @@ public class ActorTest {
         assertTrue(a == b);
     }
 
-    @Test(expected = ExecutionException.class)
+    @Test
     public void testShutdownGracefullyAfterDispose() throws InterruptedException, ExecutionException, TimeoutException {
         Context context = Context.create();
         context.shutdownNow();
-        context.shutdownGracefully().get(1, TimeUnit.SECONDS);
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
+        context.shutdownGracefully().get(5, TimeUnit.SECONDS);
     }
 
     private enum Start {

@@ -192,6 +192,9 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     @SuppressWarnings("unchecked")
     private void runOnStop(Message<T> message) {
         if (setState(STOPPED)) {
+            if (debug) {
+                log.debug(this + ": running onStop with message=" + message);
+            }
             try {
                 actor.onStop(this);
             } catch (Throwable e) {
@@ -330,7 +333,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
         int s;
         while ((s = state.get()) != PAUSED && (message = poll()) != null) {
             if (debug) {
-                log("message polled=" + message.content() + ", state=" + s);
+                log("message polled=" + message.content() + " from " + message.sender() + ", state=" + s);
             }
             if (s == RESTART) {
                 actor.onStop(this);

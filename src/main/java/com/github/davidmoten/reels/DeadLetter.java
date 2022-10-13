@@ -12,4 +12,8 @@ public final class DeadLetter {
         return message;
     }
 
+    @Override
+    public String toString() {
+        return "DeadLetter [message=" + message + "]";
+    }
 }

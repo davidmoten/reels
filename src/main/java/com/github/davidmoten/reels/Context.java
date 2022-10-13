@@ -121,6 +121,7 @@ public final class Context {
     
     public CompletableFuture<Void> shutdownGracefully() {
         state.compareAndSet(STATE_ACTIVE, STATE_STOPPING);
+        root.stop();
         return root.stopFuture();
     }
 
@@ -131,7 +132,7 @@ public final class Context {
             if (s == STATE_DISPOSED) {
                 break;
             } else if (state.compareAndSet(s, STATE_DISPOSED)) {
-                root.dispose();
+                root.stopNow();
                 break;
             }
         }
