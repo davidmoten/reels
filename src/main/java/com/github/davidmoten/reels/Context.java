@@ -65,6 +65,10 @@ public final class Context {
     public static Context create() {
         return new Context();
     }
+    
+    public static Context create(Scheduler scheduler) {
+        return builder().scheduler(scheduler).build();
+    }
 
     public static ContextBuilder builder() {
         return new ContextBuilder();

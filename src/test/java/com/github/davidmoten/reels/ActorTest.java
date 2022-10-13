@@ -30,8 +30,6 @@ import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationNonSti
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.scheduler.TestScheduler;
 
-import rx.schedulers.Schedulers;
-
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ActorTest {
 
@@ -179,10 +177,10 @@ public class ActorTest {
 
     @Test
     public void onStopCalled() {
-        Context c = Context.create();
+        Context c = Context.create(Scheduler.immediate());
         AtomicBoolean called = new AtomicBoolean();
         ActorRef<Object> a = c.matchAny(m -> {
-        }).onStop(m -> called.set(true)).scheduler(Scheduler.immediate()).build();
+        }).onStop(m -> called.set(true)).build();
         assertFalse(called.get());
         a.stop();
         assertTrue(called.get());
@@ -220,10 +218,9 @@ public class ActorTest {
 
     @Test
     public void testAddChildToDisposedParentWillDisposeChild() {
-        Context c = Context.create();
+        Context c = Context.create(Scheduler.immediate());
         ActorRef<Object> a = c //
                 .actorFactory(ActorDoNothing::create) //
-                .scheduler(Scheduler.immediate()) //
                 .build();
         a.stopNow();
         ActorRef<Object> b = c.matchAny(m -> {
@@ -405,7 +402,7 @@ public class ActorTest {
 
     @Test
     public void testLookup() {
-        Context c = Context.builder().scheduler(Scheduler.immediate()).build();
+        Context c = Context.create(Scheduler.immediate());
         ActorRef<Integer> a = c //
                 .match(Integer.class, m -> {
                     throw new RuntimeException("boo");
