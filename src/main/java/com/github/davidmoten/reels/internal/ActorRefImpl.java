@@ -33,7 +33,7 @@ import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, Disposable {
 
-    public static final boolean debug = true;
+    public static final boolean debug = false;
     private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
 
     private final String name;
@@ -118,16 +118,14 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     }
 
     public void disposeThis() {
-        if (debug) {
-            log("disposed");
-        }
+        
         while (true) {
             final int s = state.get();
             if (s == DISPOSING || s == STOPPING || s == STOPPED) {
                 break;
             } else if (state.compareAndSet(s, DISPOSING)) {
-                if (parent != null) {
-                    ((ActorRefImpl<?>) parent).removeChild(this);
+                if (debug) {
+                    log("removing from parent and calling stop");
                 }
                 stop();
                 break;
@@ -154,9 +152,6 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     @Override
     public void tell(T message, ActorRef<?> sender) {
-        if (state.get() == DISPOSING) {
-            return;
-        }
         queue.offer(new Message<T>(message, this, sender));
         scheduleDrain();
     }
@@ -217,7 +212,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     @Override
     public boolean isDisposed() {
-        return state.get() == DISPOSING;
+        return state.get() == STOPPED;
     }
 
     @Override

@@ -30,6 +30,8 @@ import com.github.davidmoten.reels.internal.scheduler.SchedulerComputationNonSti
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.scheduler.TestScheduler;
 
+import rx.schedulers.Schedulers;
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ActorTest {
 
@@ -219,8 +221,11 @@ public class ActorTest {
     @Test
     public void testAddChildToDisposedParentWillDisposeChild() {
         Context c = Context.create();
-        ActorRef<Object> a = c.createActor(ActorDoNothing::create);
-        a.dispose();
+        ActorRef<Object> a = c //
+                .actorFactory(ActorDoNothing::create) //
+                .scheduler(Scheduler.immediate()) //
+                .build();
+        a.stopNow();
         ActorRef<Object> b = c.matchAny(m -> {
         }).parent(a).build();
         assertTrue(a == b.parent());
@@ -400,7 +405,7 @@ public class ActorTest {
 
     @Test
     public void testLookup() {
-        Context c = Context.create();
+        Context c = Context.builder().scheduler(Scheduler.immediate()).build();
         ActorRef<Integer> a = c //
                 .match(Integer.class, m -> {
                     throw new RuntimeException("boo");
@@ -408,7 +413,7 @@ public class ActorTest {
                 .name("thing") //
                 .build();
         assertTrue(a == c.<Integer>lookupActor("thing").get());
-        a.dispose();
+        a.stopNow();
         assertFalse(c.lookupActor("thing").isPresent());
     }
 
@@ -505,7 +510,9 @@ public class ActorTest {
                 }
                 count.incrementAndGet();
             }
-        }).build();
+        }) //
+                .scheduler(Scheduler.immediate()) //
+                .build();
         actor.tell(1);
         actor.tell(2);
         Thread.sleep(100);
