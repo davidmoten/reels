@@ -4,19 +4,19 @@ hide empty description
 Starting --> Active
 Active --> Stopping
 Stopping -> Stopped: allChildrenStopped
-Active --> Disposing
-Disposing --> Stopping
+Active --> StoppingNow
+StoppingNow --> Stopping
 Paused --> Restart
 Paused --> Active
 Restart --> Starting
-Paused --> Disposing
+Paused --> StoppingNow
 Stopped --> [*]
 Active --> Errored
 Errored --> Active
-Errored --> Disposing
+Errored --> StoppingNow
 Errored --> Restart
 Errored --> Paused
-Restart --> Disposing
+Restart --> StoppingNow
 
 Active: processes\nmessages
 Stopping: stop children,\nprocess buffered\nmessages
@@ -24,6 +24,6 @@ Stopped: run onStop,\nparent advised,\nremove this from\nparent, further\nmessag
 Paused: messages\nbuffered
 Errored: handled by\nsupervisor
 Starting: run preStart
-Disposing: clear mailbox,\ndispose children
+StoppingNow: ignore non-system\nmessages
 
 @enduml

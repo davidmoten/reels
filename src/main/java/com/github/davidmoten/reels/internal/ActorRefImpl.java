@@ -170,7 +170,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     public void stop() {
         tell((T) PoisonPill.INSTANCE, parent);
     }
-    
+
     @Override
     public void stopNow() {
         dispose();
@@ -357,8 +357,14 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
             } else if (message.content() == PoisonPill.INSTANCE) {
                 if (setState(STOPPING)) {
                     boolean isEmpty = true;
+                    ActorRef<Object> ch;
                     for (ActorRef<?> child : children.values()) {
-                        ((ActorRef<Object>) child).tell(PoisonPill.INSTANCE, this);
+                        ch = ((ActorRef<Object>) child);
+                        if (systemMessagesOnly) {
+                            ch.stopNow();
+                        } else {
+                            ch.stop();
+                        }
                         isEmpty = false;
                     }
                     if (isEmpty) {
