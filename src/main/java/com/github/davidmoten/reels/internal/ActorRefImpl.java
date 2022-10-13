@@ -52,7 +52,6 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     private boolean retry;
     private boolean systemMessagesOnly;
 
-    // TODO use enum
     private static final int ACTIVE = 0;
     private static final int STOPPING = 1;
     private static final int STOPPED = 2;
@@ -90,7 +89,6 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     private void addChild(ActorRef<?> actor) {
         int s = state.get();
-        // TODO use enum method here
         if (s == DISPOSING || s == STOPPING || s == STOPPED) {
             actor.dispose();
         } else {
