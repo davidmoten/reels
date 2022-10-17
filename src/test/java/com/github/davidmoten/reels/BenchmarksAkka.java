@@ -2,6 +2,7 @@ package com.github.davidmoten.reels;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +19,7 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.infra.Blackhole;
 
 import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.pattern.Patterns;
@@ -69,8 +71,14 @@ public class BenchmarksAkka {
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
-    public void contendedConcurrencyDefaultDispatcher() throws InterruptedException {
+    public void contendedConcurrency() throws InterruptedException {
         contendedConcurrency(Benchmarks.MESSAGES_PER_RUNNER);
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    public void groupRandomMessages() throws InterruptedException {
+        _groupRandomMessages();
     }
 
     private void contendedConcurrency(int messagesPerRunner) throws InterruptedException {
@@ -129,15 +137,63 @@ public class BenchmarksAkka {
         }
     }
 
+    private void _groupRandomMessages() throws InterruptedException {
+        int numMessages = 100000;
+        int numActors = 10;
+        Random random = new Random();
+
+        // this is how many messages are pinging around simultaneously at any one time
+        int starters = Runtime.getRuntime().availableProcessors();
+        CountDownLatch latch = new CountDownLatch(starters);
+        for (int i = 0; i < numActors; i++) {
+            system.actorOf(Props.create(GroupActor.class, numActors, numMessages, random, latch), Integer.toString(i));
+        }
+        ActorSelection a = system //
+                .actorSelection("/user/0");
+        for (int i = 0; i < starters; i++) {
+            a.tell(0, ActorRef.noSender());
+        }
+        assertTrue(latch.await(60, TimeUnit.SECONDS));
+    }
+
+    static final class GroupActor extends akka.actor.AbstractActor {
+
+        private final int numActors;
+        private final int numMessages;
+        private final CountDownLatch latch;
+        private final Random random;
+
+        public GroupActor(int numActors, int numMessages, Random random, CountDownLatch latch) {
+            this.numActors = numActors;
+            this.numMessages = numMessages;
+            this.random = random;
+            this.latch = latch;
+        }
+
+        @Override
+        public Receive createReceive() {
+            return receiveBuilder() //
+                    .matchAny(m -> {
+                        if ((Integer) m == numMessages) {
+                            latch.countDown();
+                        } else {
+                            context() //
+                                    .actorSelection("/user/" + Integer.toString(random.nextInt(numActors)))
+                                    .tell((Integer) m + 1, getSender());
+                        }
+                    }) //
+                    .build();
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         BenchmarksAkka b = new BenchmarksAkka();
         while (true) {
             long t = System.currentTimeMillis();
             b.setup();
-            b.contendedConcurrency(10000);
+            b.groupRandomMessages();
             b.tearDown();
             System.out.println(System.currentTimeMillis() - t + "ms");
         }
     }
-
 }
