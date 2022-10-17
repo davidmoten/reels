@@ -1,5 +1,8 @@
 package com.github.davidmoten.reels;
 
+import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -14,6 +17,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.infra.Blackhole;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.pattern.Patterns;
@@ -63,12 +67,77 @@ public class BenchmarksAkka {
         }
     }
 
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
+    public void contendedConcurrencyDefaultDispatcher() throws InterruptedException {
+        contendedConcurrency(Benchmarks.MESSAGES_PER_RUNNER);
+    }
+
+    private void contendedConcurrency(int messagesPerRunner) throws InterruptedException {
+        int runners = 100;
+        CountDownLatch latch = new CountDownLatch(1);
+        ActorRef root = system.actorOf(Props.create(Manager.class, runners, messagesPerRunner, latch));
+        root.tell(Start.VALUE, root);
+        assertTrue(latch.await(60, TimeUnit.SECONDS));
+    }
+
+    private enum Start {
+        VALUE;
+    }
+
+    static final class Manager extends akka.actor.AbstractActor {
+
+        private final int runners;
+        private final int messagesPerRunner;
+        private final CountDownLatch latch;
+        int count;
+
+        Manager(int runners, int messagesPerRunner, CountDownLatch latch) {
+            this.runners = runners;
+            this.messagesPerRunner = messagesPerRunner;
+            this.count = messagesPerRunner * runners;
+            this.latch = latch;
+        }
+
+        @Override
+        public Receive createReceive() {
+            return receiveBuilder() //
+                    .match(Start.class, m -> {
+                        for (int i = 0; i < runners; i++) {
+                            akka.actor.ActorRef actor = context().actorOf(Props.create(Runner.class));
+                            for (int j = 0; j < messagesPerRunner; j++) {
+                                actor.tell(new int[] { i, j }, self());
+                            }
+                        }
+                    }) //
+                    .match(int[].class, m -> {
+                        count--;
+                        if (count == 0) {
+                            latch.countDown();
+                        }
+                    }).build();
+        }
+    }
+
+    static final class Runner extends akka.actor.AbstractActor {
+
+        @Override
+        public Receive createReceive() {
+            return receiveBuilder() //
+                    .matchAny(m -> sender().tell(m, self())) //
+                    .build();
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         BenchmarksAkka b = new BenchmarksAkka();
-        b.setup();
-        while (true)
-            Await.result(Patterns.ask(b.askActor, "hi", 1000), Duration.create(10000, TimeUnit.MILLISECONDS));
-//        b.tearDown();
+        while (true) {
+            long t = System.currentTimeMillis();
+            b.setup();
+            b.contendedConcurrency(10000);
+            b.tearDown();
+            System.out.println(System.currentTimeMillis() - t + "ms");
+        }
     }
 
 }
