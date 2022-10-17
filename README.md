@@ -455,19 +455,19 @@ Benchmarks.groupRandomMessagesIo                  thrpt   10       0.839 ±   0.
 BenchmarksAkka.ask                                thrpt   10       6.546 ±   0.183  ops/s
 Benchmarks.sequential                                ss   10       2.515 ±   0.522   s/op
 
-Benchmark                                              Mode  Cnt       Score     Error  Units
-Benchmarks.actorCreateAndStop                         thrpt   10  254204.424 ± 271.271  ops/s
-Benchmarks.ask                                        thrpt   10       8.094 ±   0.018  ops/s
-Benchmarks.contendedConcurrencyComputationSticky      thrpt   10       0.712 ±   0.041  ops/s
-Benchmarks.contendedConcurrencyForkJoin               thrpt   10       5.641 ±   0.056  ops/s
-Benchmarks.contendedConcurrencyImmediate              thrpt   10       9.924 ±   0.039  ops/s
-Benchmarks.groupRandomMessagesComputationSticky       thrpt   10       2.000 ±   0.075  ops/s
-Benchmarks.groupRandomMessagesForkJoin                thrpt   10      17.259 ±   0.248  ops/s
-Benchmarks.groupRandomMessagesImmediate               thrpt   10      30.504 ±   0.449  ops/s
-Benchmarks.groupRandomMessagesIo                      thrpt   10       0.882 ±   0.020  ops/s
-BenchmarksAkka.ask                                    thrpt   10       7.085 ±   0.393  ops/s
-BenchmarksAkka.contendedConcurrencyDefaultDispatcher  thrpt   10       1.682 ±   0.016  ops/s
-Benchmarks.sequential                                    ss   10       2.559 ±   0.299   s/op
-
+Benchmark                                          Mode  Cnt       Score     Error  Units
+Benchmarks.actorCreateAndStop                     thrpt   10  249599.500 ± 417.851  ops/s
+Benchmarks.ask                                    thrpt   10       8.048 ±   0.022  ops/s
+Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.696 ±   0.053  ops/s
+Benchmarks.contendedConcurrencyForkJoin           thrpt   10       5.679 ±   0.043  ops/s
+Benchmarks.contendedConcurrencyImmediate          thrpt   10       9.422 ±   0.175  ops/s
+Benchmarks.groupRandomMessagesComputationSticky   thrpt   10       1.921 ±   0.055  ops/s
+Benchmarks.groupRandomMessagesForkJoin            thrpt   10      17.068 ±   0.238  ops/s
+Benchmarks.groupRandomMessagesImmediate           thrpt   10      31.629 ±   0.384  ops/s
+Benchmarks.groupRandomMessagesIo                  thrpt   10       0.867 ±   0.019  ops/s
+BenchmarksAkka.ask                                thrpt   10       7.095 ±   0.175  ops/s
+BenchmarksAkka.contendedConcurrency               thrpt   10       1.746 ±   0.017  ops/s
+BenchmarksAkka.groupRandomMessages                thrpt   10       3.300 ±   0.102  ops/s
+Benchmarks.sequential                                ss   10       2.514 ±   0.361   s/op
 ```
 
