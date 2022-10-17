@@ -152,12 +152,25 @@ Output:
 2022-10-07T21:47:28:562 +1100 [ReelsComputation-1] INFO com.github.davidmoten.reels.ActorTest - b: onStop
 2022-10-07T21:47:28:564 +1100 [ReelsSingle-1] INFO com.github.davidmoten.reels.ActorTest - a: onStop
 ```
+
+#### A warning about using lambdas to create actors
+Note that if you use a lambda and you make a reference to the enclosing class then the ActorRef will retain a reference to the enclosing object. We should be careful about this because that referred object will not be garbage collected till the ActorRef is. Consequentl, if you create an actor from another actor then you should be conscious about this lifecycle link.
+
 ### Create an Actor using your own class
 
 You can also create an Actor class yourself instead of using the builder. Implement `Actor<T` or extend `AbstractActor<T>`. Suppose you create a class called `MyActor` which extends `AbstractActor<Integer>`. You can create an ActorRef for this class with the Context as follows:
 
 ```java
+ActorRef<Integer> actor = context.actorClass(MyActor.class).build();
+```
+or
+```java
 ActorRef<Integer> actor = context.actorFactory(() -> new MyActor()).build();
+```
+
+Note that you can also use the actorClass builder method with constructor arguments too:
+```java
+ActorRef<Integer> actor = context.actorClass(MyActor.class, "Fred Nurk", 1980).build();
 ```
 
 ## Send a message to an Actor
