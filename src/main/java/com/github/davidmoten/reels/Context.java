@@ -208,35 +208,34 @@ public final class Context {
     }
     
     @SuppressWarnings("unchecked")
-    static <C> Constructor<C> getMatchingConstructor(Class<C> c, Object[] initArgs){
-        if(initArgs == null)
-            initArgs = new Object[0];
-        for(Constructor<?> con : c.getDeclaredConstructors()){
+    static <C> Constructor<C> getMatchingConstructor(Class<C> c, Object[] args) {
+        for (Constructor<?> con : c.getDeclaredConstructors()) {
             Class<?>[] types = con.getParameterTypes();
-            if(types.length!=initArgs.length)
+            if (types.length != args.length)
                 continue;
             boolean match = true;
-            for(int i = 0; i < types.length; i++){
-                Class<?> need = types[i], got = initArgs[i].getClass();
-                if(!need.isAssignableFrom(got)){
-                    if(need.isPrimitive()){
-                        match = (int.class.equals(need) && Integer.class.equals(got))
-                        || (long.class.equals(need) && Long.class.equals(got))
-                        || (char.class.equals(need) && Character.class.equals(got))
-                        || (short.class.equals(need) && Short.class.equals(got))
-                        || (boolean.class.equals(need) && Boolean.class.equals(got))
-                        || (byte.class.equals(need) && Byte.class.equals(got));
-                    }else{
+            for (int i = 0; i < types.length; i++) {
+                Class<?> need = types[i], got = args[i].getClass();
+                if (!need.isAssignableFrom(got)) {
+                    if (need.isPrimitive()) {
+                        match = (int.class.equals(need) && Integer.class.equals(got)) //
+                                || (long.class.equals(need) && Long.class.equals(got)) //
+                                || (char.class.equals(need) && Character.class.equals(got)) //
+                                || (short.class.equals(need) && Short.class.equals(got)) //
+                                || (boolean.class.equals(need) && Boolean.class.equals(got)) //
+                                || (byte.class.equals(need) && Byte.class.equals(got));
+                    } else {
                         match = false;
                     }
                 }
-                if(!match)
+                if (!match)
                     break;
             }
-            if(match)
+            if (match)
                 return (Constructor<C>) con;
         }
-        throw new CreateException("Cannot find an appropriate constructor for class " + c + " and arguments " + Arrays.toString(initArgs));
+        throw new CreateException("Cannot find an appropriate constructor for class " + c + " and arguments "
+                + Arrays.toString(args));
     }
 
     // VisibleForTesting
