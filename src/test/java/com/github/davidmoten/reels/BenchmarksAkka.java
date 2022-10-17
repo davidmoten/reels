@@ -85,7 +85,7 @@ public class BenchmarksAkka {
         int runners = 100;
         CountDownLatch latch = new CountDownLatch(1);
         ActorRef root = system.actorOf(Props.create(Manager.class, runners, messagesPerRunner, latch));
-        root.tell(Start.VALUE, root);
+        root.tell(Start.VALUE, ActorRef.noSender());
         assertTrue(latch.await(60, TimeUnit.SECONDS));
     }
 
@@ -148,8 +148,7 @@ public class BenchmarksAkka {
         for (int i = 0; i < numActors; i++) {
             system.actorOf(Props.create(GroupActor.class, numActors, numMessages, random, latch), Integer.toString(i));
         }
-        ActorSelection a = system //
-                .actorSelection("/user/0");
+        ActorSelection a = system.actorSelection("/user/0");
         for (int i = 0; i < starters; i++) {
             a.tell(0, ActorRef.noSender());
         }

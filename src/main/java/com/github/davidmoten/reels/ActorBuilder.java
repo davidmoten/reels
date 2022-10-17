@@ -53,10 +53,10 @@ public final class ActorBuilder<T> {
         return this;
     }
 
-    public ActorBuilder<T> actorClass(Class<? extends Actor<T>> actorClass) {
+    public ActorBuilder<T> actorClass(Class<? extends Actor<T>> actorClass, Object... args) {
         Preconditions.checkArgumentNonNull(actorClass, "actorClass");
         Preconditions.checkArgument(matches.isEmpty(), "cannot set both matches and actorClass in builder");
-        return actorFactory(() -> Context.createActorObject(actorClass));
+        return actorFactory(() -> Context.createActorObject(actorClass, args));
     }
 
     public ActorBuilder<T> actorFactory(Supplier<? extends Actor<T>> factory) {

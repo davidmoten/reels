@@ -43,20 +43,21 @@ public final class Context {
     // final state is TERMINATED indicated by latch having counted down to 0
 
     private final ActorRefImpl<DeadLetter> deadLetterActor;
-    
+
     final RootActorRefImpl root;
 
     private final Scheduler scheduler;
 
     Context() {
-        this(Supervisor.defaultSupervisor(), () -> createActorObject(DeadLetterActor.class), Scheduler.defaultScheduler());
+        this(Supervisor.defaultSupervisor(), () -> createActorObject(DeadLetterActor.class),
+                Scheduler.defaultScheduler());
     }
 
     Context(Supervisor supervisor, Supplier<? extends Actor<DeadLetter>> deadLetterActorFactory, Scheduler scheduler) {
         this.supervisor = supervisor;
         // TODO this escaping the constructor
-        this.root = new RootActorRefImpl(Constants.ROOT_ACTOR_NAME, ActorDoNothing::create,
-                scheduler, this, supervisor);
+        this.root = new RootActorRefImpl(Constants.ROOT_ACTOR_NAME, ActorDoNothing::create, scheduler, this,
+                supervisor);
         this.deadLetterActor = (ActorRefImpl<DeadLetter>) createActor(deadLetterActorFactory,
                 Constants.DEAD_LETTER_ACTOR_NAME);
         this.scheduler = scheduler;
@@ -65,7 +66,7 @@ public final class Context {
     public static Context create() {
         return new Context();
     }
-    
+
     public static Context create(Scheduler scheduler) {
         return builder().scheduler(scheduler).build();
     }
@@ -73,7 +74,7 @@ public final class Context {
     public static ContextBuilder builder() {
         return new ContextBuilder();
     }
-    
+
     public <T> ActorRef<T> createActor(Class<? extends Actor<T>> actorClass) {
         return createActor(actorClass, actorClass.getName() + "-" + Long.toString(counter.incrementAndGet()));
     }
@@ -122,7 +123,7 @@ public final class Context {
     public <T> Optional<ActorRef<T>> lookupActor(String name) {
         return Optional.ofNullable((ActorRef<T>) root.child(name));
     }
-    
+
     public CompletableFuture<Void> shutdownGracefully() {
         state.compareAndSet(STATE_ACTIVE, STATE_STOPPING);
         root.stop();
@@ -187,13 +188,17 @@ public final class Context {
     public <T> ActorBuilder<T> actorFactory(Supplier<? extends Actor<T>> factory) {
         return this.<T>actorBuilder().actorFactory(factory);
     }
-    
+
+    public <T> ActorBuilder<T> actorClass(Class<? extends Actor<T>> actorClass, Object... args) {
+        return this.<T>actorBuilder().actorClass(actorClass, args);
+    }
+
     /////////////////////////////
     // private methods
     ////////////////////////////
 
     @SuppressWarnings("unchecked")
-    static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass) {
+    static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass, Object... args) {
         Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors()).filter(x -> x.getParameterCount() == 0)
                 .findFirst();
         if (!c.isPresent()) {
@@ -201,13 +206,13 @@ public final class Context {
                     "Actor class must have a public no-arg constructor to be created with this method."
                             + " Another method is available to create ActorRef for an Actor instance that you provide.");
         }
-        return (Actor<T>) construct(c.get());
+        return (Actor<T>) construct(c.get(), args);
     }
 
     // VisibleForTesting
-    static Object construct(Constructor<?> c) {
+    static Object construct(Constructor<?> c, Object... args) {
         try {
-            return c.newInstance();
+            return c.newInstance(args);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
             throw new CreateException(e);

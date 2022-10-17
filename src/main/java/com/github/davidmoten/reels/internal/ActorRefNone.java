@@ -56,7 +56,7 @@ public final class ActorRefNone implements ActorRef<Object> {
 
     @Override
     public Context context() {
-        return Context.DEFAULT;
+        throw new UnsupportedOperationException("context not available for ActorRefNone");
     }
 
     @Override
@@ -66,7 +66,7 @@ public final class ActorRefNone implements ActorRef<Object> {
 
     @Override
     public Scheduler scheduler() {
-        return context().scheduler();
+        throw new UnsupportedOperationException("scheduler not available for ActorRefNone");
     }
 
     @SuppressWarnings("unchecked")
