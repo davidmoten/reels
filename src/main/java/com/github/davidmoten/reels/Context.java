@@ -199,10 +199,6 @@ public final class Context {
 
     @SuppressWarnings("unchecked")
     static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass, Object... args) {
-        Class<?>[] argTypes = new Class[args.length];
-        for (int i = 0; i < args.length;i ++) {
-            argTypes[i] = args.getClass();
-        }
         Constructor<? extends Actor<T>> c = getMatchingConstructor(actorClass, args);
         return (Actor<T>) construct(c, args);
     }
