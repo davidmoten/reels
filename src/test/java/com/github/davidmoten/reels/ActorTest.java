@@ -133,7 +133,22 @@ public class ActorTest {
     @Test
     public void testActorClass() {
         Context c = new Context();
-        ActorRef<Integer> a = c.<Integer>actorBuilder().actorClass(MyActor.class).scheduler(Scheduler.immediate())
+        ActorRef<Integer> a = c //
+                .<Integer>actorBuilder() //
+                .actorClass(MyActor.class) //
+                .scheduler(Scheduler.immediate()) //
+                .build();
+        a.tell(1234);
+        assertEquals(1234, (int) MyActor.last);
+    }
+    
+    @Test
+    public void testActorClassWithArgs() {
+        Context c = new Context();
+        ActorRef<Integer> a = c //
+                .<Integer>actorBuilder() //
+                .actorClass(MyActorWithArgs.class, 10, new Double(3)) //
+                .scheduler(Scheduler.immediate()) //
                 .build();
         a.tell(1234);
         assertEquals(1234, (int) MyActor.last);
@@ -843,6 +858,21 @@ public class ActorTest {
     public static final class MyActor extends AbstractActor<Integer> {
 
         static volatile Integer last;
+
+        @Override
+        public void onMessage(Message<Integer> message) {
+            last = message.content();
+        }
+
+    }
+    
+    public static final class MyActorWithArgs extends AbstractActor<Integer> {
+
+        static volatile Integer last;
+        
+        public MyActorWithArgs(int thing, Number n) {
+            
+        }
 
         @Override
         public void onMessage(Message<Integer> message) {

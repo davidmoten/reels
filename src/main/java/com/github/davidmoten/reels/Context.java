@@ -199,14 +199,44 @@ public final class Context {
 
     @SuppressWarnings("unchecked")
     static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass, Object... args) {
-        Optional<Constructor<?>> c = Arrays.stream(actorClass.getConstructors()).filter(x -> x.getParameterCount() == 0)
-                .findFirst();
-        if (!c.isPresent()) {
-            throw new CreateException(
-                    "Actor class must have a public no-arg constructor to be created with this method."
-                            + " Another method is available to create ActorRef for an Actor instance that you provide.");
+        Class<?>[] argTypes = new Class[args.length];
+        for (int i = 0; i < args.length;i ++) {
+            argTypes[i] = args.getClass();
         }
-        return (Actor<T>) construct(c.get(), args);
+        Constructor<? extends Actor<T>> c = getMatchingConstructor(actorClass, args);
+        return (Actor<T>) construct(c, args);
+    }
+    
+    @SuppressWarnings("unchecked")
+    static <C> Constructor<C> getMatchingConstructor(Class<C> c, Object[] initArgs){
+        if(initArgs == null)
+            initArgs = new Object[0];
+        for(Constructor<?> con : c.getDeclaredConstructors()){
+            Class<?>[] types = con.getParameterTypes();
+            if(types.length!=initArgs.length)
+                continue;
+            boolean match = true;
+            for(int i = 0; i < types.length; i++){
+                Class<?> need = types[i], got = initArgs[i].getClass();
+                if(!need.isAssignableFrom(got)){
+                    if(need.isPrimitive()){
+                        match = (int.class.equals(need) && Integer.class.equals(got))
+                        || (long.class.equals(need) && Long.class.equals(got))
+                        || (char.class.equals(need) && Character.class.equals(got))
+                        || (short.class.equals(need) && Short.class.equals(got))
+                        || (boolean.class.equals(need) && Boolean.class.equals(got))
+                        || (byte.class.equals(need) && Byte.class.equals(got));
+                    }else{
+                        match = false;
+                    }
+                }
+                if(!match)
+                    break;
+            }
+            if(match)
+                return (Constructor<C>) con;
+        }
+        throw new CreateException("Cannot find an appropriate constructor for class " + c + " and arguments " + Arrays.toString(initArgs));
     }
 
     // VisibleForTesting
@@ -218,4 +248,5 @@ public final class Context {
             throw new CreateException(e);
         }
     }
+
 }
