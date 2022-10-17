@@ -37,6 +37,7 @@ Add this dependency to your pom.xml:
 </dependency><
 ```
 ## Glossary
+ TODO
 
 * Actor
 * ActorRef
@@ -196,6 +197,14 @@ ActorRef<Integer> square =
 ## Schedulers
  
 ## Benchmarks
+
+Benchmarking indicates that reels is faster than Akka for three aspects tested:
+
+* ask performance (15% faster)
+* hub and spoke contended performance (320% faster)
+* random messages around a ring performance, some contention (%500 faster)
+
+
 Using JDK 17:
 ```
 Benchmarks.actorCreateAndStop                     thrpt   10  1036159.638 ± 11147.430  ops/s
