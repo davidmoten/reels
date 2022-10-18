@@ -251,7 +251,7 @@ public class ActorTest {
         ActorRef<Object> a = c.matchAny(m -> {
             try {
                 latch.await(5, TimeUnit.SECONDS);
-                m.sender().tell(2);
+                m.reply(2);
             } catch (InterruptedException e) {
                 // do nothing
             }
@@ -589,7 +589,7 @@ public class ActorTest {
                     for (int i = 0; i < runners; i++) {
                         ActorRef<int[]> actor = m.context() //
                                 .<int[]>matchAny(m2 -> {
-                                    m2.sender().tell(m2.content(), m2.self());
+                                    m2.reply(m2.content());
                                 }) //
                                 .scheduler(scheduler) //
                                 .build();
@@ -621,7 +621,7 @@ public class ActorTest {
         Context c = Context.create();
         try {
             ActorRef<Integer> b = c.<Integer>matchAny(m -> {
-                m.sender().tell(m.content() + 1);
+                m.reply(m.content() + 1);
             }).name("b").build();
             ActorRef<Integer> a = c.<Integer>matchAny(m -> {
                 if (m.content() < maxMessages) {
@@ -697,7 +697,7 @@ public class ActorTest {
     @Test
     public void testAsk() throws InterruptedException, ExecutionException, TimeoutException {
         Context context = Context.create();
-        ActorRef<String> actor = context.<String>matchAny(m -> m.sender().tell("boo")) //
+        ActorRef<String> actor = context.<String>matchAny(m -> m.reply("boo")) //
                 .build();
         assertEquals("boo", actor.ask("hi").get(1000, TimeUnit.MILLISECONDS));
         context.shutdownNow();
@@ -829,7 +829,7 @@ public class ActorTest {
         context //
                 .<Number>matchEquals(1, m -> {
                     log.info("{}: equal matched, sender = {}", m.self(), m.sender());
-                    m.sender().tell(9999);
+                    m.reply(9999);
                 }) //
                 .match(Integer.class, m -> log.info("{}: received integer {}", m.self(), m.content())) //
                 .match(Double.class, m -> log.info("{}: received double {}", m.self(), m.content())) //
@@ -891,5 +891,10 @@ public class ActorTest {
         public void onMessage(Message<Integer> message) {
         }
 
+    }
+    
+    public static void main(String[] args) {
+        Context c = Context.create();
+        c.<Integer>matchAny(m -> m.reply(m.content()*m.content()));
     }
 }

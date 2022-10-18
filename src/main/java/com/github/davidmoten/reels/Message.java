@@ -36,6 +36,16 @@ public final class Message<T> {
         return (ActorRef<S>) sender;
     }
 
+    /**
+     * Replies to sender. Calls {@code sender().tell(message, self())}.
+     * 
+     * @param <S>     sender message type
+     * @param message  message to reply with
+     */
+    public <S> void reply(S message) {
+        sender().tell(message, self());
+    }
+
     public Context context() {
         return recipient.context();
     }
