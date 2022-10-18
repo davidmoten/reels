@@ -208,6 +208,22 @@ ActorRef<Integer> square =
 * Restarting an actor from a supervisor will dispose all that actors children
 
 ## Schedulers
+Sending a message to an Actor is normally asynchronous. That is when you call `actorRef.tell(msg)` what happens under the covers is that the message is placed on a concurrent queue for that actor and the actor is notified to process its queue using an executor.
+
+Schedulers wrap executors and are designed to be efficient for particular use cases. Actors obtain a Worker from each Scheduler for the lifetime of the actor. The standard schedulers are 
+
+* `Scheduler.forkjoin()`, a singleton work-stealing pool of threads that is great for general purpose non-blocking work (wins benchmarks pretty handily and became twice as fast between Java 8 and Java 17). The default scheduler.
+* `Scheduler.computation()` is an alias for `forkJoin()` and is for non-blocking work
+* `Scheduler.computationSticky()`, a singleton pool of threads (size = number of processors) for non-blocking work. A Worker on this pool uses a randomly/round-robin assigned thread from the pool and that thread stays with the Worker till disposal of the Worker (that is a thread *sticks* to an actor). One thread can be in use by many Workers. Normally slower than `forkJoin()`.
+* `Scheduler.io()`, a singleton unbounded thread pool designed for blocking work, unused threads are disposed of by an evicting thread after 60s of inactivity. Each Worker has one thread (and each thread in this pool has only one Worker). This scheduler was adapted from RxJava 3.x `Schedulers.io()`.
+* `Scheduler.single()`, a singleton scheduler that is based on a single thread executor service
+* `Scheduler.newSingle()`, creates a new single-thread-based scheduler
+* `Scheduler.test()` is for synchronous unit testing purposes and **should not be mixed with asynchronous scheduler use** in the same Context.
+* `Scheduler.immediate()` is for synchronous execution of all tasks, limited delayed scheduling, and **should not be mixed with asynchronous scheduler use** in the same Context
+ 
+## Blocking work
+
+Make sure you use a blocking scheduler (especially `Scheduler.io()`) for any blocking work like database calls, file system IO, network IO.
  
 ## Benchmarks
 
