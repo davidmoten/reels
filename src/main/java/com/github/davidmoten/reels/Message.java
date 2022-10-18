@@ -40,7 +40,7 @@ public final class Message<T> {
      * Replies to sender. Calls {@code sender().tell(message, self())}.
      * 
      * @param <S>     sender message type
-     * @param message  message to reply with
+     * @param message message to reply with
      */
     public <S> void reply(S message) {
         sender().tell(message, self());

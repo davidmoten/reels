@@ -197,8 +197,13 @@ Here's an example of `ask` where an actor does some calculation and returns an a
 ```java
 ActorRef<Integer> square = 
     context
-      .matchAny(m -> m.sender().<Integer>tell(m.content() * m.content())
+      .<Integer>matchAny(m -> m.reply(m.content() * m.content())
       .build();
+square.ask(23).thenAccept(System.out::printly).join();
+```
+Output:
+```
+529
 ```
 
 ## Notes

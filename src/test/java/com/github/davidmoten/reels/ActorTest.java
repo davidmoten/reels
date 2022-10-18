@@ -141,7 +141,7 @@ public class ActorTest {
         a.tell(1234);
         assertEquals(1234, (int) MyActor.last);
     }
-    
+
     @Test
     public void testActorClassWithArgs() {
         Context c = new Context();
@@ -865,13 +865,13 @@ public class ActorTest {
         }
 
     }
-    
+
     public static final class MyActorWithArgs extends AbstractActor<Integer> {
 
         static volatile Integer last;
-        
+
         public MyActorWithArgs(int thing, Number n) {
-            
+
         }
 
         @Override
@@ -892,9 +892,13 @@ public class ActorTest {
         }
 
     }
-    
+
     public static void main(String[] args) {
         Context c = Context.create();
-        c.<Integer>matchAny(m -> m.reply(m.content()*m.content()));
+        ActorRef<Integer> a = c //
+                .<Integer>matchAny(m -> m.reply(m.content() * m.content())) //
+                .build();
+        a.ask(23).thenAccept(System.out::println).join();
+        c.shutdownGracefully().join();
     }
 }
