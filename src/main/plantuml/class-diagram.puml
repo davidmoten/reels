@@ -18,20 +18,16 @@ interface "ActorRef<T>" as ActorRef_T_ [[java:com.github.davidmoten.reels.ActorR
 }
 Context --> "creates\n*" ActorRef_T_
 ActorRef_T_ --> "1" Scheduler : scheduler
-Disposable <|-- ActorRef_T_
 class Context [[java:com.github.davidmoten.reels.Context]] {
     +createActor(...): ActorRef<T>
     +lookupActor(name: String): Optional<ActorRef<T>>
-    +dispose(): void
-    +isDisposed(): boolean
-    +shutdownNow(): void
+    +shutdownNow(): CompletableFuture<Void>
     +shutdownGracefully(): CompletableFuture<Void>
     +actorBuilder(): ActorBuilder<T>
 }
 Context --> "1" Supervisor : defaultSupervisor
 Context --> "1" Scheduler : defaultScheduler
 Context --> "1" ActorRef_T_ : deadLetterActor
-Disposable <|.. Context
 
 interface Disposable [[java:com.github.davidmoten.reels.Disposable]] {
     dispose(): void
@@ -41,9 +37,7 @@ class "Message<T>" as Message_T_ [[java:com.github.davidmoten.reels.Message]] {
     +content(): T
     +self(): ActorRef<T>
     +recipient(): ActorRef<T>
-    +sender(): Optional<ActorRef<S>>
-    +senderRaw(): ActorRef<S>
-    +toString(): String
+    +sender(): ActorRef<S>
 }
 Message_T_ --> "1" Context
 interface Scheduler [[java:com.github.davidmoten.reels.Scheduler]] {
@@ -53,6 +47,7 @@ interface Scheduler [[java:com.github.davidmoten.reels.Scheduler]] {
     shutdown(): void
     requiresSerialization(): boolean
 }
+
 Scheduler --> "*" Worker : creates
 
 interface "SupervisedActorRef<T>" as SupervisedActorRef_T_ [[java:com.github.davidmoten.reels.SupervisedActorRef]] {
