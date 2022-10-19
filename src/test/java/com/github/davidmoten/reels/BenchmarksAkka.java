@@ -55,28 +55,22 @@ public class BenchmarksAkka {
 
     }
 
-//    @Benchmark
-//    @BenchmarkMode(Mode.Throughput)
-//    public void actorCreateAndStop() throws InterruptedException {
-//        system.actorOf(Props.create(Test.class)).tell(Boolean.TRUE, null);
-//    }
-
-//    @Benchmark
-//    @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void ask(Blackhole bh) throws Exception {
         for (int i = 0; i < 10000; i++) {
             bh.consume(Await.result(Patterns.ask(askActor, "hi", 1000), Duration.create(1000, TimeUnit.MILLISECONDS)));
         }
     }
 
-//    @Benchmark
-//    @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrency() throws InterruptedException {
         contendedConcurrency(Benchmarks.MESSAGES_PER_RUNNER);
     }
 
-//    @Benchmark
-//    @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessages() throws InterruptedException {
         _groupRandomMessages();
     }

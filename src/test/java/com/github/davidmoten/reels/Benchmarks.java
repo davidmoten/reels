@@ -50,8 +50,8 @@ public class Benchmarks {
         context = null;
     }
 
-    // @Benchmark
-    // @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void actorCreateAndStop() throws InterruptedException {
         context //
                 .matchAny(m -> m.self().stop()) //
@@ -60,58 +60,58 @@ public class Benchmarks {
                 .tell(Boolean.TRUE);
     }
 
-    // @Benchmark
-    // @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void ask(Blackhole bh) throws InterruptedException, ExecutionException, TimeoutException {
         for (int i = 0; i < 10000; i++) {
             bh.consume(askActor.<String>ask("hi").get(1000, TimeUnit.MILLISECONDS));
         }
     }
 
-    // @Benchmark
-    // @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyForkJoin() throws InterruptedException {
         contendedConcurrency(Scheduler.forkJoin(), MESSAGES_PER_RUNNER);
     }
 
-//    // @Benchmark
-//    // @BenchmarkMode(Mode.AverageTime)
+//    @Benchmark
+//    @BenchmarkMode(Mode.AverageTime)
 //    public void contendedConcurrencyForkJoinLong() throws InterruptedException {
 //        contendedConcurrency(Scheduler.forkJoin(), 100000);
 //   ) }
 
-    // @Benchmark
-    // @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyComputationSticky() throws InterruptedException {
         contendedConcurrency(Scheduler.computationSticky(), MESSAGES_PER_RUNNER);
     }
 
-    // @Benchmark
-    // @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void contendedConcurrencyImmediate() throws InterruptedException {
         contendedConcurrency(Scheduler.immediate(), MESSAGES_PER_RUNNER);
     }
 
-    // @Benchmark
-    // @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesForkJoin() throws InterruptedException {
         groupRandomMessages(Scheduler.forkJoin());
     }
 
-    // @Benchmark
-    // @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesComputationSticky() throws InterruptedException {
         groupRandomMessages(Scheduler.computationSticky());
     }
 
-    // @Benchmark
-    // @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesIo() throws InterruptedException {
         groupRandomMessages(Scheduler.io());
     }
 
-    // @Benchmark
-    // @BenchmarkMode(Mode.Throughput)
+    @Benchmark
+    @BenchmarkMode(Mode.Throughput)
     public void groupRandomMessagesImmediate() throws InterruptedException {
         groupRandomMessages(Scheduler.immediate());
     }
