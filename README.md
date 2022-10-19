@@ -206,6 +206,14 @@ Output:
 529
 ```
 
+## Supervisors
+When an error is thrown by your code in onMessage you have two options:
+* handle the error there and reset state as appropriate
+* handle the error in a Supervisor, which has more functionality including the ability to restart (recreate the Actor instance), pause processing, and retry a message.
+
+For example, a Supervisor for some JDBC work can check if the thrown exception is an instance of SQLTransientException and mark the message for a retry after a pause. 
+If the thrown exception is an instance of SQLNonTransientConnectionException then we should retry with a new connection object. This [unit test](src/test/java/com/github/davidmoten/reels/RetryExampleTest.java) demonstrates this example.
+
 ## Notes
 
 * An Actor is created by a Context object. The Context object has an internal singleton root actor but is the parent for an Actor you create unless you provide it with an explicit parent. 

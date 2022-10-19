@@ -53,7 +53,7 @@ public class RetryExampleTest {
                 actor.retry();
                 actor.pauseAndRestart(RESTART_INTERVAL_MS, TimeUnit.MILLISECONDS);
             } else {
-                // don't retry the message but pause a bit anyway
+                // don't retry the message but pause and restart anyway
                 actor.pauseAndRestart(RESTART_INTERVAL_MS, TimeUnit.MILLISECONDS);
             }
         };
