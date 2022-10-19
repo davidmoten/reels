@@ -145,11 +145,10 @@ public class Benchmarks {
         @Override
         public void onMessage(Message<Integer> m) {
             int x = m.content();
-            ActorRef<Object> sender = m.sender();
-            if (sender == ActorRef.none() && x == finished) {
+            if (m.sender() == ActorRef.none() && x == finished) {
                 latch.countDown();
             } else if (x == max) {
-                sender.tell(finished);
+                m.replyNoSender(finished);
             } else {
                 ActorRef<Integer> next = createSequentialActor(m.context(), latch, finished, max);
                 next.tell(x + 1, m.self());

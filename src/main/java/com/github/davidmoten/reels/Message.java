@@ -45,6 +45,10 @@ public final class Message<T> {
     public <S> void reply(S message) {
         sender().tell(message, self());
     }
+    
+    public <S> void replyNoSender(S message) {
+        sender().tell(message, ActorRef.none());
+    }
 
     public Context context() {
         return recipient.context();

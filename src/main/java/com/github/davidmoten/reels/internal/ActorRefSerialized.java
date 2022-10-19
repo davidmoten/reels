@@ -30,7 +30,6 @@ public class ActorRefSerialized<T> extends ActorRefImpl<T> {
                 }
             }
         }
-
     }
 
 }
