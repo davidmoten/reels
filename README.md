@@ -199,7 +199,10 @@ ActorRef<Integer> square =
     context
       .<Integer>matchAny(m -> m.reply(m.content() * m.content())
       .build();
-square.ask(23).thenAccept(System.out::println).join();
+square
+  .ask(23)
+  .thenAccept(System.out::println)
+  .join();
 ```
 Output:
 ```
@@ -213,6 +216,8 @@ When an error is thrown by your code in onMessage you have two options:
 
 For example, a Supervisor for some JDBC work can check if the thrown exception is an instance of SQLTransientException and mark the message for a retry after a pause. 
 If the thrown exception is an instance of SQLNonTransientConnectionException then we should retry with a new connection object. This [unit test](src/test/java/com/github/davidmoten/reels/RetryExampleTest.java) demonstrates this example.
+
+If you don't specify your own Supervisor (either globally in the Context or specifically for your Actor) then the [default Supervisor](src/main/java/com/github/davidmoten/reels/internal/supervisor/SupervisorDefault.java) is used.
 
 ## Notes
 
