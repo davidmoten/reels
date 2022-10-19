@@ -21,7 +21,7 @@ public class SupervisorDefaultTest {
             Mockito.when(actor.name()).thenReturn("Anonymous-1");
             RuntimeException e = new RuntimeException("boo");
             SupervisorDefault.INSTANCE.processFailure(m, actor, e);
-            Mockito.verify(actor, Mockito.times(1)).dispose();
+            Mockito.verify(actor, Mockito.times(1)).stopNow();
             Mockito.verify(actor, Mockito.atLeastOnce()).name();
             Mockito.verifyNoMoreInteractions(actor);
             Mockito.verifyNoMoreInteractions(m);

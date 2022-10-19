@@ -18,16 +18,6 @@ public final class ActorRefNone implements ActorRef<Object> {
     }
 
     @Override
-    public void dispose() {
-        // do nothing
-    }
-
-    @Override
-    public boolean isDisposed() {
-        return true;
-    }
-
-    @Override
     public void tell(Object message) {
         // do nothing
     }
@@ -51,7 +41,7 @@ public final class ActorRefNone implements ActorRef<Object> {
 
     @Override
     public void stopNow() {
-        dispose();
+        // do nothing
     }
 
     @Override
@@ -83,6 +73,11 @@ public final class ActorRefNone implements ActorRef<Object> {
     @Override
     public <S> Collection<ActorRef<S>> children() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public boolean isStopped() {
+        return true;
     }
 
 }

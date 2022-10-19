@@ -8,7 +8,7 @@ public class PoisonPillTest {
 
     @Test
     public void test() {
-        assertEquals("PoisonPill", PoisonPill.INSTANCE.toString());
+        assertEquals("PoisonPill", PoisonPill.instance().toString());
     }
 
 }

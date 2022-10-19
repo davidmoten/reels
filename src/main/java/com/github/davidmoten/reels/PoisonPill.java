@@ -1,7 +1,13 @@
 package com.github.davidmoten.reels;
 
-public enum PoisonPill {
-    INSTANCE;
+public final class PoisonPill {
+
+    private static final PoisonPill INSTANCE = new PoisonPill();
+    
+    @SuppressWarnings("unchecked")
+    public static <T> T instance() {
+        return (T) INSTANCE;
+    }
     
     public String toString() {
         return "PoisonPill";

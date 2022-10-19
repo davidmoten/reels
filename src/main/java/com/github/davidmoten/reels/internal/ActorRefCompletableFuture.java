@@ -11,16 +11,6 @@ import com.github.davidmoten.reels.Scheduler;
 public class ActorRefCompletableFuture<T> extends CompletableFuture<T> implements ActorRef<T> {
     
     @Override
-    public void dispose() {
-        // do nothing
-    }
-
-    @Override
-    public boolean isDisposed() {
-        return false;
-    }
-
-    @Override
     public void tell(T message) {
         tell(message, ActorRef.none());
     }
@@ -72,7 +62,11 @@ public class ActorRefCompletableFuture<T> extends CompletableFuture<T> implement
 
     @Override
     public void stopNow() {
-        dispose();
+    }
+
+    @Override
+    public boolean isStopped() {
+        return false;
     }
 
 }

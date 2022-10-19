@@ -11,7 +11,7 @@ import com.github.davidmoten.reels.internal.ActorRefNone;
  *
  * @param <T> the message type for the Actor
  */
-public interface ActorRef<T> extends Disposable {
+public interface ActorRef<T> {
 
     /**
      * Sends the message without a sender.
@@ -53,6 +53,8 @@ public interface ActorRef<T> extends Disposable {
      * the queue and ignored so the Poison Pill message effectively jumps the queue.
      */
     void stopNow();
+    
+    boolean isStopped();
 
     /**
      * Returns the current actor system context.

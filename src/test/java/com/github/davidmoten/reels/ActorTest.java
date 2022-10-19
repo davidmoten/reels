@@ -241,7 +241,7 @@ public class ActorTest {
         ActorRef<Object> b = c.matchAny(m -> {
         }).parent(a).build();
         assertTrue(a == b.parent());
-        assertTrue(b.isDisposed());
+        assertTrue(b.isStopped());
     }
 
     @Test
@@ -293,7 +293,7 @@ public class ActorTest {
         CountDownLatch latch = new CountDownLatch(1);
         Context c = Context.create();
         Supervisor supervisor = (context, actor, error) -> {
-            actor.dispose();
+            actor.stopNow();
             latch.countDown();
         };
         AtomicInteger count = new AtomicInteger();
@@ -528,9 +528,9 @@ public class ActorTest {
         actor.tell(1);
         actor.tell(2);
         Thread.sleep(100);
-        assertFalse(actor.isDisposed());
-        actor.dispose();
-        assertTrue(actor.isDisposed());
+        assertFalse(actor.isStopped());
+        actor.stopNow();
+        assertTrue(actor.isStopped());
         Thread.sleep(500);
         assertEquals(1, count.get());
     }
@@ -671,7 +671,7 @@ public class ActorTest {
         ActorRef<Object> a = context.matchAny(m -> {
         }).build();
         ActorRef<Object> b = context.matchAny(m -> called.set(true)).scheduler(Scheduler.immediate()).parent(a).build();
-        a.dispose();
+        a.stopNow();
         b.tell(1);
         assertFalse(called.get());
     }

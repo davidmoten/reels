@@ -19,7 +19,6 @@ import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
 import com.github.davidmoten.reels.CreateException;
 import com.github.davidmoten.reels.DeadLetter;
-import com.github.davidmoten.reels.Disposable;
 import com.github.davidmoten.reels.Message;
 import com.github.davidmoten.reels.OnStopException;
 import com.github.davidmoten.reels.PoisonPill;
@@ -31,7 +30,7 @@ import com.github.davidmoten.reels.Worker;
 import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
 import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
-public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable, Disposable {
+public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable {
 
     public static final boolean debug = false;
     private static final Logger log = LoggerFactory.getLogger(ActorRefImpl.class);
@@ -55,7 +54,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     private static final int ACTIVE = 0;
     private static final int STOPPING = 1;
     private static final int STOPPED = 2;
-    private static final int DISPOSING = 3;
+    private static final int STOPPING_NOW = 3;
     protected static final int RESTART = 4;
     private static final int PAUSED = 5;
 
@@ -89,8 +88,8 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     private void addChild(ActorRef<?> actor) {
         int s = state.get();
-        if (s == DISPOSING || s == STOPPING || s == STOPPED) {
-            actor.dispose();
+        if (s == STOPPING_NOW || s == STOPPING || s == STOPPED) {
+            actor.stopNow();
         } else {
             children.put(actor.name(), actor);
         }
@@ -101,29 +100,32 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     }
 
     @Override
-    public void dispose() {
+    public void stop() {
+        tell(PoisonPill.instance(), parent);
+    }
+    
+    @Override
+    public void stopNow() {
         if (debug)
-            log("disposing");
+            log("stopNow");
         // use a stack rather than recursion to avoid
         // stack overflow on deeply nested hierarchies
         Deque<ActorRef<?>> stack = new ArrayDeque<>();
         stack.offer(this);
         ActorRef<?> a;
         while ((a = stack.poll()) != null) {
-            ((ActorRefImpl<?>) a).disposeThis();
+            ((ActorRefImpl<?>) a).stopNowThis();
             stack.addAll(children.values());
         }
-        if (debug)
-            log("disposed");
     }
 
-    public void disposeThis() {
+    public void stopNowThis() {
 
         while (true) {
             final int s = state.get();
-            if (s == DISPOSING || s == STOPPING || s == STOPPED) {
+            if (s == STOPPING_NOW || s == STOPPING || s == STOPPED) {
                 break;
-            } else if (state.compareAndSet(s, DISPOSING)) {
+            } else if (state.compareAndSet(s, STOPPING_NOW)) {
                 if (debug) {
                     log("removing from parent and calling stop");
                 }
@@ -136,13 +138,18 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     private boolean setState(int value) {
         while (true) {
             int s = state.get();
-            if (s == STOPPED || s == STOPPING && value == DISPOSING) {
+            if (s == STOPPED || s == STOPPING && value == STOPPING_NOW) {
                 return false;
             }
             if (state.compareAndSet(s, value)) {
                 return true;
             }
         }
+    }
+    
+    @Override
+    public boolean isStopped() {
+        return state.get() == STOPPED;
     }
 
     @Override
@@ -158,17 +165,6 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     private void scheduleDrain() {
         worker.schedule(this);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void stop() {
-        tell((T) PoisonPill.INSTANCE, parent);
-    }
-
-    @Override
-    public void stopNow() {
-        dispose();
     }
 
     private void handleTerminationMessage(Message<T> message) {
@@ -208,11 +204,6 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     private void log(String s) {
         log.debug("{}: {}", name, s);
-    }
-
-    @Override
-    public boolean isDisposed() {
-        return state.get() == STOPPED;
     }
 
     @Override
@@ -339,7 +330,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                     s = state.get();
                 }
             }
-            if (s == DISPOSING) {
+            if (s == STOPPING_NOW) {
                 systemMessagesOnly = true;
             }
             if (s == STOPPING) {
@@ -349,10 +340,10 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
                     sendToDeadLetter(message);
                 }
             } else if (s == STOPPED) {
-                if (message.content() != PoisonPill.INSTANCE) {
+                if (message.content() != PoisonPill.instance()) {
                     sendToDeadLetter(message);
                 }
-            } else if (message.content() == PoisonPill.INSTANCE) {
+            } else if (message.content() == PoisonPill.instance()) {
                 if (setState(STOPPING)) {
                     boolean isEmpty = true;
                     ActorRef<Object> ch;
