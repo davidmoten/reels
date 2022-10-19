@@ -232,6 +232,11 @@ Schedulers wrap executors and are designed to be efficient for particular use ca
 Make sure you use a blocking scheduler (especially `Scheduler.io()`) for any blocking work like database calls, file system IO, network IO.
  
 ## Benchmarks
+To run benchmarks:
+
+```bash
+mvn clean install -P benchmark
+```
 
 Benchmarking indicates that reels is faster than Akka for three aspects tested:
 
