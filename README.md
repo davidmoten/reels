@@ -241,8 +241,9 @@ mvn clean install -P benchmark
 Benchmarking indicates that reels is faster than Akka for three aspects tested:
 
 * ask performance (15% faster)
-* hub and spoke contended performance (320% faster)
-* random messages around a ring performance, some contention, uses actor lookups (%500 faster)
+* hub and spoke contended performance (3x faster)
+* random messages around a ring performance, some contention, uses actor lookups (5x faster)
+* long sequential chain then return (8x faster)
 
 
 Using JDK 17:
