@@ -80,6 +80,17 @@ public class BenchmarksAkka {
     public void groupRandomMessages() throws InterruptedException {
         _groupRandomMessages();
     }
+    
+    @Benchmark
+    @BenchmarkMode(Mode.SingleShotTime)
+    public void sequential() throws InterruptedException, ExecutionException, TimeoutException {
+        int max = 1000000;
+        CountDownLatch latch = new CountDownLatch(1);
+        ActorRef a = createSequentialActor(system, latch, -1, max);
+        a.tell(0, ActorRef.noSender());
+        assertTrue(latch.await(60, TimeUnit.SECONDS));
+    }
+    
 
     private void contendedConcurrency(int messagesPerRunner) throws InterruptedException {
         int runners = 100;
@@ -184,15 +195,48 @@ public class BenchmarksAkka {
                     .build();
         }
     }
+    
+    private static ActorRef createSequentialActor(ActorSystem system, CountDownLatch latch, int finished, int max) {
+        return system.actorOf(Props.create(SequentialActor.class, latch, finished, max));
+    }
+    
+    final static class SequentialActor extends akka.actor.AbstractActor {
+        
+        private final int finished;
+        private final int max;
+        private final CountDownLatch latch;
+
+        SequentialActor(CountDownLatch latch, int finished, int max) {
+            this.finished = finished;
+            this.max = max;
+            this.latch = latch;
+        }
+
+        @Override
+        public Receive createReceive() {
+            return receiveBuilder() //
+                    .match(Integer.class, x ->{
+                        if (sender() == context().system().deadLetters() && x == finished) {
+                            latch.countDown();
+                        } else if (x == max) {
+                            sender().tell(finished, ActorRef.noSender());
+                        } else {
+                            ActorRef next = createSequentialActor(context().system(), latch, finished, max);
+                            next.tell(x + 1, self());
+                        }
+                    })
+                    .build();
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         BenchmarksAkka b = new BenchmarksAkka();
         while (true) {
-            long t = System.currentTimeMillis();
             b.setup();
-            b.groupRandomMessages();
-            b.tearDown();
+            long t = System.currentTimeMillis();
+            b.sequential();
             System.out.println(System.currentTimeMillis() - t + "ms");
+            b.tearDown();
         }
     }
 }
