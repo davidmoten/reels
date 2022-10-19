@@ -1,5 +1,7 @@
 package com.github.davidmoten.reels;
 
+import static org.junit.Assert.assertTrue;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -7,52 +9,67 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientConnectionException;
 import java.sql.SQLTransientException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RetryExampleMain {
+public class RetryExampleTest {
 
-    private static final Logger log = LoggerFactory.getLogger(RetryExampleMain.class);
+    private static final Logger log = LoggerFactory.getLogger(RetryExampleTest.class);
+    
+    private static final long RESTART_INTERVAL_MS= 300;
 
-    public static void main(String[] args) throws InterruptedException, ExecutionException, TimeoutException {
+    @Test
+    public void demonstrateJdbcRetriesAndRestartsWithSpecialSupervisor() throws InterruptedException, ExecutionException, TimeoutException {
         Context context = Context //
                 .builder() //
-                .supervisor((message, actor, error) -> {
-                    log.warn(error.getMessage());
-                    long intervalSeconds = 1;
-                    if (error.getCause() != null && error.getCause() instanceof SQLTransientException) {
-                        actor.retry();
-                        actor.pause(intervalSeconds, TimeUnit.SECONDS);
-                    } else if (error.getCause() != null
-                            && error.getCause() instanceof SQLNonTransientConnectionException) {
-                        // connection failed so retry the message and recreate the connection
-                        actor.retry();
-                        actor.pauseAndRestart(intervalSeconds, TimeUnit.SECONDS);
-                    } else {
-                        actor.pauseAndRestart(intervalSeconds, TimeUnit.SECONDS);
-                    }
-                }).build();
-
-        ActorRef<String> actor = context.createActor(Query.class);
+                .supervisor(createJdbcSupervisor()) //
+                .scheduler(Scheduler.io()) //
+                .build();
+        CountDownLatch latch = new CountDownLatch(2);
+        ActorRef<String> actor = context.actorClass(Query.class, latch).build();
         actor.tell("run");
         actor.tell("error");
         actor.tell("again");
-        Thread.sleep(10000);
+        assertTrue(latch.await(10, TimeUnit.SECONDS));
         context.shutdownGracefully().get(5, TimeUnit.SECONDS);
         log.info("shutdown");
-        Scheduler.forkJoin().shutdown();
+    }
+
+    private static Supervisor createJdbcSupervisor() {
+        return (message, actor, error) -> {
+            log.warn(error.getMessage());
+            if (error.getCause() != null && error.getCause() instanceof SQLTransientException) {
+                actor.retry();
+                actor.pause(RESTART_INTERVAL_MS, TimeUnit.MILLISECONDS);
+            } else if (error.getCause() != null
+                    && error.getCause() instanceof SQLNonTransientConnectionException) {
+                // connection failed so retry the message and recreate the connection
+                actor.retry();
+                actor.pauseAndRestart(RESTART_INTERVAL_MS, TimeUnit.MILLISECONDS);
+            } else {
+                // don't retry the message but pause a bit anyway
+                actor.pauseAndRestart(RESTART_INTERVAL_MS, TimeUnit.MILLISECONDS);
+            }
+        };
     }
 
     public static final class Query extends AbstractActor<String> {
 
         private static final Logger log = LoggerFactory.getLogger(Query.class);
 
+        private final CountDownLatch latch;
         private Connection con;
         private PreparedStatement ps;
+        
+        public Query(CountDownLatch latch) {
+            this.latch = latch;
+        }
 
         @Override
         public void preStart(ActorRef<String> self) {
@@ -75,6 +92,7 @@ public class RetryExampleMain {
                 try (ResultSet rs = ps.executeQuery()) {
                     rs.next();
                     log.info("returned {}", rs.getObject(1));
+                    latch.countDown();
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
