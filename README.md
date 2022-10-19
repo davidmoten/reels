@@ -256,5 +256,6 @@ BenchmarksAkka.ask                                thrpt   10       7.095 ±   0.
 BenchmarksAkka.contendedConcurrency               thrpt   10       1.746 ±   0.017  ops/s
 BenchmarksAkka.groupRandomMessages                thrpt   10       3.300 ±   0.102  ops/s
 Benchmarks.sequential                                ss   10       2.514 ±   0.361   s/op
+BenchmarksAkka.sequential                            ss   10      21.438 ±   0.587   s/op
 ```
 
