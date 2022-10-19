@@ -211,13 +211,19 @@ Output:
 
 ## Supervisors
 When an error is thrown by your code in onMessage you have two options:
-* handle the error there and reset state as appropriate
+* catch and handle the error in-place and reset state as appropriate
 * handle the error in a Supervisor, which has more functionality including the ability to restart (recreate the Actor instance), pause processing, and retry a message.
 
 For example, a Supervisor for some JDBC work can check if the thrown exception is an instance of SQLTransientException and mark the message for a retry after a pause. 
 If the thrown exception is an instance of SQLNonTransientConnectionException then we should retry with a new connection object. This [unit test](src/test/java/com/github/davidmoten/reels/RetryExampleTest.java) demonstrates this example.
 
 If you don't specify your own Supervisor (either globally in the Context or specifically for your Actor) then the [default Supervisor](src/main/java/com/github/davidmoten/reels/internal/supervisor/SupervisorDefault.java) is used.
+
+Note that the Supervisor is called also for errors thrown by `Actor.preStart` and `Actor.onStop`. However, those errors will arrive at the Supervisor wrapped in `PreStartException` and `OnStopException` respectively. 
+
+The default Supervisor for an actor is the Supervisor of its parent.
+
+Supervisors themselves should not throw. If they do TODO.
 
 ## Notes
 
@@ -257,7 +263,6 @@ Benchmarking indicates that reels is faster than Akka for three aspects tested:
 * hub and spoke contended performance (3x faster)
 * random messages around a ring performance, some contention, uses actor lookups (5x faster)
 * long sequential chain then return (8x faster)
-
 
 Using JDK 17:
 ```
