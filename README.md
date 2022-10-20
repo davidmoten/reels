@@ -243,6 +243,7 @@ Schedulers wrap executors and are designed to be efficient for particular use ca
 * `Scheduler.io()`, a singleton unbounded thread pool designed for blocking work, unused threads are disposed of by an evicting thread after 60s of inactivity. Each Worker has one thread (and each thread in this pool has only one Worker). This scheduler was adapted from RxJava 3.x `Schedulers.io()`.
 * `Scheduler.single()`, a singleton scheduler that is based on a single thread executor service
 * `Scheduler.newSingle()`, creates a new single-thread-based scheduler
+* `Scheduler.fromExecutor(ExecutorService)`, creates a new scheduler based on the given ExecutorService. Use one of these with a pool for blocking work where you have a lot of actors (to limit context switching and thread memory use)
 * `Scheduler.test()` is for synchronous unit testing purposes and **should not be mixed with asynchronous scheduler use** in the same Context.
 * `Scheduler.immediate()` is for synchronous execution of all tasks, limited delayed scheduling, and **should not be mixed with asynchronous scheduler use** in the same Context
  
