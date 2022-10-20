@@ -58,7 +58,7 @@ Add this dependency to your pom.xml:
 ## Usage
 
 ### Create a Context
-* Create a `Context` (`ActorSystem` in Akka) object to create your actors and control their lifecyclee
+* Create a `Context` (`ActorSystem` in Akka) object to create your actors and control their lifecycle
 * `Scheduler`s (`Dispatcher`s in Akka) live outside your `Context` object and thus can be shared across `Context`s (for greater efficiency))
 
 The simplest way to create a `Context` object is:
@@ -159,7 +159,7 @@ Note that if you use a lambda and you make a reference to the enclosing class th
 
 ### Create an Actor using your own class
 
-You can also create an Actor class yourself instead of using the builder. Implement `Actor<T` or extend `AbstractActor<T>`. Suppose you create a class called `MyActor` which extends `AbstractActor<Integer>`. You can create an ActorRef for this class with the Context as follows:
+You can also create an Actor class yourself instead of using the builder. Implement `Actor<T>` or extend `AbstractActor<T>`. Suppose you create a class called `MyActor` which extends `AbstractActor<Integer>`. You can create an ActorRef for this class with the Context as follows:
 
 ```java
 ActorRef<Integer> actor = context.actorClass(MyActor.class).build();
@@ -264,7 +264,7 @@ Benchmarking indicates that reels is faster than Akka for three aspects tested:
 * random messages around a ring performance, some contention, uses actor lookups (5x faster)
 * long sequential chain then return (8x faster)
 
-Using JDK 17:
+Using JDK 17 on i5-6200U with 4 cores:
 ```
 Benchmark                                          Mode  Cnt       Score     Error  Units
 Benchmarks.actorCreateAndStop                     thrpt   10  249599.500 ± 417.851  ops/s
