@@ -855,6 +855,28 @@ public class ActorTest {
         context.shutdownGracefully().get(5000, TimeUnit.SECONDS);
     }
 
+    @Test
+    public void testBoundedMailbox() throws InterruptedException, ExecutionException, TimeoutException {
+        Context c = Context.create();
+        List<Integer> list = new CopyOnWriteArrayList<>();
+        ActorRef<Integer> a = c //
+                .<Integer>matchAny(m -> {
+                    list.add(m.content());
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        // do nothing
+                    }
+                }) //
+                .mailboxFactory(MailboxFactory.bounded(3, true)) //
+                .build();
+        for (int i = 0; i < 7; i++) {
+            a.tell(i);
+        }
+        c.shutdownGracefully().get(5, TimeUnit.SECONDS);
+        assertTrue(Arrays.asList(0, 5, 6).equals(list) || Arrays.asList(4, 5, 6).equals(list));
+    }
+
     public static final class MyActor extends AbstractActor<Integer> {
 
         static volatile Integer last;
