@@ -148,6 +148,19 @@ public final class ActorBuilder<T> {
         this.mailboxFactory = mailboxFactory;
         return this;
     }
+    
+    public ActorBuilder<T> mailbox(Mailbox<T> mailbox) {
+        this.mailboxFactory = new MailboxFactory() {
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public <S> Mailbox<S> create() {
+                return (Mailbox<S>) mailbox;
+            }
+            
+        };
+        return this;
+    }
 
     public ActorRef<T> build() {
         if (supervisor == null) {
