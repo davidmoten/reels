@@ -2,7 +2,6 @@ package com.github.davidmoten.reels;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,6 +14,7 @@ import com.github.davidmoten.reels.internal.Constants;
 import com.github.davidmoten.reels.internal.DeadLetterActor;
 import com.github.davidmoten.reels.internal.Preconditions;
 import com.github.davidmoten.reels.internal.RootActorRefImpl;
+import com.github.davidmoten.reels.internal.util.Util;
 
 /**
  * Creates actors, disposes actors and looks actors up by name.
@@ -210,39 +210,8 @@ public final class Context {
 
     @SuppressWarnings("unchecked")
     static <T> Actor<T> createActorObject(Class<? extends Actor<T>> actorClass, Object... args) {
-        Constructor<? extends Actor<T>> c = getMatchingConstructor(actorClass, args);
+        Constructor<? extends Actor<T>> c = Util.getMatchingConstructor(actorClass, args);
         return (Actor<T>) construct(c, args);
-    }
-
-    @SuppressWarnings("unchecked")
-    static <C> Constructor<C> getMatchingConstructor(Class<C> c, Object[] args) {
-        for (Constructor<?> con : c.getDeclaredConstructors()) {
-            Class<?>[] types = con.getParameterTypes();
-            if (types.length != args.length)
-                continue;
-            boolean match = true;
-            for (int i = 0; i < types.length; i++) {
-                Class<?> need = types[i], got = args[i].getClass();
-                if (!need.isAssignableFrom(got)) {
-                    if (need.isPrimitive()) {
-                        match = int.class.equals(need) && Integer.class.equals(got) //
-                                || long.class.equals(need) && Long.class.equals(got) //
-                                || char.class.equals(need) && Character.class.equals(got) //
-                                || short.class.equals(need) && Short.class.equals(got) //
-                                || boolean.class.equals(need) && Boolean.class.equals(got) //
-                                || byte.class.equals(need) && Byte.class.equals(got);
-                    } else {
-                        match = false;
-                    }
-                }
-                if (!match)
-                    break;
-            }
-            if (match)
-                return (Constructor<C>) con;
-        }
-        throw new CreateException(
-                "Cannot find an appropriate constructor for class " + c + " and arguments " + Arrays.toString(args));
     }
 
     // VisibleForTesting

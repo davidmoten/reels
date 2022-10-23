@@ -1,5 +1,10 @@
 package com.github.davidmoten.reels.internal.util;
 
+import java.lang.reflect.Constructor;
+import java.util.Arrays;
+
+import com.github.davidmoten.reels.CreateException;
+
 public final class Util {
 
     private Util() {
@@ -25,6 +30,37 @@ public final class Util {
      */
     public static int roundToPowerOfTwo(final int value) {
         return 1 << (32 - Integer.numberOfLeadingZeros(value - 1));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static <C> Constructor<C> getMatchingConstructor(Class<C> c, Object[] args) {
+        for (Constructor<?> con : c.getDeclaredConstructors()) {
+            Class<?>[] types = con.getParameterTypes();
+            if (types.length != args.length)
+                continue;
+            boolean match = true;
+            for (int i = 0; i < types.length; i++) {
+                Class<?> need = types[i], got = args[i].getClass();
+                if (!need.isAssignableFrom(got)) {
+                    if (need.isPrimitive()) {
+                        match = int.class.equals(need) && Integer.class.equals(got) //
+                                || long.class.equals(need) && Long.class.equals(got) //
+                                || char.class.equals(need) && Character.class.equals(got) //
+                                || short.class.equals(need) && Short.class.equals(got) //
+                                || boolean.class.equals(need) && Boolean.class.equals(got) //
+                                || byte.class.equals(need) && Byte.class.equals(got);
+                    } else {
+                        match = false;
+                    }
+                }
+                if (!match)
+                    break;
+            }
+            if (match)
+                return (Constructor<C>) con;
+        }
+        throw new CreateException(
+                "Cannot find an appropriate constructor for class " + c + " and arguments " + Arrays.toString(args));
     }
 
 }
