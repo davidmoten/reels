@@ -38,13 +38,11 @@ public final class MailboxBounded<T> extends ArrayDeque<Message<T>> implements M
         if (size() == maxSize) {
             if (dropFirst) {
                 pollFirst();
-                return super.offer(message);
             } else {
                 return false;
             }
-        } else {
-            return super.offer(message);
         }
+        return super.offer(message);
     }
 
     @Override
