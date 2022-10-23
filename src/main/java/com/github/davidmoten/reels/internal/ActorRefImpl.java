@@ -19,6 +19,8 @@ import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
 import com.github.davidmoten.reels.CreateException;
 import com.github.davidmoten.reels.DeadLetter;
+import com.github.davidmoten.reels.Mailbox;
+import com.github.davidmoten.reels.MailboxFactory;
 import com.github.davidmoten.reels.Message;
 import com.github.davidmoten.reels.OnStopException;
 import com.github.davidmoten.reels.PoisonPill;
@@ -27,8 +29,6 @@ import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.SupervisedActorRef;
 import com.github.davidmoten.reels.Supervisor;
 import com.github.davidmoten.reels.Worker;
-import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
-import com.github.davidmoten.reels.internal.queue.SimplePlainQueue;
 
 public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable {
 
@@ -37,7 +37,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     private final String name;
     private final Supplier<? extends Actor<T>> factory; // used to recreate actor
-    private transient final SimplePlainQueue<Message<T>> queue; // mailbox
+    private transient final Mailbox<T> mailbox; // mailbox
     private final Context context;
     private final Supervisor supervisor;
     private final Scheduler scheduler;
@@ -47,8 +47,6 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     private Actor<T> actor; // mutable because recreated if restart called
     private boolean preStartHasBeenRun;
     protected final AtomicInteger state = new AtomicInteger(); // ACTIVE
-    private Message<T> lastMessage; // used for retrying
-    private boolean retry;
     private boolean systemMessagesOnly;
 
     private static final int ACTIVE = 0;
@@ -59,12 +57,12 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     private static final int PAUSED = 5;
 
     public static <T> ActorRefImpl<T> create(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
-            Context context, Supervisor supervisor, ActorRef<?> parent) {
+            Context context, Supervisor supervisor, ActorRef<?> parent, MailboxFactory mailboxFactory) {
         final ActorRefImpl<T> a;
         if (scheduler.requiresSerialization()) {
-            a = new ActorRefSerialized<T>(name, factory, scheduler, context, supervisor, parent);
+            a = new ActorRefSerialized<T>(name, factory, scheduler, context, supervisor, parent, mailboxFactory);
         } else {
-            a = new ActorRefNotSerialized<T>(name, factory, scheduler, context, supervisor, parent);
+            a = new ActorRefNotSerialized<T>(name, factory, scheduler, context, supervisor, parent, mailboxFactory);
         }
         if (parent != null) {
             ((ActorRefImpl<?>) parent).addChild(a);
@@ -73,12 +71,12 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     }
 
     protected ActorRefImpl(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler, Context context,
-            Supervisor supervisor, ActorRef<?> parent) {
+            Supervisor supervisor, ActorRef<?> parent, MailboxFactory mailboxFactory) {
         this.name = name;
         this.factory = factory;
         this.context = context;
         this.supervisor = supervisor;
-        this.queue = new MpscLinkedQueue<Message<T>>();
+        this.mailbox = mailboxFactory.create();
         this.worker = scheduler.createWorker();
         this.parent = parent;
         this.scheduler = scheduler;
@@ -159,7 +157,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     @Override
     public void tell(T message, ActorRef<?> sender) {
-        queue.offer(new Message<T>(message, this, sender));
+        mailbox.offer(new Message<T>(message, this, sender));
         scheduleDrain();
     }
 
@@ -195,7 +193,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
             ActorRef<?> p = parent;
             if (p == null) {
                 // is root actor (which is the only actor without a parent)
-                queue.offer(new Message<T>((T) Terminated.INSTANCE, this, this));
+                mailbox.offer(new Message<T>((T) Terminated.INSTANCE, this, this));
             } else {
                 p.<Object>recast().tell(Terminated.INSTANCE, this);
             }
@@ -300,24 +298,14 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
 
     @Override
     public void retry() {
-        retry = true;
-    }
-
-    private Message<T> poll() {
-        if (retry) {
-            retry = false;
-            return lastMessage;
-        }
-        Message<T> v = queue.poll();
-        lastMessage = v;
-        return v;
+        mailbox.retryLatest();
     }
 
     @SuppressWarnings("unchecked")
     protected void drain() {
         Message<T> message;
         int s;
-        while ((s = state.get()) != PAUSED && (message = poll()) != null) {
+        while ((s = state.get()) != PAUSED && (message = (Message<T>) mailbox.poll()) != null) {
             if (debug) {
                 log("message polled=" + message.content() + " from " + message.sender() + ", state=" + s);
             }

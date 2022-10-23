@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * A multi-producer single consumer unbounded queue.
  * @param <T> the contained value type
  */
-public final class MpscLinkedQueue<T> implements SimplePlainQueue<T> {
+public class MpscLinkedQueue<T> implements SimplePlainQueue<T> {
     private final AtomicReference<LinkedQueueNode<T>> producerNode;
     private final AtomicReference<LinkedQueueNode<T>> consumerNode;
 

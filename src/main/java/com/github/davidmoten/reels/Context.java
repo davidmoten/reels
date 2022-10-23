@@ -48,19 +48,30 @@ public final class Context {
 
     private final Scheduler scheduler;
 
+    private final MailboxFactory mailboxFactory;
+
     Context() {
         this(Supervisor.defaultSupervisor(), () -> createActorObject(DeadLetterActor.class),
-                Scheduler.defaultScheduler());
+                Scheduler.defaultScheduler(), MailboxFactory.unbounded());
     }
 
-    Context(Supervisor supervisor, Supplier<? extends Actor<DeadLetter>> deadLetterActorFactory, Scheduler scheduler) {
+    Context(Supervisor supervisor, Supplier<? extends Actor<DeadLetter>> deadLetterActorFactory, Scheduler scheduler,
+            MailboxFactory mailboxFactory) {
         this.supervisor = supervisor;
         // TODO this escaping the constructor
         this.root = new RootActorRefImpl(Constants.ROOT_ACTOR_NAME, ActorDoNothing::create, scheduler, this,
                 supervisor);
-        this.deadLetterActor = (ActorRefImpl<DeadLetter>) createActor(deadLetterActorFactory,
-                Constants.DEAD_LETTER_ACTOR_NAME);
+
+        // set this before calling createActor
+        this.mailboxFactory = mailboxFactory;
         this.scheduler = scheduler;
+
+        this.deadLetterActor = (ActorRefImpl<DeadLetter>) createActor( //
+                deadLetterActorFactory, //
+                Constants.DEAD_LETTER_ACTOR_NAME, //
+                Scheduler.defaultScheduler(), //
+                supervisor, //
+                Optional.ofNullable(root));
     }
 
     public static Context create() {
@@ -104,11 +115,11 @@ public final class Context {
     public <T> ActorRef<T> createActor(Supplier<? extends Actor<T>> actorFactory, String name,
             Scheduler processMessagesOn, Supervisor supervisor, Optional<ActorRef<?>> parent) {
         Preconditions.checkArgumentNonNull(parent, "parent");
-        return createActor(actorFactory, name, processMessagesOn, supervisor, parent.orElse(null));
+        return createActor(actorFactory, name, processMessagesOn, supervisor, parent.orElse(null), mailboxFactory);
     }
 
     <T> ActorRef<T> createActor(Supplier<? extends Actor<T>> actorFactory, String name, Scheduler processMessagesOn,
-            Supervisor supervisor, ActorRef<?> parent) {
+            Supervisor supervisor, ActorRef<?> parent, MailboxFactory mailboxFactory) {
         Preconditions.checkArgumentNonNull(actorFactory, "actorFactory");
         Preconditions.checkArgumentNonNull(name, "name");
         Preconditions.checkArgumentNonNull(processMessagesOn, "processMessagesOn");
@@ -116,7 +127,7 @@ public final class Context {
         if (state.get() != STATE_ACTIVE) {
             throw new CreateException("cannot create actor because Context shutdown/dispose has been called ");
         }
-        return ActorRefImpl.create(name, actorFactory, processMessagesOn, this, supervisor, parent);
+        return ActorRefImpl.create(name, actorFactory, processMessagesOn, this, supervisor, parent, mailboxFactory);
     }
 
     @SuppressWarnings("unchecked")
@@ -202,7 +213,7 @@ public final class Context {
         Constructor<? extends Actor<T>> c = getMatchingConstructor(actorClass, args);
         return (Actor<T>) construct(c, args);
     }
-    
+
     @SuppressWarnings("unchecked")
     static <C> Constructor<C> getMatchingConstructor(Class<C> c, Object[] args) {
         for (Constructor<?> con : c.getDeclaredConstructors()) {
@@ -230,8 +241,8 @@ public final class Context {
             if (match)
                 return (Constructor<C>) con;
         }
-        throw new CreateException("Cannot find an appropriate constructor for class " + c + " and arguments "
-                + Arrays.toString(args));
+        throw new CreateException(
+                "Cannot find an appropriate constructor for class " + c + " and arguments " + Arrays.toString(args));
     }
 
     // VisibleForTesting
@@ -242,6 +253,10 @@ public final class Context {
                 | InvocationTargetException e) {
             throw new CreateException(e);
         }
+    }
+
+    public MailboxFactory mailboxFactory() {
+        return mailboxFactory;
     }
 
 }

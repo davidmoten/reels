@@ -32,6 +32,8 @@ public final class ActorBuilder<T> {
     private Consumer<? super ActorRef<T>> onStop = null;
     private Consumer<? super ActorRef<T>> preStart = null;
 
+    private MailboxFactory mailboxFactory;
+
     ActorBuilder(Context context) {
         this.context = context;
         this.parent = context.root;
@@ -140,6 +142,12 @@ public final class ActorBuilder<T> {
         this.parent = parent;
         return this;
     }
+    
+    public ActorBuilder<T> mailboxFactory(MailboxFactory mailboxFactory) {
+        Preconditions.checkArgumentNonNull(mailboxFactory, "mailboxFactory");
+        this.mailboxFactory = mailboxFactory;
+        return this;
+    }
 
     public ActorRef<T> build() {
         if (supervisor == null) {
@@ -148,8 +156,11 @@ public final class ActorBuilder<T> {
         if (scheduler == null) {
             scheduler = parent.scheduler();
         }
+        if (mailboxFactory == null) {
+            mailboxFactory = context.mailboxFactory(); 
+        }
         Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError, preStart, onStop));
-        return context.createActor(f, name, scheduler, supervisor, parent);
+        return context.createActor(f, name, scheduler, supervisor, parent, mailboxFactory);
     }
 
     private static final class Matcher<T, S extends T> {
