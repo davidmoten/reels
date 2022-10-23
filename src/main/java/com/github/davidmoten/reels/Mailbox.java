@@ -22,7 +22,9 @@ public interface Mailbox<T> {
 
     /**
      * Places the last message polled back on the queue so that the next poll will
-     * return that message again.
+     * return that message again. Must be called from the same thread as poll or
+     * more formally there should always be a formal happens-before relationship
+     * between poll and this method.
      */
     void retryLatest();
 }
