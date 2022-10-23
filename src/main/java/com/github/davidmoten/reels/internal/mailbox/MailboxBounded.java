@@ -27,6 +27,7 @@ public final class MailboxBounded<T> extends ArrayDeque<Message<T>> implements M
             retry = false;
             return latest;
         } else {
+            retry = false;
             synchronized (this) {
                 return latest = super.poll();
             }

@@ -15,6 +15,7 @@ public final class MailboxUnbounded<T> extends MpscLinkedQueue<Message<T>> imple
             retry = false;
             return latest;
         } else {
+            retry = false;
             return latest = super.poll();
         }
     }

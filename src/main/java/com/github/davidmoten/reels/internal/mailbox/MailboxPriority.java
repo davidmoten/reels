@@ -22,6 +22,7 @@ public final class MailboxPriority<T> implements Mailbox<T> {
             retry = false;
             return latest;
         } else {
+            retry = false;
             synchronized (this) {
                 return latest = queue.poll();
             }

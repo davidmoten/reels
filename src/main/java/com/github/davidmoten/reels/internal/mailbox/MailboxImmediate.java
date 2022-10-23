@@ -24,6 +24,7 @@ public final class MailboxImmediate<T> implements Mailbox<T> {
             retry = false;
             return latest;
         } else {
+            retry = false;
             return latest = queue.poll();
         }
     }
