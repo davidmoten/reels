@@ -1,6 +1,7 @@
 package com.github.davidmoten.reels.internal.queue;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -25,12 +26,15 @@ public class MpscLinkedQueueTest {
     public void testEmpty() {
         MpscLinkedQueue<Object> q = new MpscLinkedQueue<>();
         assertTrue(q.isEmpty());
+        q.clear();
+        assertTrue(q.isEmpty());
     }
     
     @Test
     public void testPollThenEmpty() {
         MpscLinkedQueue<Object> q = new MpscLinkedQueue<>();
         q.offer(1);
+        assertFalse(q.isEmpty());
         q.clear();
         assertTrue(q.isEmpty());
     }
