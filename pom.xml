@@ -222,7 +222,7 @@
             <plugin>
                 <groupId>com.github.davidmoten</groupId>
                 <artifactId>plantuml-maven-plugin</artifactId>
-                <version>0.1.6</version>
+                <version>0.1.7</version>
                 <executions>
                     <execution>
                         <id>generate-diagrams</id>
