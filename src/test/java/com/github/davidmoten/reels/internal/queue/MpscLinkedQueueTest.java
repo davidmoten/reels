@@ -34,6 +34,7 @@ public class MpscLinkedQueueTest {
     public void testPollThenEmpty() {
         MpscLinkedQueue<Object> q = new MpscLinkedQueue<>();
         q.offer(1);
+        q.offer(2);
         assertFalse(q.isEmpty());
         q.clear();
         assertTrue(q.isEmpty());
