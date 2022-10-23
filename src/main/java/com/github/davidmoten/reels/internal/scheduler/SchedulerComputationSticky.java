@@ -65,7 +65,7 @@ public final class SchedulerComputationSticky extends AbstractCanScheduleDisposa
     }
 
     @Override
-    public boolean requiresSynchronization() {
+    public boolean requiresDrainSynchronization() {
         return false;
     }
 

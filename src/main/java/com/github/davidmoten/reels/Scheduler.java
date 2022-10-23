@@ -24,12 +24,14 @@ public interface Scheduler extends CanSchedule {
     Worker createWorker();
 
     /**
-     * Returns true If and only if the draining and processing of messages from the
-     * queue (mailbox) needs enforced serialization.
+     * Returns true if and only if the draining and processing of messages from the
+     * queue (mailbox) needs enforced synchronization. For example the {@code io()}
+     * Scheduler always processes a single actor's messages on the same thread so
+     * doesn't require multithreaded access protection.
      * 
-     * @return true true iff requires serialization
+     * @return true true iff requires synchronization
      */
-    boolean requiresSynchronization();
+    boolean requiresDrainSynchronization();
 
     /**
      * Shuts this scheduler down so that subsequent tasks submitted to it will be

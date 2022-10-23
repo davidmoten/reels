@@ -59,10 +59,10 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     public static <T> ActorRefImpl<T> create(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
             Context context, Supervisor supervisor, ActorRef<?> parent, MailboxFactory mailboxFactory) {
         final ActorRefImpl<T> a;
-        if (scheduler.requiresSynchronization()) {
-            a = new ActorRefSynchronized<T>(name, factory, scheduler, context, supervisor, parent, mailboxFactory);
+        if (scheduler.requiresDrainSynchronization()) {
+            a = new ActorRefSynchronizedDrain<T>(name, factory, scheduler, context, supervisor, parent, mailboxFactory);
         } else {
-            a = new ActorRefUnsynchronized<T>(name, factory, scheduler, context, supervisor, parent, mailboxFactory);
+            a = new ActorRefUnsynchronizedDrain<T>(name, factory, scheduler, context, supervisor, parent, mailboxFactory);
         }
         if (parent != null) {
             ((ActorRefImpl<?>) parent).addChild(a);

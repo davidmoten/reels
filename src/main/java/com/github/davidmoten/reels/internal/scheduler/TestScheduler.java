@@ -146,7 +146,7 @@ public class TestScheduler extends AbstractCanScheduleDisposable implements Sche
     }
 
     @Override
-    public boolean requiresSynchronization() {
+    public boolean requiresDrainSynchronization() {
         return false;
     }
 
