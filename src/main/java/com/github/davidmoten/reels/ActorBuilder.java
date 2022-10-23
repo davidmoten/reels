@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.Preconditions;
+import com.github.davidmoten.reels.internal.mailbox.MailboxUnsynchronizedFactory;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
 import com.github.davidmoten.reels.internal.util.Util;
 
@@ -31,7 +32,6 @@ public final class ActorBuilder<T> {
     private Optional<Supplier<? extends Actor<T>>> factory = Optional.empty();
     private Consumer<? super ActorRef<T>> onStop = null;
     private Consumer<? super ActorRef<T>> preStart = null;
-
     private MailboxFactory mailboxFactory;
 
     ActorBuilder(Context context) {
@@ -104,7 +104,8 @@ public final class ActorBuilder<T> {
     /**
      * Sets unique name of the actor (should be unique amongst sibling Actors).
      * 
-     * @param name unique name of the actor (should be unique amongst sibling Actors).
+     * @param name unique name of the actor (should be unique amongst sibling
+     *             Actors).
      * @return builder
      */
     public ActorBuilder<T> name(String name) {
@@ -142,13 +143,13 @@ public final class ActorBuilder<T> {
         this.parent = parent;
         return this;
     }
-    
+
     public ActorBuilder<T> mailboxFactory(MailboxFactory mailboxFactory) {
         Preconditions.checkArgumentNonNull(mailboxFactory, "mailboxFactory");
         this.mailboxFactory = mailboxFactory;
         return this;
     }
-    
+
     public ActorBuilder<T> mailbox(Mailbox<T> mailbox) {
         this.mailboxFactory = new MailboxFactory() {
 
@@ -157,7 +158,7 @@ public final class ActorBuilder<T> {
             public <S> Mailbox<S> create() {
                 return (Mailbox<S>) mailbox;
             }
-            
+
         };
         return this;
     }
@@ -170,7 +171,11 @@ public final class ActorBuilder<T> {
             scheduler = parent.scheduler();
         }
         if (mailboxFactory == null) {
-            mailboxFactory = context.mailboxFactory(); 
+            if (!scheduler.requiresSynchronization()) {
+                mailboxFactory = MailboxUnsynchronizedFactory.INSTANCE;
+            } else {
+                mailboxFactory = context.mailboxFactory();
+            }
         }
         Supplier<? extends Actor<T>> f = factory.orElse(() -> new MatchingActor<T>(matches, onError, preStart, onStop));
         return context.createActor(f, name, scheduler, supervisor, parent, mailboxFactory);

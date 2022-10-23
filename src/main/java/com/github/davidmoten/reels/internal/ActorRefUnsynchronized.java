@@ -1,6 +1,5 @@
 package com.github.davidmoten.reels.internal;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import com.github.davidmoten.reels.Actor;
@@ -10,27 +9,23 @@ import com.github.davidmoten.reels.MailboxFactory;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Supervisor;
 
-public class ActorRefSerialized<T> extends ActorRefImpl<T> {
+public class ActorRefUnsynchronized<T> extends ActorRefImpl<T> {
 
-    private final AtomicInteger wip = new AtomicInteger();
+    boolean running;
 
-    protected ActorRefSerialized(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
+    protected ActorRefUnsynchronized(String name, Supplier<? extends Actor<T>> factory, Scheduler scheduler,
             Context context, Supervisor supervisor, ActorRef<?> parent, MailboxFactory mailboxFactory) {
         super(name, factory, scheduler, context, supervisor, parent, mailboxFactory);
     }
-
+    
     @Override
     public void run() {
-        if (wip.getAndIncrement() == 0) {
-            while (true) {
-                int missed = 1;
-                drain();
-                missed = wip.addAndGet(-missed);
-                if (missed == 0) {
-                    break;
-                }
-            }
+        // protect against recursion
+        if (!running) {
+            running = true;
+            drain();
+            running = false;
         }
     }
-
+    
 }

@@ -49,7 +49,7 @@ public class SchedulerImmediate implements Scheduler {
     }
 
     @Override
-    public boolean requiresSerialization() {
+    public boolean requiresSynchronization() {
         return false;
     }
 

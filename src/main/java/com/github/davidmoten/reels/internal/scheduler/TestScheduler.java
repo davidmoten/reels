@@ -146,7 +146,7 @@ public class TestScheduler extends AbstractCanScheduleDisposable implements Sche
     }
 
     @Override
-    public boolean requiresSerialization() {
+    public boolean requiresSynchronization() {
         return false;
     }
 

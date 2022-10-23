@@ -48,7 +48,7 @@ public class SchedulerFromExecutor implements Scheduler {
     }
 
     @Override
-    public boolean requiresSerialization() {
+    public boolean requiresSynchronization() {
         return requiresSerialization;
     }
 }

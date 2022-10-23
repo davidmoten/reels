@@ -287,7 +287,7 @@ public final class SchedulerIo extends AbstractCanScheduleDisposable implements 
     }
 
     @Override
-    public boolean requiresSerialization() {
+    public boolean requiresSynchronization() {
         return false;
     }
 

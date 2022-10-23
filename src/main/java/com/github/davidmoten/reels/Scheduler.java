@@ -29,7 +29,7 @@ public interface Scheduler extends CanSchedule {
      * 
      * @return true true iff requires serialization
      */
-    boolean requiresSerialization();
+    boolean requiresSynchronization();
 
     /**
      * Shuts this scheduler down so that subsequent tasks submitted to it will be

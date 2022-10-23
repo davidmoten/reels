@@ -10,7 +10,7 @@ import com.github.davidmoten.reels.MailboxFactory;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Supervisor;
 
-public final class RootActorRefImpl extends ActorRefSerialized<Object> {
+public final class RootActorRefImpl extends ActorRefSynchronized<Object> {
     
     private final CompletableFuture<Void> stopFuture = new CompletableFuture<>();
 

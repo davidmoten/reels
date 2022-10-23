@@ -65,7 +65,7 @@ public final class SchedulerComputationSticky extends AbstractCanScheduleDisposa
     }
 
     @Override
-    public boolean requiresSerialization() {
+    public boolean requiresSynchronization() {
         return false;
     }
 
