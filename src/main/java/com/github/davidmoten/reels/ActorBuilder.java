@@ -9,8 +9,9 @@ import java.util.function.Supplier;
 
 import com.github.davidmoten.reels.internal.ActorRefImpl;
 import com.github.davidmoten.reels.internal.Preconditions;
-import com.github.davidmoten.reels.internal.mailbox.MailboxUnsynchronizedFactory;
+import com.github.davidmoten.reels.internal.mailbox.MailboxImmediateFactory;
 import com.github.davidmoten.reels.internal.scheduler.SchedulerForkJoinPool;
+import com.github.davidmoten.reels.internal.scheduler.SchedulerImmediate;
 import com.github.davidmoten.reels.internal.util.Util;
 
 /**
@@ -171,8 +172,8 @@ public final class ActorBuilder<T> {
             scheduler = parent.scheduler();
         }
         if (mailboxFactory == null) {
-            if (!scheduler.requiresSynchronization()) {
-                mailboxFactory = MailboxUnsynchronizedFactory.INSTANCE;
+            if (scheduler instanceof SchedulerImmediate) {
+                mailboxFactory = MailboxImmediateFactory.INSTANCE;
             } else {
                 mailboxFactory = context.mailboxFactory();
             }

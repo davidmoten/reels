@@ -11,7 +11,7 @@ import com.github.davidmoten.reels.Message;
  * 
  * @param <T>
  */
-public final class MailboxUnsynchronized<T> implements Mailbox<T> {
+public final class MailboxImmediate<T> implements Mailbox<T> {
 
     private final Queue<Message<T>> queue = new LinkedList<Message<T>>();
 
