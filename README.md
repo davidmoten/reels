@@ -268,19 +268,20 @@ Benchmarking indicates that reels is faster than Akka for three aspects tested:
 Using JDK 17 on i5-6200U with 4 cores:
 ```
 Benchmark                                          Mode  Cnt       Score     Error  Units
-Benchmarks.actorCreateAndStop                     thrpt   10  249599.500 ± 417.851  ops/s
-Benchmarks.ask                                    thrpt   10       8.048 ±   0.022  ops/s
-Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.696 ±   0.053  ops/s
-Benchmarks.contendedConcurrencyForkJoin           thrpt   10       5.679 ±   0.043  ops/s
-Benchmarks.contendedConcurrencyImmediate          thrpt   10       9.422 ±   0.175  ops/s
-Benchmarks.groupRandomMessagesComputationSticky   thrpt   10       1.921 ±   0.055  ops/s
-Benchmarks.groupRandomMessagesForkJoin            thrpt   10      17.068 ±   0.238  ops/s
-Benchmarks.groupRandomMessagesImmediate           thrpt   10      31.629 ±   0.384  ops/s
+Benchmarks.actorCreateAndStop                     thrpt   10  251437.893 ± 449.575  ops/s
+Benchmarks.ask                                    thrpt   10       8.063 ±   0.018  ops/s
+Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       0.763 ±   0.050  ops/s
+Benchmarks.contendedConcurrencyForkJoin           thrpt   10       6.028 ±   0.248  ops/s
+Benchmarks.contendedConcurrencyImmediate          thrpt   10      10.072 ±   0.099  ops/s
+Benchmarks.groupRandomMessagesComputationSticky   thrpt   10       1.958 ±   0.045  ops/s
+Benchmarks.groupRandomMessagesForkJoin            thrpt   10      17.947 ±   0.694  ops/s
+Benchmarks.groupRandomMessagesImmediate           thrpt   10      32.813 ±   0.616  ops/s
 Benchmarks.groupRandomMessagesIo                  thrpt   10       0.867 ±   0.019  ops/s
-BenchmarksAkka.ask                                thrpt   10       7.095 ±   0.175  ops/s
-BenchmarksAkka.contendedConcurrency               thrpt   10       1.746 ±   0.017  ops/s
-BenchmarksAkka.groupRandomMessages                thrpt   10       3.300 ±   0.102  ops/s
-Benchmarks.sequential                                ss   10       2.514 ±   0.361   s/op
-BenchmarksAkka.sequential                            ss   10      21.438 ±   0.587   s/op
+BenchmarksAkka.ask                                thrpt   10       6.978 ±   0.293  ops/s
+BenchmarksAkka.contendedConcurrency               thrpt   10       1.641 ±   0.105  ops/s
+BenchmarksAkka.groupRandomMessages                thrpt   10       3.711 ±   0.055  ops/s
+Benchmarks.sequential                                ss   10       1.951 ±   0.326   s/op
+BenchmarksAkka.sequential                            ss   10      20.868 ±   0.478   s/op
 ```
+
 
