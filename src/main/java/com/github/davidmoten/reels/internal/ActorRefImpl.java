@@ -29,6 +29,7 @@ import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.SupervisedActorRef;
 import com.github.davidmoten.reels.Supervisor;
 import com.github.davidmoten.reels.Worker;
+import com.github.davidmoten.reels.internal.mailbox.MailboxUnsynchronizedFactory;
 
 public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable {
 
@@ -62,7 +63,8 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
         if (scheduler.requiresSerialization()) {
             a = new ActorRefSerialized<T>(name, factory, scheduler, context, supervisor, parent, mailboxFactory);
         } else {
-            a = new ActorRefNotSerialized<T>(name, factory, scheduler, context, supervisor, parent, mailboxFactory);
+            a = new ActorRefNotSerialized<T>(name, factory, scheduler, context, supervisor, parent,
+                    MailboxUnsynchronizedFactory.INSTANCE);
         }
         if (parent != null) {
             ((ActorRefImpl<?>) parent).addChild(a);
@@ -101,7 +103,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     public void stop() {
         tell(PoisonPill.instance(), parent);
     }
-    
+
     @Override
     public void stopNow() {
         if (debug)
@@ -144,7 +146,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
             }
         }
     }
-    
+
     @Override
     public boolean isStopped() {
         return state.get() == STOPPED;

@@ -22,8 +22,8 @@ public interface Mailbox<T> {
 
     /**
      * Places the last message polled back on the queue so that the next poll will
-     * return that message again. Must be called from the same thread as poll or
-     * more formally there should always be a formal happens-before relationship
+     * return that message again. Should be called from the same thread as poll or
+     * more formally there must always be a formal happens-before relationship
      * between poll and this method.
      */
     void retryLatest();
