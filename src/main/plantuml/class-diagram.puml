@@ -1,4 +1,6 @@
 @startuml
+top to bottom direction
+
 interface "Actor<T>" as Actor_T_ [[java:com.github.davidmoten.reels.Actor]] {
     onMessage(message: Message<T>): void
     preStart(self: ActorRef<T>): void
@@ -19,25 +21,39 @@ interface "ActorRef<T>" as ActorRef_T_ [[java:com.github.davidmoten.reels.ActorR
 Context --> "creates\n*" ActorRef_T_
 ActorRef_T_ --> "1" Scheduler : scheduler
 class Context [[java:com.github.davidmoten.reels.Context]] {
-    +createActor(...): ActorRef<T>
-    +lookupActor(name: String): Optional<ActorRef<T>>
-    +shutdownNow(): CompletableFuture<Void>
-    +shutdownGracefully(): CompletableFuture<Void>
-    +actorBuilder(): ActorBuilder<T>
+    createActor(...): ActorRef<T>
+    lookupActor(name: String): Optional<ActorRef<T>>
+    shutdownNow(): CompletableFuture<Void>
+    shutdownGracefully(): CompletableFuture<Void>
+    actorBuilder(): ActorBuilder<T>
 }
 Context --> "1" Supervisor : defaultSupervisor
 Context --> "1" Scheduler : defaultScheduler
 Context --> "1" ActorRef_T_ : deadLetterActor
+Context --> "1" MailboxFactory: defaultMailboxFactory
+
+interface "Mailbox<T>" as Mailbox_T_ {
+    poll(): Message<T>
+    offer(message: Message<T>): boolean
+    retryLatest(): void
+}
+ActorRef_T_ "1" <--> "1" Mailbox_T_
+
+interface MailboxFactory {
+    create(): Mailbox<T>
+}
+
+MailboxFactory --> "creates\n*" Mailbox_T_ 
 
 interface Disposable [[java:com.github.davidmoten.reels.Disposable]] {
     dispose(): void
     isDisposed(): boolean
 }
 class "Message<T>" as Message_T_ [[java:com.github.davidmoten.reels.Message]] {
-    +content(): T
-    +self(): ActorRef<T>
-    +recipient(): ActorRef<T>
-    +sender(): ActorRef<S>
+    content(): T
+    self(): ActorRef<T>
+    recipient(): ActorRef<T>
+    sender(): ActorRef<S>
 }
 Message_T_ --> "1" Context
 interface Scheduler [[java:com.github.davidmoten.reels.Scheduler]] {
