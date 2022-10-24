@@ -6,9 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import com.github.davidmoten.reels.internal.ActorRefNone;
 
 /**
- * Calling {@link #dispose()} will clear the message queue for the Actor and
- * prevent more work being queued for the Actor.
- *
+ * Reference that controls the lifecycle and operation of an Actor.
  * @param <T> the message type for the Actor
  */
 public interface ActorRef<T> {
@@ -50,10 +48,11 @@ public interface ActorRef<T> {
     /**
      * Sends a Poison Pill message to the actor which will be stopped when that
      * message is processed. All messages before it in the queue are removed from
-     * the queue and ignored so the Poison Pill message effectively jumps the queue.
+     * the queue and sent to the Dead Letter actor so the Poison Pill message
+     * effectively jumps the queue.
      */
     void stopNow();
-    
+
     boolean isStopped();
 
     /**

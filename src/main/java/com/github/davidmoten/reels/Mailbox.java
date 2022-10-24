@@ -15,7 +15,7 @@ public interface Mailbox<T> {
      * Adds the message to the mailbox. In general this method is thread-safe (can
      * be called concurrently).
      * 
-     * @param value message to add to the mailbox
+     * @param message message to add to the mailbox
      * @return true if added to the mailbox
      */
     boolean offer(Message<T> message);
