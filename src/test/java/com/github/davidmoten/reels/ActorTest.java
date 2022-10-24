@@ -873,8 +873,9 @@ public class ActorTest {
         for (int i = 0; i < 7; i++) {
             a.tell(i);
         }
+        Thread.sleep(200);
         c.shutdownGracefully().get(5, TimeUnit.SECONDS);
-        assertTrue(Arrays.asList(0, 5, 6).equals(list) || Arrays.asList(4, 5, 6).equals(list));
+        assertTrue("did not expect " + list, Arrays.asList(0, 5, 6).equals(list) || Arrays.asList(4, 5, 6).equals(list));
     }
 
     public static final class MyActor extends AbstractActor<Integer> {
