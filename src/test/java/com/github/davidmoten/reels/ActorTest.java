@@ -862,20 +862,15 @@ public class ActorTest {
         ActorRef<Integer> a = c //
                 .<Integer>matchAny(m -> {
                     list.add(m.content());
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        // do nothing
-                    }
                 }) //
                 .mailboxFactory(MailboxFactory.bounded(3, true)) //
                 .build();
         for (int i = 0; i < 7; i++) {
             a.tell(i);
         }
-        Thread.sleep(200);
         c.shutdownGracefully().get(5, TimeUnit.SECONDS);
-        assertTrue("did not expect " + list, Arrays.asList(0, 5, 6).equals(list) || Arrays.asList(4, 5, 6).equals(list));
+        assertTrue("did not expect " + list,
+                Arrays.asList(0, 4, 5, 6).equals(list) || Arrays.asList(4, 5, 6).equals(list));
     }
 
     public static final class MyActor extends AbstractActor<Integer> {

@@ -7,6 +7,7 @@ import com.github.davidmoten.reels.internal.ActorRefNone;
 
 /**
  * Reference that controls the lifecycle and operation of an Actor.
+ * 
  * @param <T> the message type for the Actor
  */
 public interface ActorRef<T> {
