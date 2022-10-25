@@ -79,5 +79,10 @@ public final class ActorRefNone implements ActorRef<Object> {
     public boolean isStopped() {
         return true;
     }
+    
+    @Override
+    public String toString() {
+        return name();
+    }
 
 }

@@ -93,10 +93,6 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
         }
     }
 
-    void removeChild(ActorRef<?> actor) {
-        children.remove(actor.name());
-    }
-
     @Override
     public void stop() {
         tell(PoisonPill.instance(), parent);
@@ -182,7 +178,7 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
     private void runOnStop(Message<T> message) {
         if (setState(STOPPED)) {
             if (debug) {
-                log.debug(this + ": running onStop with message=" + message);
+                log(this + ": running onStop with message=" + message);
             }
             try {
                 actor.onStop(this);
