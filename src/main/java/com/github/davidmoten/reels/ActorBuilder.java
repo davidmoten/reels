@@ -152,6 +152,7 @@ public final class ActorBuilder<T> {
     }
 
     public ActorBuilder<T> mailbox(Mailbox<T> mailbox) {
+        Preconditions.checkArgumentNonNull(mailbox, "mailbox");
         this.mailboxFactory = new MailboxFactory() {
 
             @SuppressWarnings("unchecked")
