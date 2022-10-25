@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -36,6 +37,7 @@ public class ActorTest {
     private static final Logger log = LoggerFactory.getLogger(ActorTest.class);
     private static final int RUNNERS = 100;
     private static final int NUM_MESSAGES = 10000;
+    private static final int CopyOnWriteArrayList = 0;
 
     @Test
     public void test() throws InterruptedException {
@@ -60,6 +62,64 @@ public class ActorTest {
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertEquals("test", a.toString());
         assertEquals(Supervisor.defaultSupervisor(), c.supervisor());
+    }
+
+    @Test
+    public void testMailboxFactoryBounded() throws InterruptedException {
+        Context c = Context.create();
+        List<Integer> list = new CopyOnWriteArrayList<>();
+        CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch finished = new CountDownLatch(1);
+        int bound = 2;
+        ActorRef<Integer> a = c.<Integer>matchAny(m -> {
+            list.add(m.content());
+            try {
+                latch.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                // do nothing
+            }
+            if (m.content() == 9999) {
+                finished.countDown();
+            }
+        }) //
+                .mailboxFactory(MailboxFactory.bounded(bound, true)) //
+                .build();
+        for (int i = 0; i < 10000; i++) {
+            a.tell(i);
+        }
+        latch.countDown();
+        finished.await(5, TimeUnit.SECONDS);
+        c.shutdownGracefully();
+        assertTrue(list.size() <= bound + 1);
+        assertEquals(9999, (int) list.get(list.size() - 1));
+    }
+
+    @Test
+    public void testMailboxFactoryPriority() throws InterruptedException {
+        Context c = Context.create();
+        List<Integer> list = new CopyOnWriteArrayList<>();
+        CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch finished = new CountDownLatch(1);
+        ActorRef<Integer> a = c.<Integer>matchAny(m -> {
+            list.add(m.content());
+            try {
+                latch.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                // do nothing
+            }
+            if (list.size() == 10000) {
+                finished.countDown();
+            }
+        }) //
+                .mailboxFactory(MailboxFactory.priority(Comparator.<Integer>naturalOrder())) //
+                .build();
+        for (int i = 10000; i > 0; i--) {
+            a.tell(i);
+        }
+        latch.countDown();
+        finished.await(5, TimeUnit.SECONDS);
+        c.shutdownGracefully();
+        // can't really assert anything much about order of list because of potential races
     }
 
     @Test
