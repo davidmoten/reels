@@ -119,7 +119,7 @@ public class ActorTest {
         latch.countDown();
         finished.await(5, TimeUnit.SECONDS);
         c.shutdownGracefully();
-        // can't really assert anything much about order of list because of potential races
+        assertTrue(list.get(0) == 1|| list.get(1) == 1);
     }
 
     @Test
