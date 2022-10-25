@@ -29,5 +29,11 @@ public class UtilTest {
         assertFalse(Util.primitiveTypesMatch(char.class, Byte.class));
         assertFalse(Util.primitiveTypesMatch(boolean.class, Byte.class));
     }
+    
+    @Test
+    public void testTypesMatch() {
+        assertTrue(Util.typesMatch(Number.class, Integer.class));
+        assertFalse(Util.typesMatch(Number.class, String.class));
+    }
 
 }

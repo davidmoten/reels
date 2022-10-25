@@ -54,7 +54,8 @@ public final class Util {
                 "Cannot find an appropriate constructor for class " + c + " and arguments " + Arrays.toString(args));
     }
 
-    private static boolean typesMatch(Class<?> need, Class<?> got) {
+    // VisibleForTesting
+    static boolean typesMatch(Class<?> need, Class<?> got) {
         if (need.isAssignableFrom(got)) {
             return true;
         } else if (need.isPrimitive()) {
