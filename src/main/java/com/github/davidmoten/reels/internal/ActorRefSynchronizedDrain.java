@@ -10,7 +10,7 @@ import com.github.davidmoten.reels.MailboxFactory;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Supervisor;
 
-public final class ActorRefSynchronizedDrain<T> extends ActorRefImpl<T> {
+public class ActorRefSynchronizedDrain<T> extends ActorRefImpl<T> {
 
     private final AtomicInteger wip = new AtomicInteger();
 
