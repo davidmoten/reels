@@ -15,8 +15,9 @@ public class UtilTest {
         assertTrue(Util.primitiveTypesMatch(float.class, Float.class));
         assertTrue(Util.primitiveTypesMatch(double.class, Double.class));
         assertTrue(Util.primitiveTypesMatch(char.class, Character.class));
+        assertTrue(Util.primitiveTypesMatch(boolean.class, Boolean.class));
     }
-    
+
     @Test
     public void testPrimitiveTypesDoNotMatch() {
         assertFalse(Util.primitiveTypesMatch(byte.class, Short.class));
@@ -26,6 +27,7 @@ public class UtilTest {
         assertFalse(Util.primitiveTypesMatch(float.class, Double.class));
         assertFalse(Util.primitiveTypesMatch(double.class, Character.class));
         assertFalse(Util.primitiveTypesMatch(char.class, Byte.class));
+        assertFalse(Util.primitiveTypesMatch(boolean.class, Byte.class));
     }
 
 }
