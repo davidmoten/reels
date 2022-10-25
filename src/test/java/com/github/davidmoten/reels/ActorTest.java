@@ -119,7 +119,7 @@ public class ActorTest {
         latch.countDown();
         finished.await(5, TimeUnit.SECONDS);
         c.shutdownGracefully();
-        assertTrue(list.get(0) == 1|| list.get(1) == 1);
+        assertTrue("got " + list, list.get(0) == 1|| list.get(1) == 1);
     }
 
     @Test
