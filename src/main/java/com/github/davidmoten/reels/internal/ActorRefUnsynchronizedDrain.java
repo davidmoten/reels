@@ -9,7 +9,7 @@ import com.github.davidmoten.reels.MailboxFactory;
 import com.github.davidmoten.reels.Scheduler;
 import com.github.davidmoten.reels.Supervisor;
 
-public class ActorRefUnsynchronizedDrain<T> extends ActorRefImpl<T> {
+public final class ActorRefUnsynchronizedDrain<T> extends ActorRefImpl<T> {
 
     boolean running;
 

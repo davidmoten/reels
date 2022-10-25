@@ -8,7 +8,7 @@ import com.github.davidmoten.reels.ActorRef;
 import com.github.davidmoten.reels.Context;
 import com.github.davidmoten.reels.Scheduler;
 
-public class ActorRefCompletableFuture<T> extends CompletableFuture<T> implements ActorRef<T> {
+public final class ActorRefCompletableFuture<T> extends CompletableFuture<T> implements ActorRef<T> {
     
     @Override
     public void tell(T message) {
@@ -32,7 +32,7 @@ public class ActorRefCompletableFuture<T> extends CompletableFuture<T> implement
 
     @Override
     public Context context() {
-        return Context.DEFAULT;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ActorRefCompletableFuture<T> extends CompletableFuture<T> implement
 
     @Override
     public Scheduler scheduler() {
-        return context().scheduler();
+        throw new UnsupportedOperationException();
     }
 
     @Override
