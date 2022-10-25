@@ -37,7 +37,6 @@ public class ActorTest {
     private static final Logger log = LoggerFactory.getLogger(ActorTest.class);
     private static final int RUNNERS = 100;
     private static final int NUM_MESSAGES = 10000;
-    private static final int CopyOnWriteArrayList = 0;
 
     @Test
     public void test() throws InterruptedException {
