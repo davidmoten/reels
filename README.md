@@ -7,7 +7,7 @@ Actor framework for Java, non-blocking, performant. Developed as a reaction to t
 
 Why would you trust this library with plenty of concurrency-sensitive code? I've been involved in concurrency-sensitive projects since 2014 as a frequent contributor to RxJava 1.x and the author of numerous popular RxJava libraries (rxjava-extras, rxjava-jdbc, rxjava3-pool, rxjava-slf4j, rxjava-http, rxjava-aws). All these libraries involve a lot of concurrency-aware and performance-aware work so this is not new ground for me. Please raise an issue if you spot something.
 
-Why do we need another Actor library on the JVM? I think there's space for an in-memory Actor library that has a small footprint (only *slf4j-api* as a logging dependency and jar is 87K), is easy to use (the API is both simple and discoverable), offers a goodly number of useful features, and is thread-safe and performant.
+Why do we need another Actor library on the JVM? I think there's space for an in-memory Actor library that has a small footprint (only *slf4j-api* as a logging dependency and jar is ~100K), is easy to use (the API is both simple and discoverable), offers a goodly number of useful features, and is thread-safe and performant.
 
 ## Features
 * Discoverable concise API (Akka is not, partly due to the way it's evolved and a lot of Scala library stuff)
@@ -16,7 +16,7 @@ Why do we need another Actor library on the JVM? I think there's space for an in
 * Dead letter actor
 * SLF4J logging (add the implementation that you like)
 * Akka stop semantics (stopping an actor stops its children first)
-* Jar size 87K with only one logging dependency (slf4j)
+* Jar size 100K with only one logging dependency (slf4j)
  
 TODO 
 * Lifecycle monitoring (DeathWatch) support
