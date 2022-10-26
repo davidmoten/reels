@@ -1,6 +1,6 @@
 # reels
 <a href="https://github.com/davidmoten/reels/actions/workflows/ci.yml"><img src="https://github.com/davidmoten/reels/actions/workflows/ci.yml/badge.svg"/></a><br/>
-[![codecov](https://codecov.io/gh/davidmoten/reels/branch/master/graph/badge.svg)](https//:codecov.io/gh/davidmoten/reels)<br/>
+[![codecov](https://codecov.io/gh/davidmoten/reels/branch/master/graph/badge.svg)](https://codecov.io/gh/davidmoten/reels)<br/>
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/au.gov.amsa/reels/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/au.gov.amsa/reels)<br/>
 
 Actor framework for Java, non-blocking, performant. Developed as a reaction to the Akka licence change. Akka is a huge framework with a large number of extensions including persistence, web serving, streaming and more. My needs are limited to core of Akka, namely in-memory actor support (including supervision) and that's what this library provides.
@@ -120,6 +120,7 @@ context
     .onStop(self -> log.info("{}: onStop", self)) 
     .scheduler(Scheduler.computation()) 
     .parent(a) 
+    .mailboxFactory(Mailbox.bounded(1000, true))
     .supervisor((m, actor, e) -> {
         log.error(e.getMessage(), e);
         actor.pause(30, TimeUnit.SECONDS);
@@ -155,7 +156,7 @@ Output:
 ```
 
 #### A warning about using lambdas to create actors
-Note that if you use a lambda and you make a reference to the enclosing class then the ActorRef will retain a reference to the enclosing object. We should be careful about this because that referred object will not be garbage collected till the ActorRef is. Consequentl, if you create an actor from another actor then you should be conscious about this lifecycle link.
+Note that if you use a lambda and you make a reference to the enclosing class then the ActorRef will retain a reference to the enclosing object. We should be careful about this because that referred object will not be garbage collected till the ActorRef is. Consequently, if you create an actor from another actor then you should be conscious about this lifecycle link.
 
 ### Create an Actor using your own class
 
@@ -258,7 +259,7 @@ To run benchmarks:
 mvn clean install -P benchmark
 ```
 
-Benchmarking indicates that reels is faster than Akka for three aspects tested:
+Benchmarking indicates that reels is faster than Akka for four aspects tested:
 
 * ask performance (15% faster)
 * hub and spoke contended performance (3x faster)
