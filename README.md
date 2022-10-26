@@ -18,6 +18,8 @@ Why do we need another Actor library on the JVM? I think there's space for an in
 * Akka stop semantics (stopping an actor stops its children first)
 * Jar size 100K with only one logging dependency (slf4j)
  
+**Status:** *Published to Maven Central*
+
 TODO 
 * Lifecycle monitoring (DeathWatch) support. Later.
 * Add Actor.preRestart, Actor.postRestart methods? Jury still out on this. NO
