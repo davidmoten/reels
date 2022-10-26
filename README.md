@@ -19,9 +19,9 @@ Why do we need another Actor library on the JVM? I think there's space for an in
 * Jar size 100K with only one logging dependency (slf4j)
  
 TODO 
-* Lifecycle monitoring (DeathWatch) support
+* Lifecycle monitoring (DeathWatch) support. Later.
 * Add Actor.preRestart, Actor.postRestart methods? Jury still out on this. NO
-* Akka has a kill method that forces onMessage to throw an ActorKilledException. Not keen on this.
+* Akka has a kill method that forces onMessage to throw an ActorKilledException. Not keen on this. NO
 
 ## How to build
 ```bash
