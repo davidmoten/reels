@@ -277,7 +277,9 @@ Schedulers wrap executors and are designed to be efficient for particular use ca
 Make sure you use a blocking scheduler (especially `Scheduler.io()`) for any blocking work like database calls, file system IO, network IO.
  
 ## Memory use
-Each actor takes about 600 bytes. (i.e a million actors would take 600MB of memory). My tests show Akka is about 520 bytes per actor. I measured this by running [MemoryUsageMain.java](src/test/java/com/github/davidmoten/reels/MemoryUsageMain.java) and [MemoryUsageAkkaMain.java](src/test/java/com/github/davidmoten/reels/MemoryUsageAkkaMain.java) and used jconsole to force gc and check memory usage. 
+Each actor takes about 600 bytes if you use the `match*` builder methods. (i.e a million actors would take 600MB of memory). My tests show Akka is about 520 bytes per actor. I measured this by running [MemoryUsageMain.java](src/test/java/com/github/davidmoten/reels/MemoryUsageMain.java) and [MemoryUsageAkkaMain.java](src/test/java/com/github/davidmoten/reels/MemoryUsageAkkaMain.java) and used jconsole to force gc and check memory usage. 
+
+If the actor is created with `context.actorClass(...)` then each actor takes about 450 bytes.
 
 ## Benchmarks
 To run benchmarks:
