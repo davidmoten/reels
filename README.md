@@ -276,6 +276,9 @@ Schedulers wrap executors and are designed to be efficient for particular use ca
 
 Make sure you use a blocking scheduler (especially `Scheduler.io()`) for any blocking work like database calls, file system IO, network IO.
  
+## Memory use
+Each actor takes about 600 bytes. (i.e a million actors would take 600MB of memory). Akka purportedly uses about 400 bytes per actor (nice).
+
 ## Benchmarks
 To run benchmarks:
 
