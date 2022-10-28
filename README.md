@@ -43,39 +43,46 @@ Add this dependency to your pom.xml:
 ## Glossary
 For background about the Actor Model see this wikipedia [article](https://en.wikipedia.org/wiki/Actor_model).
 
-* Actor
+**Actor**
 
 An Actor is an object (with a chunk of message processing logic) that reacts to messages that are sent to it and communicates with other Actors via asynchronous messsaging. An Actor can have private state and has the simplification that messages sent to it are processed in-order so concurrency issues don't need to be considered. Concurrent/Parallel aspects of a system are modelled via asynchronous messages between Actors. An Actor has a lifecycle, and can be restarted (recreated) by a Supervisor.
-* ActorRef
+
+**ActorRef**
 
 An ActorRef is a reference to an Actor and is how one programmatically interacts with an Actor. The referred Actor object is not directly accesible and in fact may be replaced over time if a Supervisor restarts the Actor. 
-* Context
+
+**Context**
 
 A Context (ActorSystem in Akka) is used to create and own Actors in a heirarchy (which can be flat), handle dead messages, and shutdown all its owned Actors in a controlled manner.
-* Mailbox
+
+**Mailbox**
 
 When a message is sent to an Actor it is placed in a Mailbox (queue) where it waits its turn to be processed by the Actor onMessage method. Mailboxes can be of various types and are customizable. For example a Mailbox can be unbounded in size (so buffered messages growth is only limited by available memory), bounded in size, or supported by a PriorityQueue.
-* Message
+
+**Message**
 
 The chunk of information that flies around between Actors is a Message and is comprised of content and a sender ActorRef (optional). The reels API also makes available the message recipient ActorRef (self) and Context in the call to Actor.onMessage (Akka exposes those things as functions on `this`).
-* Scheduler
+
+**Scheduler**
 
 Based on Executors of various kinds Schedulers allow work (Runnable) to be submitted to run now (once a worker thread available) or in the future. Schedulers (and queues) are the basis for asynchronous messaging between Actors.
 * Supervisor
 
 When an Actor throws from its processing methods the error is caught by a Supervisor. Within the Supervisor the ActorRef for the Actor is supplemented with extra methods to be able to restart, restart with a delay or pause an Actor for a period. A minimal Supervisor might just log the failure and allow message processing to continue, or Actor state might be reset via restart, or the Actor might be stopped. Up to you.
-* SupervisedActorRef
+
+**SupervisedActorRef**
 
 When the ActorRef is passed to the Supervisor it is wrapped as a SupervisedActorRef which supplements the ActorRef with methods to restart, restart with a delay or pause the Actor. The aim is that this sort of interaction with an Actor should only happen in the Supervisor (in a fault-recovery scenario).
-* Worker
+
+**Worker**
 
 A Scheduler can create a Worker which has scheduling methods but has a lifespan (controlled by calling the `dispose` method). Every ActorRef has a Worker for scheduling in-order processing of messages. A Scheduler (like the `io()` Scheduler) might offer a unique thread with each Worker so disposal allows for recovery of that thread for use by other Workers. 
 
-## Actor Lifecycle
+## Actor Lifecycle UML State Diagram
 
 ![Actor Lifecycle](src/docs/state-diagram.svg)
 
-## Class Diagram
+## Reels UML Class Diagram
 
 ![Class Diagram](src/docs/class-diagram.svg)
 
