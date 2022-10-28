@@ -257,6 +257,16 @@ Supervisors themselves should not throw. If they do TODO.
 * Dispose happens synchronously (the actor and all its children and descendants are disposed before the method returns) 
 * Restarting an actor from a supervisor will dispose all that actors children
 
+## Mailboxes
+Mailboxes are where messages sent to an actor are buffered for processing. Each ActorRef has its own Mailbox which is essentially a queue that supports `offer` from multiple threads and `poll` from one thread.
+
+Three types of Mailbox factory are provided:
+* `MailboxFactory.unbounded()` creates Mailboxes with an unbounded queue
+* `MailboxFactory.bounded(maxSize, dropFirst)` creates Mailboxes with bounded queues and defines what strategy to use when the bound is met (drop first or drop last)
+* `MailboxFactory.priority(comparator)` creates Mailboxes based on a priority queue
+
+You can create your own Mailbox type by implementing the Mailbox [interface](src/main/java/com/github/davidmoten/reels/Mailbox.java).
+
 ## Schedulers
 Sending a message to an Actor is normally asynchronous. That is when you call `actorRef.tell(msg)` what happens under the covers is that the message is placed on a concurrent queue for that actor and the actor is notified to process its queue using an executor.
 
