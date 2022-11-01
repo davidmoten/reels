@@ -13,27 +13,17 @@ public class LoadBalancerExampleMain {
 
     private static final Logger log = LoggerFactory.getLogger(LoadBalancerExampleMain.class);
 
-    public static void main(String[] args) throws InterruptedException {
-        Context context = Context.create();
-        AtomicInteger count = new AtomicInteger();
-        Function<ActorRef<Integer>, ActorRef<Integer>> workerFactory = parent -> context
-                .<Integer>matchAny(m -> log.info(m.self().name() + " received " + m.content())) //
-                .name("worker" + Integer.toString(count.incrementAndGet())) //
-                .parent(parent) //
-                .build();
-        ActorRef<Integer> balancer = context
-                .actorFactory(() -> new Balancer<Integer>(workerFactory, 5)).build();
-        for (int i = 0; i < 20; i++) {
-            balancer.tell(i);
-        }
-        Thread.sleep(2000);
-        context.shutdownGracefully().join();
-    }
-
+    /**
+     * Performs round-robin load balancing.
+     *
+     * @param <T> message type
+     */
     public static class Balancer<T> extends AbstractActor<T> {
 
         /**
-         *  Given the Balancer ActorRef, creates a worker. The worker should set the parent to the Balancer. If you don't then stopping the Balancer will not stop the workers.
+         * Given the Balancer ActorRef, creates a worker. The worker should set the
+         * parent to the Balancer. If you don't then stopping the Balancer will not stop
+         * the workers.
          */
         private final Function<ActorRef<T>, ActorRef<T>> workerFactory;
         private final int size;
@@ -45,11 +35,11 @@ public class LoadBalancerExampleMain {
             this.workerFactory = actorFactory;
             this.size = size;
         }
-        
+
         @Override
         public void preStart(ActorRef<T> self) {
             actors = IntStream //
-                    .range(0,  size) //
+                    .range(0, size) //
                     .mapToObj(i -> workerFactory.apply(self)) //
                     .collect(Collectors.toList());
         }
@@ -60,5 +50,21 @@ public class LoadBalancerExampleMain {
             index = (index + 1) % actors.size();
         }
 
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        Context context = Context.create();
+        AtomicInteger count = new AtomicInteger();
+        Function<ActorRef<Integer>, ActorRef<Integer>> workerFactory = parent -> context
+                .<Integer>matchAny(m -> log.info(m.self().name() + " received " + m.content())) //
+                .name("worker" + Integer.toString(count.incrementAndGet())) //
+                .parent(parent) //
+                .build();
+        ActorRef<Integer> balancer = context.actorFactory(() -> new Balancer<Integer>(workerFactory, 5)).build();
+        for (int i = 0; i < 20; i++) {
+            balancer.tell(i);
+        }
+        Thread.sleep(2000);
+        context.shutdownGracefully().join();
     }
 }
