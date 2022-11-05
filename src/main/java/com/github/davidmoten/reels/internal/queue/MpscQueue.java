@@ -28,9 +28,8 @@ public class MpscQueue<T> {
         if (v != null) {
             if (next == null) {
                 if (node != producerNode.get()) {
-                    while ((next = node.getNext()) == null) {
-                        //spin
-                    }
+                    // spin while offer method in progress
+                    while ((next = node.getNext()) == null) { } // NOPMD
                     v = node.value;
                     consumerNode.lazySet(next);
                 } else {
