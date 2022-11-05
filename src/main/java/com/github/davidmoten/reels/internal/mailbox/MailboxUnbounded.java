@@ -2,9 +2,9 @@ package com.github.davidmoten.reels.internal.mailbox;
 
 import com.github.davidmoten.reels.Mailbox;
 import com.github.davidmoten.reels.Message;
-import com.github.davidmoten.reels.internal.queue.MpscLinkedQueue;
+import com.github.davidmoten.reels.internal.queue.MpscQueue;
 
-public final class MailboxUnbounded<T> extends MpscLinkedQueue<Message<T>> implements Mailbox<T> {
+public final class MailboxUnbounded<T> extends MpscQueue<Message<T>> implements Mailbox<T> {
     
     private Message<T> latest;
     private boolean retry;
