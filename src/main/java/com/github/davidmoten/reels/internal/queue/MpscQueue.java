@@ -23,6 +23,7 @@ public class MpscQueue<T> {
 
     public T poll() {
         Node<T> node = consumerNode.get();
+        // reading next helps with visibility of value
         Node<T> next = node.getNext();
         T v = node.value;
         if (v != null) {
@@ -30,12 +31,12 @@ public class MpscQueue<T> {
                 if (node != producerNode.get()) {
                     // spin while offer method in progress
                     while ((next = node.getNext()) == null) { } // NOPMD
-                    v = node.value;
                     consumerNode.lazySet(next);
                 } else {
                     node.value = null;
                 }
             } else {
+                node.value = null; // help gc
                 consumerNode.lazySet(next);
             }
         }
@@ -43,11 +44,10 @@ public class MpscQueue<T> {
     }
 
     static final class Node<T> extends AtomicReference<Node<T>> {
+        
         private static final long serialVersionUID = 2232102237291327527L;
+        
         T value;
-
-        Node() {
-        }
 
         void setNext(Node<T> node) {
             lazySet(node);
