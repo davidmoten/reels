@@ -13,32 +13,6 @@ import java.util.concurrent.TimeoutException;
 
 public class MockedScheduledFuture<T> implements ScheduledFuture<T> {
     
-    public static final Object ANY = new Object();
-    
-    private final List<String> events = new CopyOnWriteArrayList<>();
-    private final List<Object> args = new CopyOnWriteArrayList<>();
-
-    public List<String> events() {
-        return events;
-    }
-    
-    public List<Object> args() {
-        return args;
-    }
-    
-    public void assertEvents(String... events) {
-        assertEquals(Arrays.asList(events), this.events);
-    }
-    
-    public void assertArgs(Object... args) {
-        assertEquals(this.args.size(), args.length);
-        for (int i = 0; i < this.args.size(); i++) {
-            if (args[i] != ANY ) {
-                assertEquals(this.args.get(i), args[i]);
-            }
-        }
-    }
-
     @Override
     public long getDelay(TimeUnit unit) {
         // TODO Auto-generated method stub
