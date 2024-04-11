@@ -15,58 +15,57 @@ public class SchedulerFromExecutorTest {
 
     @Test
     public void testScheduleDirect() {
-        ScheduledExecutorService a = Mockito.mock(ScheduledExecutorService.class);
+        MockedScheduledExecutorService a = new MockedScheduledExecutorService();
         SchedulerFromExecutor b = new SchedulerFromExecutor(a, false);
         Runnable r = () -> {
         };
         b.schedule(r);
-        verify(a, times(1)).submit(r);
-        verifyNoMoreInteractions(a);
+        a.assertEvents("submit");
+        a.assertArgs(r);
     }
 
     @Test
     public void testScheduleWithNegativeDelay() {
-        ScheduledExecutorService a = Mockito.mock(ScheduledExecutorService.class);
+        MockedScheduledExecutorService a = new MockedScheduledExecutorService();
         SchedulerFromExecutor b = new SchedulerFromExecutor(a, false);
         Runnable r = () -> {
         };
         b.schedule(r, -1, TimeUnit.SECONDS);
-        verify(a, times(1)).submit(r);
-        verifyNoMoreInteractions(a);
+        a.assertEvents("submit");
+        a.assertArgs(r);
     }
 
     @Test
     public void testScheduleWithDelay() {
-        ScheduledExecutorService a = Mockito.mock(ScheduledExecutorService.class);
+        MockedScheduledExecutorService a = new MockedScheduledExecutorService();
         SchedulerFromExecutor b = new SchedulerFromExecutor(a, false);
         Runnable r = () -> {
         };
         b.schedule(r, 1, TimeUnit.SECONDS);
-        verify(a, times(1)).schedule(eq(r), eq(1L), eq(TimeUnit.SECONDS));
-        verifyNoMoreInteractions(a);
+        a.assertEvents("schedule");
+        a.assertArgs(r, 1L, TimeUnit.SECONDS);
     }
 
     @Test
     public void testSchedulePeriodically() {
-        ScheduledExecutorService a = Mockito.mock(ScheduledExecutorService.class);
+        MockedScheduledExecutorService a = new MockedScheduledExecutorService();
         SchedulerFromExecutor b = new SchedulerFromExecutor(a, false);
         Runnable r = () -> {
         };
         b.schedulePeriodically(r, 1, 2, TimeUnit.SECONDS);
-        verify(a, times(1)).scheduleAtFixedRate(eq(r), eq(1L), eq(2L), eq(TimeUnit.SECONDS));
-        verifyNoMoreInteractions(a);
+        a.assertEvents("scheduleAtFixedRate");
+        a.assertArgs(r, 1L, 2L, TimeUnit.SECONDS);
     }
 
     @Test
     public void testShutdown() {
-        ScheduledExecutorService a = Mockito.mock(ScheduledExecutorService.class);
+        MockedScheduledExecutorService a = new MockedScheduledExecutorService();
         SchedulerFromExecutor b = new SchedulerFromExecutor(a, false);
         b.shutdown();
         Runnable r = () -> {
         };
         assertTrue(Disposable.disposed() == b.schedule(r));
-        verify(a, times(1)).shutdownNow();
-        verifyNoMoreInteractions(a);
+        a.assertEvents("shutdownNow");
     }
 
 }
