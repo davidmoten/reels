@@ -17,7 +17,7 @@ Why do we need another Actor library on the JVM? I think there's space for an in
 * SLF4J logging (add the implementation that you like)
 * Akka stop semantics (stopping an actor stops its children first)
 * Jar size 100K with only one logging dependency (slf4j)
-* Built and tested with JDK 8, 11, 17
+* Built and tested with JDK 8, 11, 17, 21
  
 **Status:** *Published to Maven Central*
 
