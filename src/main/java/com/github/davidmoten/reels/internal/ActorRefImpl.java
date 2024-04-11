@@ -248,6 +248,12 @@ public abstract class ActorRefImpl<T> implements SupervisedActorRef<T>, Runnable
         preStartHasBeenRun = false;
         return actor;
     }
+    
+    @Override
+    protected final void finalize() throws Throwable {
+        // do nothing, stops spotbugs from complaining about 
+        // exception leaving the constructor
+    }
 
     @Override
     public String name() {

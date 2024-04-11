@@ -9,6 +9,7 @@
             <Bug pattern="BC_UNCONFIRMED_CAST"/>
             <Bug pattern="MS_EXPOSE_REP"/>
             <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD"/>
+            <Bug pattern="SING_SINGLETON_GETTER_NOT_SYNCHRONIZED"/>
         </Or>
     </Match>
 </FindBugsFilter>
