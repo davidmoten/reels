@@ -331,7 +331,7 @@ BenchmarksAkka.groupRandomMessages                thrpt   10       3.711 ±   0.
 Benchmarks.sequential                                ss   10       1.951 ±   0.326   s/op
 BenchmarksAkka.sequential                            ss   10      20.868 ±   0.478   s/op
 ```
-Using JDK 21 on i7-i7-1355U with 10 cores
+Using JDK 21 on i7-1355U with 10 cores
 ```
 Benchmark                                          Mode  Cnt       Score       Error  Units
 Benchmarks.actorCreateAndStop                     thrpt   10  956110.681 ± 39242.319  ops/s
