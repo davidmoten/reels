@@ -331,5 +331,23 @@ BenchmarksAkka.groupRandomMessages                thrpt   10       3.711 ±   0.
 Benchmarks.sequential                                ss   10       1.951 ±   0.326   s/op
 BenchmarksAkka.sequential                            ss   10      20.868 ±   0.478   s/op
 ```
+Using JDK 21 on i7-i7-1355U with 10 cores
+```
+Benchmark                                          Mode  Cnt       Score       Error  Units
+Benchmarks.actorCreateAndStop                     thrpt   10  956110.681 ± 39242.319  ops/s
+Benchmarks.ask                                    thrpt   10      24.689 ±     3.795  ops/s
+Benchmarks.contendedConcurrencyComputationSticky  thrpt   10       1.243 ±     0.069  ops/s
+Benchmarks.contendedConcurrencyForkJoin           thrpt   10       4.370 ±     0.566  ops/s
+Benchmarks.contendedConcurrencyImmediate          thrpt   10       7.333 ±     8.578  ops/s
+Benchmarks.groupRandomMessagesComputationSticky   thrpt   10       1.892 ±     0.224  ops/s
+Benchmarks.groupRandomMessagesForkJoin            thrpt   10       4.279 ±     0.395  ops/s
+Benchmarks.groupRandomMessagesImmediate           thrpt   10      19.922 ±     0.418  ops/s
+Benchmarks.groupRandomMessagesIo                  thrpt   10       1.401 ±     0.035  ops/s
+BenchmarksAkka.ask                                thrpt   10      23.851 ±     1.482  ops/s
+BenchmarksAkka.contendedConcurrency               thrpt   10       2.809 ±     0.200  ops/s
+BenchmarksAkka.groupRandomMessages                thrpt   10       2.860 ±     0.025  ops/s
+Benchmarks.sequential                                ss   10       1.156 ±     0.127   s/op
+BenchmarksAkka.sequential                            ss   10       6.205 ±     0.285   s/op
+```
 
 
