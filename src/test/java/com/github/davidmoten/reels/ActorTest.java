@@ -206,7 +206,7 @@ public class ActorTest {
         Context c = new Context();
         ActorRef<Integer> a = c //
                 .<Integer>actorBuilder() //
-                .actorClass(MyActorWithArgs.class, 10, new Double(3)) //
+                .actorClass(MyActorWithArgs.class, 10, 3.0) //
                 .scheduler(Scheduler.immediate()) //
                 .build();
         a.tell(1234);
